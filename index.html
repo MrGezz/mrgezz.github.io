@@ -201,7 +201,16 @@ html[data-theme="light"] .tag.code{color:var(--accent)}
 .shot .ttl i{color:var(--accent)}
 .shot .ttl .code{font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:5px; padding:1px 6px; letter-spacing:.3px}
 .shot .frame{position:relative; aspect-ratio:16/9; overflow:hidden; background:radial-gradient(130% 120% at 50% 0,var(--panel-2),var(--bg-2))}
-.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+
+/* 
+  FIX: object-fit set to 'contain' instead of 'cover'. 
+  This ensures the image auto-fits inside the bounds without stretching or clipping. 
+*/
+.shot img{
+  position:absolute; inset:0; width:100%; height:100%; 
+  object-fit:contain; display:block;
+}
+
 /* faux app UI placeholder */
 .ph{position:absolute; inset:0; display:flex; overflow:hidden}
 .ph .rail{width:26%; max-width:155px; background:var(--bg); border-right:1px solid var(--line); padding:16px 14px; display:flex; flex-direction:column; gap:10px}
@@ -569,6 +578,25 @@ footer a{font-weight:600}
           </div>
         </div>
         <div class="sec-body">
+          <div class="shot">
+            <div class="bar">
+              <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
+              <span class="ttl"><i class="fa-solid fa-sliders"></i> Project Setup <span class="code">PSU</span></span>
+            </div>
+            <div class="frame">
+              <img src="images/psu.png" alt="PSU screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <div class="ph">
+                <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
+                <div class="body">
+                  <span class="h"></span><span class="line"></span><span class="line" style="width:68%"></span>
+                  <div class="cards"><span class="c"></span><span class="c"></span><span class="c"></span></div>
+                  <span class="line" style="width:52%"></span><span class="line" style="width:40%"></span>
+                </div>
+                <i class="wm fa-solid fa-sliders"></i>
+                <span class="hint">add <code>images/psu.png</code></span>
+              </div>
+            </div>
+          </div>
           <ul class="feat">
             <li class="reveal"><i class="fa-solid fa-link"></i><div class="ft"><b>Batch Link Worksets:</b> Sorts Revit / CAD / NWD link instances into the right worksets by filename pattern. <span class="win">A workset chore that used to be done by hand, automated.</span></div></li>
             <li class="reveal"><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>Guarded Project Info:</b> Reads/writes only standard built-in ProjectInfo params. <span class="win">Protects document health while you edit.</span></div></li>
@@ -589,6 +617,25 @@ footer a{font-weight:600}
           </div>
         </div>
         <div class="sec-body">
+          <div class="shot">
+            <div class="bar">
+              <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
+              <span class="ttl"><i class="fa-solid fa-broom"></i> Model Cleanup <span class="code">CD</span></span>
+            </div>
+            <div class="frame">
+              <img src="images/cd.png" alt="CD screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <div class="ph">
+                <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
+                <div class="body">
+                  <span class="h"></span><span class="line"></span><span class="line" style="width:68%"></span>
+                  <div class="cards"><span class="c"></span><span class="c"></span><span class="c"></span></div>
+                  <span class="line" style="width:52%"></span><span class="line" style="width:40%"></span>
+                </div>
+                <i class="wm fa-solid fa-broom"></i>
+                <span class="hint">add <code>images/cd.png</code></span>
+              </div>
+            </div>
+          </div>
           <div class="techtags reveal">
             <span class="ttag">Revit API</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
             <span class="ttag alt">SubTransaction</span><span class="ttag alt">Spatial grid O(n)</span>
@@ -628,6 +675,25 @@ footer a{font-weight:600}
           </div>
         </div>
         <div class="sec-body">
+          <div class="shot">
+            <div class="bar">
+              <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
+              <span class="ttl"><i class="fa-solid fa-file-export"></i> ExportDocTools <span class="code">EXP</span></span>
+            </div>
+            <div class="frame">
+              <img src="images/export.png" alt="ExportDocTools screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <div class="ph">
+                <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
+                <div class="body">
+                  <span class="h"></span><span class="line"></span><span class="line" style="width:68%"></span>
+                  <div class="cards"><span class="c"></span><span class="c"></span><span class="c"></span></div>
+                  <span class="line" style="width:52%"></span><span class="line" style="width:40%"></span>
+                </div>
+                <i class="wm fa-solid fa-file-export"></i>
+                <span class="hint">add <code>images/export.png</code></span>
+              </div>
+            </div>
+          </div>
           <ul class="feat">
             <li class="reveal"><i class="fa-solid fa-cube"></i><div class="ft"><b>One-Stop Export:</b> NWC, PDF and DWG from a single dark-theme shell with an in-window results log.</div></li>
             <li class="reveal"><i class="fa-solid fa-table-cells"></i><div class="ft"><b>Schedules → Excel:</b> Pushes Revit view schedules straight to formatted <code>.xlsx</code> via COM. <span class="win">Protects values like Ø and DN from Excel auto-formatting.</span></div></li>
@@ -648,6 +714,25 @@ footer a{font-weight:600}
           </div>
         </div>
         <div class="sec-body">
+          <div class="shot">
+            <div class="bar">
+              <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
+              <span class="ttl"><i class="fa-solid fa-print"></i> MEPAutoDocTools <span class="code">DOC</span></span>
+            </div>
+            <div class="frame">
+              <img src="images/doc.png" alt="DOC screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <div class="ph">
+                <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
+                <div class="body">
+                  <span class="h"></span><span class="line"></span><span class="line" style="width:68%"></span>
+                  <div class="cards"><span class="c"></span><span class="c"></span><span class="c"></span></div>
+                  <span class="line" style="width:52%"></span><span class="line" style="width:40%"></span>
+                </div>
+                <i class="wm fa-solid fa-print"></i>
+                <span class="hint">add <code>images/doc.png</code></span>
+              </div>
+            </div>
+          </div>
           <div class="techtags reveal">
             <span class="ttag">Revit API</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
             <span class="ttag alt">View Creation</span><span class="ttag alt">Automated Tagging</span><span class="ttag alt">Dimensions</span>
@@ -672,6 +757,25 @@ footer a{font-weight:600}
           </div>
         </div>
         <div class="sec-body">
+          <div class="shot">
+            <div class="bar">
+              <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
+              <span class="ttl"><i class="fa-solid fa-list-check"></i> BOQ Lookup <span class="code">RO1</span></span>
+            </div>
+            <div class="frame">
+              <img src="images/ro1.png" alt="RO1 screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <div class="ph">
+                <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
+                <div class="body">
+                  <span class="h"></span><span class="line"></span><span class="line" style="width:68%"></span>
+                  <div class="cards"><span class="c"></span><span class="c"></span><span class="c"></span></div>
+                  <span class="line" style="width:52%"></span><span class="line" style="width:40%"></span>
+                </div>
+                <i class="wm fa-solid fa-list-check"></i>
+                <span class="hint">add <code>images/ro1.png</code></span>
+              </div>
+            </div>
+          </div>
           <ul class="feat">
             <li class="reveal"><i class="fa-solid fa-database"></i><div class="ft"><b>Automated BOQ Engine:</b> Cross-references multiple element parameters against a master database to populate Order IDs.</div></li>
             <li class="reveal"><i class="fa-solid fa-ruler"></i><div class="ft"><b>Smart Size Parsing:</b> Reads messy inch strings (e.g. <code>1 1/2"</code>) and resolves them to metric Nominal Widths. <span class="win">Handles the real-world mess in supplier data.</span></div></li>
@@ -691,6 +795,25 @@ footer a{font-weight:600}
           </div>
         </div>
         <div class="sec-body">
+          <div class="shot">
+            <div class="bar">
+              <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
+              <span class="ttl"><i class="fa-solid fa-vector-square"></i> Wall Opening <span class="code">WOT</span></span>
+            </div>
+            <div class="frame">
+              <img src="images/wot.png" alt="WOT screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <div class="ph">
+                <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
+                <div class="body">
+                  <span class="h"></span><span class="line"></span><span class="line" style="width:68%"></span>
+                  <div class="cards"><span class="c"></span><span class="c"></span><span class="c"></span></div>
+                  <span class="line" style="width:52%"></span><span class="line" style="width:40%"></span>
+                </div>
+                <i class="wm fa-solid fa-vector-square"></i>
+                <span class="hint">add <code>images/wot.png</code></span>
+              </div>
+            </div>
+          </div>
            <ul class="feat">
             <li class="reveal"><i class="fa-solid fa-vector-square"></i><div class="ft"><b>Cross-Link Clash Detection:</b> Runs bounding-box intersections between MEP runs and walls, including walls in linked files.</div></li>
             <li class="reveal"><i class="fa-solid fa-location-dot"></i><div class="ft"><b>Auto-Placed Markers:</b> Drops a custom family instance at each crossing point so openings can be coordinated and scheduled. <span class="win">A complete opening set in one run.</span></div></li>
