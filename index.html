@@ -45,11 +45,12 @@ code{font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:.86em}
 html[data-theme="light"] :not(pre)>code{color:var(--accent)}
 
 /* ===== Layout ===== */
-.layout{display:grid; grid-template-columns:var(--sidebar-w) 1fr; min-height:100vh}
+.layout{display:flex; align-items:flex-start; min-height:100vh; width:100%}
 
 /* ===== Sidebar ===== */
 .sidebar{
-  position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  flex:0 0 var(--sidebar-w); width:var(--sidebar-w);
+  position:sticky; top:0; height:100vh; overflow-y:auto;
   background:var(--bg-2); border-right:1px solid var(--line); padding:0 0 40px;
 }
 .brand{
@@ -99,7 +100,7 @@ html[data-theme="light"] .nav a.active{color:var(--accent)}
 .nav-empty{display:none; padding:14px 16px; color:var(--muted); font-size:12.5px; font-style:italic}
 
 /* ===== Main ===== */
-.main{min-width:0}
+.main{flex:1 1 auto; min-width:0; max-width:100%}
 .topbar{
   position:sticky; top:0; z-index:6; display:flex; align-items:center; gap:14px;
   padding:14px 34px; background:color-mix(in srgb,var(--bg) 86%,transparent);
@@ -237,12 +238,13 @@ footer a{font-weight:600}
 /* mobile */
 .menu-btn{display:none}
 @media (max-width:960px){
-  .layout{grid-template-columns:1fr}
+  .layout{flex-direction:column}
   .sidebar{
-    position:fixed; left:0; top:0; bottom:0; width:300px; z-index:50;
-    transform:translateX(-105%); transition:transform .25s; box-shadow:0 0 40px rgba(0,0,0,.5);
+    flex:none; position:fixed; left:0; top:0; bottom:0; height:100vh; width:300px; z-index:50;
+    transform:translateX(-105%); visibility:hidden;
+    transition:transform .25s, visibility .25s; box-shadow:0 0 40px rgba(0,0,0,.5);
   }
-  .sidebar.open{transform:none}
+  .sidebar.open{transform:none; visibility:visible}
   .menu-btn{display:inline-flex}
   .stats{grid-template-columns:repeat(2,1fr)}
   .subgrid{grid-template-columns:1fr}
@@ -283,7 +285,7 @@ footer a{font-weight:600}
       </div>
 
       <div class="nav-group" data-group>
-        <div class="nav-label">GmBH Panel</div>
+        <div class="nav-label">IcZ Panel</div>
         <a href="#aa" data-name="aa spec cmmn automation phases"><span class="gi"><i class="fa-solid fa-layer-group"></i></span>SPEC / CMMN<span class="tcode">AA</span></a>
         <a href="#fit" data-name="fit mep workbench fitting audit coordinates flex param sync"><span class="gi"><i class="fa-solid fa-screwdriver-wrench"></i></span>MEP Workbench<span class="tcode">FIT</span></a>
         <a href="#psu" data-name="psu project setup links levels project info"><span class="gi"><i class="fa-solid fa-sliders"></i></span>Project Setup<span class="tcode">PSU</span></a>
@@ -391,7 +393,7 @@ pyrevit reload</code></pre>
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-layer-group"></i></div>
           <div class="sec-titles">
-            <h2>SPEC / CMMN Automation <span class="tag code">AA</span> <span class="tag">GmBH.panel</span></h2>
+            <h2>SPEC / CMMN Automation <span class="tag code">AA</span> <span class="tag">IcZ.panel</span></h2>
             <div class="sub">Full-lifecycle parameter management for MEP elements — phases 0 through 8.</div>
           </div>
         </div>
@@ -427,7 +429,7 @@ pyrevit reload</code></pre>
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-screwdriver-wrench"></i></div>
           <div class="sec-titles">
-            <h2>MEP Workbench <span class="tag code">FIT</span> <span class="tag">GmBH.panel</span></h2>
+            <h2>MEP Workbench <span class="tag code">FIT</span> <span class="tag">IcZ.panel</span></h2>
             <div class="sub">A four-page modeless workbench for routine MEP cleanup, routing &amp; parameter maintenance.</div>
           </div>
         </div>
@@ -484,7 +486,7 @@ Cross + 4 pipes                   1 main + 2 stubs = 3     3 flex (per junction 
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-sliders"></i></div>
           <div class="sec-titles">
-            <h2>Project Setup Utility <span class="tag code">PSU</span> <span class="tag">GmBH.panel</span></h2>
+            <h2>Project Setup Utility <span class="tag code">PSU</span> <span class="tag">IcZ.panel</span></h2>
             <div class="sub">One dashboard consolidating link worksets, project info &amp; level reassignment.</div>
           </div>
         </div>
@@ -867,9 +869,4 @@ class ToolWindow(Window):
 
   /* ---- Back to top ---- */
   const toTop = $('#toTop');
-  window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 600));
-  toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
-})();
-</script>
-</body>
-</html>
+  window.addEventListener('scroll', () => toTop.classList.toggle('show', windo
