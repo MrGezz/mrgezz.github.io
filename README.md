@@ -2,87 +2,59 @@
 
 [![GitHub Pages](https://img.shields.io/badge/Hosted_on-GitHub_Pages-00C8FF?logo=github)](https://MrGezz.github.io)
 [![pyRevit](https://img.shields.io/badge/Built_for-pyRevit_6.4-3776AB?logo=python)](https://github.com/pyrevitlabs/pyRevit)
-[![Revit](https://img.shields.io/badge/Revit-2023--2026-0696D7)](#)
+[![Revit API](https://img.shields.io/badge/Revit_API-2023--2026-0696D7?logo=autodesk)](#)
 
-The public documentation site for **`IcZScripts.extension`** — a pyRevit suite of BIM/MEP automation
-tools for Autodesk Revit 2023–2026. The site explains what each tool does, how it works, and the
-conventions behind the suite.
+The public documentation site for **`IcZScripts.extension`** — a master-crafted pyRevit suite of BIM/MEP automation tools targeting Autodesk Revit 2023–2026. This portal explains the underlying architecture, workflows, and conventions driving the extension.
 
 🌐 **Live site:** [https://MrGezz.github.io](https://MrGezz.github.io)
 
 ---
 
-## What this repo is
+## 🏗️ Architecture of this Repo
 
-This repository hosts a single-page, zero-build documentation portal. It is **not** the extension's
-source code — it is the reference site that documents the [`SuiteTools`](#documented-tools) ribbon tab.
+This repository serves as a highly optimized, zero-build documentation portal. It is **not** the pyRevit extension's source code; it is the interactive reference manual for the [`SuiteTools`](#documented-tools) ribbon tab.
 
-* `index.html` — the entire documentation portal (sidebar nav, live search, theme toggle, per-tool
-  cards, code samples). Fully self-contained; only CDN dependencies are FontAwesome and Prism.js.
-* `README.md` — this file.
+* **`index.html`** — The entire documentation portal. It features a bespoke Dark/Light design system, scroll-reveal animations, live-filtering, and an integrated clipboard for code blocks. Fully self-contained.
+* **`README.md`** — This file.
 
 ---
 
-## Documented tools
+## 🛠️ Documented Tools
 
-The site documents every tool shipping in the `SuiteTools.tab`:
+The documentation covers every proprietary tool shipping in the `SuiteTools.tab`:
 
 | Code | Tool | Panel | Purpose |
-| --- | --- | --- | --- |
-| **AA** | SPEC / CMMN Automation | GmBH | Full-lifecycle MEP parameter pipeline, phases 0–8 |
-| **FIT** | MEP Workbench | GmBH | Fitting Audit · Coordinates · Pipe/Duct→Flex · IFLS Param Sync |
-| **PSU** | Project Setup Utility | GmBH | Link worksets · Project Info · Levels · Security Vault |
-| **CD** | Model Cleanup | Tools | Ghost Purge + Connection Fix |
-| **EXP** | ExportDocTools | Tools | NWC / PDF / DWG / formatted Excel export |
-| **DOC** | MEPAutoDocTools | Tools | Auto-generate plans, sections, elevations, dims, tags, sheets |
-| **RO1** | BOQ Lookup | Parameter | Size → Nominal Width → BOQ designation/description |
-| **WOT** | Wall Opening Report | Report | MEP ↔ wall intersection detection across links |
-| **GUIDE** | Guidelines | QualityCheck | One-click standards (PDF/DOCX) browser |
+| :--- | :--- | :--- | :--- |
+| **AA** | SPEC / CMMN Automation | IcZ | Full-lifecycle MEP parameter pipeline, phases 0–8. |
+| **FIT** | MEP Workbench | IcZ | Fitting Audit · Coordinates · Pipe/Duct→Flex · IFLS Param Sync. |
+| **PSU** | Project Setup Utility | IcZ | Batch Link worksets · Project Info · Safe Level Reassignment. |
+| **CD** | Model Cleanup | Tools | O(n) Ghost Purge + SubTransaction Connection Fix. |
+| **EXP** | ExportDocTools | Tools | NWC / PDF / DWG / COM-driven formatted Excel export. |
+| **DOC** | MEPAutoDocTools | Tools | Auto-generate plans, sections, dimensions, tags, and sheets. |
+| **RO1** | BOQ Lookup | Parameter | Size → Nominal Width → BOQ designation/description engine. |
+| **WOT** | Wall Opening Report | Report | Cross-link MEP ↔ wall intersection detection. |
 
-Plus the shared library `lib/icz/` — `theme`, `review_grid`, `revit_compat`, `modeless`.
-
----
-
-## Site features
-
-* **Sidebar navigation** grouped by ribbon panel, with scrollspy highlighting the active tool.
-* **Live search** — press `/` to focus, type to filter the tool list; `Esc` clears.
-* **Light / Dark theme toggle** using the AA_ deep-navy & cyan palette as the base.
-* **Syntax-highlighted code** (Python / shell) via Prism.js.
-* **Responsive** — collapsible drawer nav on mobile.
+*Note: Includes the shared library `lib/icz/` detailing the framework for `theme`, `review_grid`, `revit_compat`, and safe `modeless` external events.*
 
 ---
 
-## Local preview
+## ✨ UI / UX Features
 
-No build step or server required:
+The documentation site is engineered for an elite developer experience (DX):
+
+* **Micro-interactions:** Scroll-triggered reveal animations via `IntersectionObserver`.
+* **Interactive Code Blocks:** Embedded Python & Shell blocks with Prism.js highlighting and one-click "Copy to Clipboard".
+* **Live Search:** Press `/` to focus, type to instantly filter the tool list.
+* **Advanced Theming:** Seamless Light / Dark theme toggling using a CSS variable-driven architecture.
+* **Glassmorphism:** Frosted top-bars with `backdrop-filter` for a modern application feel.
+* **Responsive Design:** Fluid grids and a collapsible mobile drawer navigation menu.
+
+---
+
+## 🚀 Local Development & Preview
+
+Because the site relies on a modern, zero-build HTML/CSS structure, no Node.js or Webpack server is required.
 
 ```bash
 git clone https://github.com/MrGezz/MrGezz.github.io.git
 cd MrGezz.github.io
-# open index.html in any browser
-```
-
-Or serve it locally if you prefer:
-
-```bash
-python -m http.server 8080
-# visit http://localhost:8080
-```
-
----
-
-## Tech stack
-
-* **HTML5 / CSS3** — custom properties for theming, CSS grid layout, no framework.
-* **Prism.js** — Python / Bash code highlighting.
-* **FontAwesome 6** — iconography and ribbon-style glyphs.
-
----
-
-## Maintainer
-
-**@MrGezz** — BIM Coordinator & Revit API developer.
-GitHub: [github.com/MrGezz](https://github.com/MrGezz)
-
-&copy; 2026 IcZ. Hosted on GitHub Pages.
