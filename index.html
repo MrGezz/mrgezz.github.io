@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IcZScripts · SuiteTools Documentation</title>
+<meta name="description" content="Documentation for the IcZScripts.extension pyRevit suite — BIM/MEP automation tools for Autodesk Revit 2023–2026.">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link id="prismTheme" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+<style>
+/* ===== AA_ base theme — Deep Navy & Cyan (from theme.py) ===== */
+:root{
+  --bg:#0E1219; --bg-2:#12161D; --panel:#1A2029; --panel-2:#1E2530; --card:#1E2530;
+  --line:#2A323F; --line-soft:#222a35;
+  --text:#E6EDF3; --text-2:#9FB0BE; --muted:#6E7F8D;
+  --accent:#00C8FF; --accent-2:#33D4FF; --accent-soft:#0B3A47;
+  --ok:#3FB950; --warn:#E3B341; --danger:#F85149; --violet:#A371F7;
+  --code-bg:#12171F;
+  --radius:10px; --radius-sm:6px;
+  --sidebar-w:288px;
+}
+html[data-theme="light"]{
+  --bg:#F4F7FA; --bg-2:#FFFFFF; --panel:#FFFFFF; --panel-2:#F0F4F8; --card:#FFFFFF;
+  --line:#DCE3EB; --line-soft:#E7EDF3;
+  --text:#16202B; --text-2:#475663; --muted:#7A8a96;
+  --accent:#0286C4; --accent-2:#0AA0E0; --accent-soft:#E2F4FB;
+  --code-bg:#0E1219;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--accent); text-decoration:none}
+a:hover{color:var(--accent-2)}
+code{font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:.86em}
+:not(pre)>code{
+  background:var(--accent-soft); color:var(--accent-2);
+  padding:.1em .4em; border-radius:4px; font-size:.85em;
+}
+html[data-theme="light"] :not(pre)>code{color:var(--accent)}
+
+/* ===== Layout ===== */
+.layout{display:grid; grid-template-columns:var(--sidebar-w) 1fr; min-height:100vh}
+
+/* ===== Sidebar ===== */
+.sidebar{
+  position:sticky; top:0; align-self:start; height:100vh; overflow-y:auto;
+  background:var(--bg-2); border-right:1px solid var(--line); padding:0 0 40px;
+}
+.brand{
+  display:flex; align-items:center; gap:11px; padding:20px 22px 16px;
+  position:sticky; top:0; background:var(--bg-2); z-index:5; border-bottom:1px solid var(--line-soft);
+}
+.brand-mark{
+  width:38px; height:38px; border-radius:9px; flex:0 0 auto;
+  background:linear-gradient(135deg,var(--accent),#0286C4);
+  display:grid; place-items:center; color:#04121a; font-weight:800; font-size:15px;
+  box-shadow:0 4px 14px -4px var(--accent);
+}
+.brand-txt b{display:block; font-size:15px; letter-spacing:.2px}
+.brand-txt span{display:block; font-size:11.5px; color:var(--muted); letter-spacing:.4px}
+
+.search-wrap{padding:14px 16px 6px; position:sticky; top:71px; background:var(--bg-2); z-index:4}
+.search{position:relative}
+.search i{position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--muted); font-size:13px}
+.search input{
+  width:100%; padding:9px 12px 9px 34px; border-radius:8px;
+  background:var(--panel); border:1px solid var(--line); color:var(--text); font-size:13px; outline:none;
+}
+.search input:focus{border-color:var(--accent)}
+.search kbd{
+  position:absolute; right:9px; top:50%; transform:translateY(-50%);
+  font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 5px; background:var(--bg)
+}
+
+.nav{padding:8px 12px}
+.nav-group{margin-top:14px}
+.nav-group>.nav-label{
+  font-size:10.5px; text-transform:uppercase; letter-spacing:1.2px; color:var(--muted);
+  padding:6px 12px; font-weight:700;
+}
+.nav a{
+  display:flex; align-items:center; gap:10px; padding:7px 12px; border-radius:7px;
+  color:var(--text-2); font-size:13.5px; transition:background .15s,color .15s;
+}
+.nav a:hover{background:var(--panel); color:var(--text)}
+.nav a.active{background:var(--accent-soft); color:var(--accent-2)}
+html[data-theme="light"] .nav a.active{color:var(--accent)}
+.nav a .tcode{
+  margin-left:auto; font-size:10px; font-weight:700; color:var(--muted);
+  border:1px solid var(--line); border-radius:5px; padding:1px 6px; letter-spacing:.3px;
+}
+.nav a .gi{width:18px; text-align:center; font-size:13px; color:var(--accent); opacity:.85}
+.nav-empty{display:none; padding:14px 16px; color:var(--muted); font-size:12.5px; font-style:italic}
+
+/* ===== Main ===== */
+.main{min-width:0}
+.topbar{
+  position:sticky; top:0; z-index:6; display:flex; align-items:center; gap:14px;
+  padding:14px 34px; background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+}
+.topbar .crumbs{font-size:13px; color:var(--muted)}
+.topbar .crumbs b{color:var(--text-2); font-weight:600}
+.topbar .spacer{flex:1}
+.btn{
+  display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:8px;
+  border:1px solid var(--line); background:var(--panel); color:var(--text-2);
+  font-size:13px; cursor:pointer; transition:.15s;
+}
+.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn-accent{background:var(--accent); color:#04121a; border-color:var(--accent); font-weight:600}
+.btn-accent:hover{background:var(--accent-2); color:#04121a}
+
+.content{max-width:980px; margin:0 auto; padding:46px 34px 90px}
+
+/* ===== Hero ===== */
+.hero{margin-bottom:40px}
+.hero .eyebrow{
+  display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:600;
+  color:var(--accent); background:var(--accent-soft); padding:5px 12px; border-radius:30px; letter-spacing:.3px;
+}
+.hero h1{font-size:2.9rem; line-height:1.1; margin:18px 0 12px; letter-spacing:-1px; font-weight:800}
+.hero h1 .grad{
+  background:linear-gradient(100deg,var(--accent),var(--accent-2)); -webkit-background-clip:text;
+  background-clip:text; -webkit-text-fill-color:transparent;
+}
+.hero p.lede{font-size:1.12rem; color:var(--text-2); max-width:680px}
+.hero-meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:22px}
+.pill{
+  display:inline-flex; align-items:center; gap:7px; font-size:12.5px; color:var(--text-2);
+  background:var(--panel); border:1px solid var(--line); padding:6px 13px; border-radius:30px;
+}
+.pill i{color:var(--accent)}
+
+/* ===== Stats ===== */
+.stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:34px 0 8px}
+.stat{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px}
+.stat .n{font-size:1.9rem; font-weight:800; color:var(--accent); line-height:1}
+.stat .l{font-size:12px; color:var(--muted); margin-top:7px; letter-spacing:.3px}
+
+/* ===== Sections ===== */
+section.doc{padding-top:42px; scroll-margin-top:80px}
+.sec-head{display:flex; align-items:flex-start; gap:14px; margin-bottom:6px}
+.sec-glyph{
+  width:46px; height:46px; flex:0 0 auto; border-radius:11px; display:grid; place-items:center;
+  background:var(--accent-soft); color:var(--accent); font-size:19px; border:1px solid var(--line);
+}
+.sec-titles{min-width:0}
+.sec-titles h2{font-size:1.55rem; margin:0; letter-spacing:-.3px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.tag{
+  font-size:10.5px; font-weight:700; letter-spacing:.4px; padding:3px 9px; border-radius:6px;
+  background:var(--panel-2); color:var(--text-2); border:1px solid var(--line); text-transform:uppercase;
+}
+.tag.code{background:var(--accent-soft); color:var(--accent-2); border-color:transparent}
+html[data-theme="light"] .tag.code{color:var(--accent)}
+.sec-titles .sub{color:var(--muted); font-size:13.5px; margin-top:3px}
+.sec-body{margin-top:18px}
+.sec-body p{color:var(--text-2)}
+.divider{height:1px; background:var(--line); border:0; margin:46px 0 0}
+
+/* ===== Feature list ===== */
+.feat{list-style:none; padding:0; margin:18px 0; display:grid; gap:11px}
+.feat li{
+  display:flex; gap:12px; padding:13px 15px; background:var(--card);
+  border:1px solid var(--line); border-radius:var(--radius-sm);
+}
+.feat li i{color:var(--accent); margin-top:3px; flex:0 0 auto}
+.feat li b{color:var(--text)}
+.feat li .ft{color:var(--text-2); font-size:13.6px}
+
+/* sub-cards (pages within a tool) */
+.subgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:18px 0}
+.subcard{background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); padding:16px 17px}
+.subcard h4{margin:0 0 7px; font-size:14.5px; display:flex; align-items:center; gap:9px}
+.subcard h4 i{color:var(--accent)}
+.subcard p{margin:0; font-size:13.2px; color:var(--text-2)}
+
+/* api chips */
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0}
+.chip{font-size:11.5px; padding:4px 10px; border-radius:6px; background:var(--panel-2); border:1px solid var(--line); color:var(--text-2)}
+.chip b{color:var(--accent)}
+
+/* callout */
+.note{
+  display:flex; gap:12px; padding:14px 16px; border-radius:var(--radius-sm); margin:18px 0;
+  background:var(--accent-soft); border:1px solid color-mix(in srgb,var(--accent) 35%,transparent);
+}
+.note i{color:var(--accent); margin-top:2px}
+.note.warn{background:color-mix(in srgb,var(--warn) 14%,transparent); border-color:color-mix(in srgb,var(--warn) 40%,transparent)}
+.note.warn i{color:var(--warn)}
+.note .nt{font-size:13.4px; color:var(--text-2)}
+.note .nt b{color:var(--text)}
+
+/* code */
+pre[class*="language-"]{
+  background:var(--code-bg)!important; border:1px solid var(--line); border-radius:var(--radius-sm);
+  margin:18px 0; font-size:12.8px;
+}
+.code-label{
+  font-size:11px; color:var(--muted); margin:18px 0 -8px; letter-spacing:.4px; display:flex; align-items:center; gap:7px;
+}
+.code-label i{color:var(--accent)}
+
+/* math-ish formula box */
+.formula{
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:14px 18px; margin:16px 0; font-family:'Cascadia Code',Consolas,monospace;
+  font-size:13px; color:var(--accent-2); overflow-x:auto;
+}
+html[data-theme="light"] .formula{color:var(--accent)}
+
+/* ascii diagram */
+.ascii{
+  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius-sm);
+  padding:16px; margin:18px 0; overflow-x:auto; font-family:'Cascadia Code',Consolas,monospace;
+  font-size:11.6px; color:var(--text-2); line-height:1.5; white-space:pre;
+}
+
+/* footer */
+footer{border-top:1px solid var(--line); padding:32px 34px; text-align:center; color:var(--muted); font-size:13px}
+footer a{font-weight:600}
+
+/* back to top */
+#toTop{
+  position:fixed; right:26px; bottom:26px; width:44px; height:44px; border-radius:50%;
+  background:var(--accent); color:#04121a; border:none; display:none; place-items:center;
+  cursor:pointer; box-shadow:0 8px 22px -6px var(--accent); z-index:20; font-size:16px;
+}
+#toTop.show{display:grid}
+
+/* mobile */
+.menu-btn{display:none}
+@media (max-width:960px){
+  .layout{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed; left:0; top:0; bottom:0; width:300px; z-index:50;
+    transform:translateX(-105%); transition:transform .25s; box-shadow:0 0 40px rgba(0,0,0,.5);
+  }
+  .sidebar.open{transform:none}
+  .menu-btn{display:inline-flex}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .subgrid{grid-template-columns:1fr}
+  .hero h1{font-size:2.1rem}
+  .content{padding:30px 20px 80px}
+  .topbar{padding:12px 18px}
+  #backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:40; display:none}
+  #backdrop.show{display:block}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+  <!-- ===================== SIDEBAR ===================== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="brand-mark">IcZ</div>
+      <div class="brand-txt">
+        <b>IcZScripts</b>
+        <span>SuiteTools · pyRevit 6.4</span>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <div class="search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input id="search" type="text" placeholder="Search tools…" autocomplete="off">
+        <kbd>/</kbd>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <div class="nav-group" data-group>
+        <div class="nav-label">Getting Started</div>
+        <a href="#overview" data-name="overview introduction install"><span class="gi"><i class="fa-solid fa-house"></i></span>Overview</a>
+        <a href="#install" data-name="install setup deploy pyrevit"><span class="gi"><i class="fa-solid fa-download"></i></span>Installation</a>
+      </div>
+
+      <div class="nav-group" data-group>
+        <div class="nav-label">GmBH Panel</div>
+        <a href="#aa" data-name="aa spec cmmn automation phases"><span class="gi"><i class="fa-solid fa-layer-group"></i></span>SPEC / CMMN<span class="tcode">AA</span></a>
+        <a href="#fit" data-name="fit mep workbench fitting audit coordinates flex param sync"><span class="gi"><i class="fa-solid fa-screwdriver-wrench"></i></span>MEP Workbench<span class="tcode">FIT</span></a>
+        <a href="#psu" data-name="psu project setup links levels project info"><span class="gi"><i class="fa-solid fa-sliders"></i></span>Project Setup<span class="tcode">PSU</span></a>
+      </div>
+
+      <div class="nav-group" data-group>
+        <div class="nav-label">Tools Panel</div>
+        <a href="#cd" data-name="cd model cleanup ghost purge connection fix"><span class="gi"><i class="fa-solid fa-broom"></i></span>Model Cleanup<span class="tcode">CD</span></a>
+        <a href="#export" data-name="export doc tools nwc pdf dwg excel"><span class="gi"><i class="fa-solid fa-file-export"></i></span>ExportDocTools<span class="tcode">EXP</span></a>
+        <a href="#autodoc" data-name="mep auto doc plans sections elevations dimensions tags sheets naming"><span class="gi"><i class="fa-solid fa-wand-magic-sparkles"></i></span>MEPAutoDoc<span class="tcode">DOC</span></a>
+      </div>
+
+      <div class="nav-group" data-group>
+        <div class="nav-label">Parameter · Report · QC</div>
+        <a href="#ro1" data-name="ro1 boq lookup spec designation description nominal width"><span class="gi"><i class="fa-solid fa-list-check"></i></span>BOQ Lookup<span class="tcode">RO1</span></a>
+        <a href="#wot" data-name="wot wall opening report intersection linked family"><span class="gi"><i class="fa-solid fa-vector-square"></i></span>Wall Opening<span class="tcode">WOT</span></a>
+        <a href="#guide" data-name="guide guideline standards deaxo pdf docx browser"><span class="gi"><i class="fa-solid fa-book"></i></span>Guidelines<span class="tcode">GUIDE</span></a>
+      </div>
+
+      <div class="nav-group" data-group>
+        <div class="nav-label">Reference</div>
+        <a href="#lib" data-name="lib icz shared library theme review grid revit compat modeless"><span class="gi"><i class="fa-solid fa-cubes"></i></span>Shared Library</a>
+        <a href="#conventions" data-name="conventions ironpython constraints design principles glyph"><span class="gi"><i class="fa-solid fa-scroll"></i></span>Conventions</a>
+      </div>
+
+      <div class="nav-empty" id="navEmpty">No tools match your search.</div>
+    </nav>
+  </aside>
+  <div id="backdrop"></div>
+
+  <!-- ===================== MAIN ===================== -->
+  <div class="main">
+    <div class="topbar">
+      <button class="btn menu-btn" id="menuBtn" aria-label="Menu"><i class="fa-solid fa-bars"></i></button>
+      <div class="crumbs">IcZScripts.extension · <b id="crumb">Overview</b></div>
+      <div class="spacer"></div>
+      <button class="btn" id="themeBtn" title="Toggle theme"><i class="fa-solid fa-moon"></i></button>
+      <a class="btn" href="https://github.com/MrGezz" target="_blank" rel="noopener"><i class="fa-brands fa-github"></i> GitHub</a>
+    </div>
+
+    <div class="content">
+
+      <!-- HERO / OVERVIEW -->
+      <section class="doc hero" id="overview" style="padding-top:4px">
+        <span class="eyebrow"><i class="fa-solid fa-cube"></i> Revit 2023–2026 · IronPython 2.7</span>
+        <h1>The <span class="grad">IcZ SuiteTools</span><br>documentation</h1>
+        <p class="lede">A purpose-built pyRevit extension for MEP &amp; structural coordination. Every tool runs as a
+        modeless WPF window sharing one chrome shell — draggable title bar, collapsible nav rail, and in-window
+        reports — so the suite feels like a single product, not a folder of scripts.</p>
+        <div class="hero-meta">
+          <span class="pill"><i class="fa-brands fa-python"></i> IronPython 2.7</span>
+          <span class="pill"><i class="fa-solid fa-window-restore"></i> Modeless WPF / XAML</span>
+          <span class="pill"><i class="fa-solid fa-shield-halved"></i> ExternalEvent-safe</span>
+          <span class="pill"><i class="fa-solid fa-palette"></i> Light / Dark themed</span>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><div class="n">9</div><div class="l">SHIPPING TOOLS</div></div>
+          <div class="stat"><div class="n">5</div><div class="l">RIBBON PANELS</div></div>
+          <div class="stat"><div class="n">4</div><div class="l">SHARED LIB MODULES</div></div>
+          <div class="stat"><div class="n">2023–26</div><div class="l">REVIT SUPPORT</div></div>
+        </div>
+
+        <div class="note" style="margin-top:30px">
+          <i class="fa-solid fa-circle-info"></i>
+          <div class="nt">All tools live under the <b>SuiteTools</b> ribbon tab and import from a single shared
+          library, <code>lib/icz/</code>. No logic is duplicated per bundle — theming, the review grid, the
+          ElementId compat shim, and the ExternalEvent wrapper each live in exactly one file.</div>
+        </div>
+      </section>
+
+      <!-- INSTALL -->
+      <section class="doc" id="install">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-download"></i></div>
+          <div class="sec-titles">
+            <h2>Installation</h2>
+            <div class="sub">Drop the extension into pyRevit and reload.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>The suite is a standard pyRevit extension. Clone or copy <code>IcZScripts.extension</code> into your
+          pyRevit extensions folder, then reload — the <b>SuiteTools</b> tab appears automatically.</p>
+          <div class="code-label"><i class="fa-solid fa-terminal"></i> shell</div>
+          <pre><code class="language-bash"># 1. Clone into a folder pyRevit watches
+git clone https://github.com/MrGezz/IcZScripts.extension.git
+
+# 2. Register the parent folder in pyRevit
+#    Settings → Custom Extension Directories → add the folder
+
+# 3. Reload pyRevit
+pyrevit reload</code></pre>
+          <ul class="feat">
+            <li><i class="fa-solid fa-check"></i><div class="ft"><b>pyRevit 6.4+</b> on the IronPython 2.7 engine (engine files must be CRLF).</div></li>
+            <li><i class="fa-solid fa-check"></i><div class="ft"><b>Revit 2023 – 2026.</b> The <code>eid()</code> shim handles the <code>ElementId</code> Int32 → Int64 change automatically.</div></li>
+            <li><i class="fa-solid fa-check"></i><div class="ft"><b>No per-bundle setup.</b> pyRevit adds <code>lib/</code> to <code>sys.path</code> for every tool, so <code>from icz import …</code> just works.</div></li>
+          </ul>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- AA -->
+      <section class="doc" id="aa">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-layer-group"></i></div>
+          <div class="sec-titles">
+            <h2>SPEC / CMMN Automation <span class="tag code">AA</span> <span class="tag">GmBH.panel</span></h2>
+            <div class="sub">Full-lifecycle parameter management for MEP elements — phases 0 through 8.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>AA is the flagship coordination tool. It walks the model through a numbered pipeline: it first repairs
+          connectivity, then de-duplicates geometry, writes standardized SPEC/CMMN parameters, assigns IFC export
+          types, and finally routes elements to the correct worksets. A pre-scan review grid shows every proposed
+          change before anything is committed.</p>
+
+          <ul class="feat">
+            <li><i class="fa-solid fa-plug-circle-bolt"></i><div class="ft"><b>Phase 0 — MEP Connection Fixer.</b> Scans open-ended ducts, pipes and trays, seals unsealed end-caps via subtransactions so they don't show up as false duplicates downstream.</div></li>
+            <li><i class="fa-solid fa-clone"></i><div class="ft"><b>Phase 1a/1b/1c — Duplicate &amp; short-duct cleanup.</b> Flags parallel curves of the same category/size sharing a centerline offset &lt; 1 mm with matching connectors; merges duct segments under 50 mm.</div></li>
+            <li><i class="fa-solid fa-pen-ruler"></i><div class="ft"><b>Phase 4 — CMMN standard parameters.</b> Writes <code>SPEC_SIZE</code>, <code>SPEC_SYSTEM</code>, <code>SPEC_QUANTITY</code> and <code>SPEC_ARTICLE_EN/DE</code> from geometry + lookup tables, and verifies clamp counts on ChemicalBox / corrosive conduits.</div></li>
+            <li><i class="fa-solid fa-file-code"></i><div class="ft"><b>Phase 7 — IFC assignment.</b> Maps Revit categories to custom IFC export types (e.g. generic models → <code>IfcFlowFittingType</code> / <code>IfcDuctAccessoryType</code>).</div></li>
+            <li><i class="fa-solid fa-diagram-project"></i><div class="ft"><b>Phase 8 — Workset orchestration.</b> Routes curves to designated worksets (<code>DX_STB</code>, <code>DX_EXH</code>, <code>DX_ELT</code>, <code>DX_PG</code>, <code>DX_RR</code>).</div></li>
+          </ul>
+
+          <div class="note"><i class="fa-solid fa-eye"></i><div class="nt"><b>Review-first UX.</b> A pre-scan grid lists every proposed change. Click any row for single-item Temporary Isolate (<code>ActiveView.IsolateElementsTemporary()</code>) and click-to-zoom navigation. The post-run report renders live metric chips — successful writes, skips, workshared lockouts — instead of a TaskDialog.</div></div>
+
+          <div class="chips">
+            <span class="chip"><b>API:</b> FilteredElementCollector</span>
+            <span class="chip"><b>API:</b> SubTransaction</span>
+            <span class="chip"><b>View:</b> IsolateElementsTemporary</span>
+            <span class="chip"><b>Data:</b> spec_mappings.json</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- FIT -->
+      <section class="doc" id="fit">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+          <div class="sec-titles">
+            <h2>MEP Workbench <span class="tag code">FIT</span> <span class="tag">GmBH.panel</span></h2>
+            <div class="sub">A four-page modeless workbench for routine MEP cleanup, routing &amp; parameter maintenance.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>FIT consolidates four formerly-standalone scripts (<code>MEPPairing</code>, <code>copy_param</code>,
+          <code>DX_B37_X_and_Y</code>, <code>BIM_MI_Script_002</code>) into one navigated window. Each page is an
+          independent task with its own review grid and isolate-on-click.</p>
+
+          <div class="subgrid">
+            <div class="subcard">
+              <h4><i class="fa-solid fa-clipboard-check"></i> Fitting Audit</h4>
+              <p>Three rule cards (A/B/C) flag fittings &amp; accessories that violate configurable rules — missing IFLS, mismatched system, orphaned components. Rule B uses an O(n) proximity search within a 1500 mm bounding box; whitelists come from <code>fitting_config.json</code>.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-location-crosshairs"></i> Coordinates</h4>
+              <p>Writes world X/Y of each selected element into two text params (default <code>H.2 Position X</code> / <code>H.3 Position Y</code>) in metres to 3 decimals, after an editable global offset. Overwrite-guard leaves existing values untouched when off.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-wave-square"></i> Pipe / Duct → Flex</h4>
+              <p>Converts rigid runs to flex via <code>FlexPipe.Create</code> / <code>FlexDuct.Create</code>. <b>Replace</b> swaps per element; <b>Containment</b> walks the centerline through fittings and lays a parallel flex, keeping originals. Vertex count, sag &amp; Chaikin smoothing tunable.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-arrows-left-right-to-line"></i> IFLS Param Sync</h4>
+              <p>Reads IFLS / AKS Infineon / Prozessmedium from source fittings in linked files and writes them onto host targets matched by MEP <b>system type name</b>, gated by a cylindrical proximity bound.</p>
+            </div>
+          </div>
+
+          <div class="code-label"><i class="fa-solid fa-square-root-variable"></i> Coordinates — internal-feet to metres</div>
+          <div class="formula">X_mm   = X_feet × 304.8 + OffsetX_mm
+Y_mm   = Y_feet × 304.8 + OffsetY_mm
+X_m    = X_mm / 1000.0      Y_m = Y_mm / 1000.0</div>
+
+          <div class="code-label"><i class="fa-solid fa-diagram-project"></i> Flex routing — per-branch vs main+stubs</div>
+          <div class="ascii">Selection                         Add sub from fitting     Create parallel flex
+─────────────                     ────────────────────     ─────────────────────
+Straight 3 pipes + 2 fittings     1 flex (= main)          1 flex
+   o─────o─────o
+Tee + 3 pipes                     1 main + 1 stub = 2      2 flex (per arm)
+Cross + 4 pipes                   1 main + 2 stubs = 3     3 flex (per junction arm)</div>
+
+          <div class="chips">
+            <span class="chip"><b>API:</b> FlexPipe / FlexDuct</span>
+            <span class="chip"><b>API:</b> Connector</span>
+            <span class="chip"><b>Algo:</b> O(n) proximity / spatial hash</span>
+            <span class="chip"><b>Config:</b> fitting_config.json</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- PSU -->
+      <section class="doc" id="psu">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-sliders"></i></div>
+          <div class="sec-titles">
+            <h2>Project Setup Utility <span class="tag code">PSU</span> <span class="tag">GmBH.panel</span></h2>
+            <div class="sub">One dashboard consolidating link worksets, project info &amp; level reassignment.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>PSU supersedes the former standalone <code>LNK_</code>, <code>Level</code> and project-info scripts,
+          merging them into a single modeless window with three pages.</p>
+
+          <div class="subgrid">
+            <div class="subcard">
+              <h4><i class="fa-solid fa-link"></i> Link Workset Assignment</h4>
+              <p>Batch-sorts Revit / CAD / NWD link instances into worksets matching <code>_LINKS_REVIT</code>, <code>_LINKS_CAD</code>, <code>_LINKS_NWD</code> by filename pattern — instance and parent type assigned inside one Transaction.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-circle-info"></i> Project Info</h4>
+              <p>Reads/writes only standard built-in ProjectInfo params (Organization, Author, Status…). Non-built-in params (MagiCAD, IFC GUIDs) are filtered out to protect document health. An IFD reminder banner is driven by <code>psu_config.json</code>.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-stairs"></i> Levels</h4>
+              <p>Bulk-reassigns reference level across categories while preserving physical elevation, computing a delta offset so elements never move. Hosted instances are safely skipped.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-key"></i> Security Vault</h4>
+              <p>Password-gated verification calling <code>DxMY.dll</code> → <code>SecurityVault.KeyManager</code> via <code>clr.AddReferenceToFileAndPath</code> to keep workflows from soft-locking on license windows.</p>
+            </div>
+          </div>
+
+          <div class="code-label"><i class="fa-solid fa-square-root-variable"></i> Levels — elevational offset compensation</div>
+          <div class="formula">ΔZ          = Z_old − Z_new
+Offset_new  = Offset_old + ΔZ      // written to INSTANCE_FREE_HOST_OFFSET_PARAM</div>
+
+          <div class="chips">
+            <span class="chip"><b>API:</b> ProjectInfo</span>
+            <span class="chip"><b>API:</b> Level / WorksetTable</span>
+            <span class="chip"><b>API:</b> ReferenceLevel</span>
+            <span class="chip"><b>Config:</b> psu_config.json</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- CD -->
+      <section class="doc" id="cd">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-broom"></i></div>
+          <div class="sec-titles">
+            <h2>Model Cleanup <span class="tag code">CD</span> <span class="tag">Tools.panel</span></h2>
+            <div class="sub">Two-tool model-hygiene suite — Ghost Purge + Connection Fix. All results in-window.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <div class="subgrid">
+            <div class="subcard">
+              <h4><i class="fa-solid fa-ghost"></i> Ghost Purge</h4>
+              <p>Finds overlapping duplicate elements, keeps the connected copy, deletes the floating ghost. Groups by <code>(CategoryId, TypeId)</code> first — O(n) per group, not O(n²). Connected element wins; ties break to the smaller <code>ElementId</code>. <code>SuperComponent</code> guard never drops nested members.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-plug"></i> Connection Fix</h4>
+              <p>Seals open MEP connector pairs within 20 mm via spatial-grid bucketing. Re-fetches connectors at connection time, checks domain compatibility (Piping / HVAC / CableTrayConduit), and isolates each attempt in its own <code>SubTransaction</code> so one failure never rolls back the run.</p>
+            </div>
+          </div>
+
+          <div class="note warn"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Stale-data exclusion.</b> Both scan caches are keyed to model state. Any external <code>DocumentChanged</code> event marks the caches dirty, so reopening either tool prompts a fresh Rescan rather than acting on stale rows.</div></div>
+
+          <div class="chips">
+            <span class="chip"><b>API:</b> SubTransaction</span>
+            <span class="chip"><b>API:</b> GetTransform / BoundingBox</span>
+            <span class="chip"><b>Algo:</b> spatial grid bucketing</span>
+            <span class="chip"><b>Event:</b> DocumentChanged invalidation</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- EXPORT -->
+      <section class="doc" id="export">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-file-export"></i></div>
+          <div class="sec-titles">
+            <h2>ExportDocTools <span class="tag code">EXP</span> <span class="tag">Tools.panel</span></h2>
+            <div class="sub">Unified export suite — NWC, PDF, DWG and formatted Excel, with JSON-persisted settings.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>A full dark-theme shell with an in-window results log and a settings page that persists to
+          <code>export_config.json</code>. Handles the awkward parts of batch export — NWC option inversion,
+          keeping PDF generation outside the DWG loop, and avoiding premature window close.</p>
+          <ul class="feat">
+            <li><i class="fa-solid fa-cube"></i><div class="ft"><b>NWC export</b> with 9 configurable options (correctly de-inverted boolean flags).</div></li>
+            <li><i class="fa-solid fa-file-pdf"></i><div class="ft"><b>PDF &amp; DWG</b> batch export with sheet-set selection; PDF runs outside the DWG loop to avoid duplication.</div></li>
+            <li><i class="fa-solid fa-file-excel"></i><div class="ft"><b>Formatted Excel export</b> using a BGR-packed OLE colour palette for styled, ready-to-read sheets.</div></li>
+            <li><i class="fa-solid fa-gear"></i><div class="ft"><b>Settings page</b> writes preferences to <code>export_config.json</code> — edit in-UI or by hand.</div></li>
+          </ul>
+          <div class="chips">
+            <span class="chip"><b>Export:</b> NWC / PDF / DWG / XLSX</span>
+            <span class="chip"><b>Config:</b> export_config.json</span>
+            <span class="chip"><b>Style:</b> floating-card UI (1px tighter)</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- AUTODOC -->
+      <section class="doc" id="autodoc">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div class="sec-titles">
+            <h2>MEPAutoDocTools <span class="tag code">DOC</span> <span class="tag">Tools.panel</span></h2>
+            <div class="sub">MEP &amp; ARCH Master Auto-Doc — from geometry to placed, named sheets.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>An end-to-end documentation generator (v8.4). It reads element geometry &amp; orientation, then
+          produces the full drawing set and enforces naming standards — turning a coordinated model into a
+          documented one in a single pass.</p>
+          <ul class="feat">
+            <li><i class="fa-solid fa-compass-drafting"></i><div class="ft"><b>Views:</b> generates Plans, Sections and Elevations driven by geometry &amp; orientation analysis.</div></li>
+            <li><i class="fa-solid fa-ruler-combined"></i><div class="ft"><b>Annotation:</b> auto-applies Dimensions and Tags.</div></li>
+            <li><i class="fa-solid fa-table-cells"></i><div class="ft"><b>Sheets:</b> places views and enforces Naming Conventions across the set.</div></li>
+          </ul>
+          <div class="chips">
+            <span class="chip"><b>Module 1:</b> Geometry &amp; Orientation</span>
+            <span class="chip"><b>Output:</b> Plans / Sections / Elevations</span>
+            <span class="chip"><b>Output:</b> Dims / Tags / Sheets</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- RO1 -->
+      <section class="doc" id="ro1">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-list-check"></i></div>
+          <div class="sec-titles">
+            <h2>BOQ Lookup <span class="tag code">RO1</span> <span class="tag">Parameter.panel</span></h2>
+            <div class="sub">Classifies MEP elements by material / fitting segment &amp; nominal width, then resolves BOQ codes.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>RO1 parses element sizes — including messy inch strings and fractions — into metric Nominal Widths
+          (NW), then cross-references a master index from <code>IFT_BOQ.xlsx</code> to write
+          <code>SPEC_DESIGNATION</code> and <code>DESCRIPTION</code>.</p>
+
+          <div class="code-label"><i class="fa-brands fa-python"></i> boq_engine.py — automated size resolution</div>
+          <pre><code class="language-python">def lookup_boq(element, doc, read_param_func):
+    size_str = read_param_func(element, "SPEC_SIZE", doc)
+
+    # Fallback to Revit native size if SPEC_SIZE is empty
+    if not size_str:
+        p = element.get_Parameter(DB.BuiltInParameter.RBS_CALCULATED_SIZE)
+        if p:
+            size_str = p.AsString()
+
+    # Parse complex inch strings into metric Nominal Widths (NW)
+    if size_str:
+        sub_parts = re.split(r'[-x×](?!\d/)', size_str)
+        all_nws = []
+        for sp in sub_parts:
+            if '"' in sp:                       # inch + fraction (e.g. 1 1/2")
+                clean = sp.replace('"', '').strip()
+                total = sum(float(f.split('/')[0]) / float(f.split('/')[1])
+                            if '/' in f else float(f) for f in clean.split())
+                all_nws.append(int(INCH_TO_NW.get(total) or round(total * 25.4)))
+            else:                               # already metric
+                found = re.findall(r'\d+\.?\d*', sp.replace(",", "."))
+                if found: all_nws.append(int(round(float(found[0]))))
+
+        if all_nws:
+            max_nw = str(max(all_nws))
+            res = boq_data.BOQ_SIZE_INDEX.get((mat_seg, fit_seg, max_nw))
+            if res: return res
+
+    return (None, "Size '{}' not found in BOQ Index".format(size_str))</code></pre>
+
+          <div class="chips">
+            <span class="chip"><b>API:</b> BuiltInParameter.RBS_CALCULATED_SIZE</span>
+            <span class="chip"><b>Parse:</b> regex inch/fraction → NW</span>
+            <span class="chip"><b>Data:</b> IFT_BOQ.xlsx index</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- WOT -->
+      <section class="doc" id="wot">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-vector-square"></i></div>
+          <div class="sec-titles">
+            <h2>Wall Opening Report <span class="tag code">WOT</span> <span class="tag">Report.panel</span></h2>
+            <div class="sub">Detects MEP ↔ wall intersections across linked files and marks every crossing.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>WOT runs bounding-box intersection between MEP runs and walls — including walls in linked files — and
+          places a custom family instance at each crossing point so openings can be coordinated and scheduled.</p>
+          <div class="chips">
+            <span class="chip"><b>Algo:</b> bounding-box intersection</span>
+            <span class="chip"><b>Scope:</b> linked + host documents</span>
+            <span class="chip"><b>API:</b> family placement</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- GUIDE -->
+      <section class="doc" id="guide">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-book"></i></div>
+          <div class="sec-titles">
+            <h2>Guidelines <span class="tag code">GUIDE</span> <span class="tag">QualityCheck.panel</span></h2>
+            <div class="sub">One-click access to project standards — scans folders for PDF / Word guideline docs.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <p>A lightweight launcher: it scans configured local or server folders for <code>.pdf</code>,
+          <code>.docx</code> and <code>.doc</code> standards, presents a <i>Folder&nbsp;&gt;&nbsp;File</i>
+          selection list, and opens the chosen guideline with the default Windows app.</p>
+          <div class="chips">
+            <span class="chip"><b>Scan:</b> PDF / DOCX / DOC</span>
+            <span class="chip"><b>Source:</b> local or server folders</span>
+            <span class="chip"><b>Open:</b> os.startfile</span>
+          </div>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- LIB -->
+      <section class="doc" id="lib">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-cubes"></i></div>
+          <div class="sec-titles">
+            <h2>Shared Library <span class="tag">lib/icz/</span></h2>
+            <div class="sub">One source of truth per concern — imported by every tool, duplicated nowhere.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <ul class="feat">
+            <li><i class="fa-solid fa-palette"></i><div class="ft"><b>icz.theme</b> — single source for Light/Dark palettes. Tools call <code>theme.apply_theme(self, "dark"|"light")</code>; controls bind to <code>{DynamicResource &lt;token&gt;}</code> and repaint automatically.</div></li>
+            <li><i class="fa-solid fa-table-list"></i><div class="ft"><b>icz.review_grid</b> — shared in-window grid builder producing <code>[CheckBox | ElementId | Family &amp; Type (+ badge)]</code> rows with hover, click-to-navigate and status pills. AA and CD both consume it.</div></li>
+            <li><i class="fa-solid fa-code-compare"></i><div class="ft"><b>icz.revit_compat</b> — the <code>eid()</code> shim returns <code>ElementId.Value</code> on 2024+ (Int64) and <code>ElementId.IntegerValue</code> on 2023 (Int32). Import everywhere an ElementId becomes a key.</div></li>
+            <li><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>icz.modeless</b> — <code>ExternalCall</code> wraps Revit's <code>IExternalEventHandler</code> / <code>ExternalEvent</code> so modeless windows raise model-mutating work into a valid API context without hand-managing the event plumbing.</div></li>
+          </ul>
+
+          <div class="code-label"><i class="fa-brands fa-python"></i> usage across every bundle</div>
+          <pre><code class="language-python">from icz import theme
+from icz.revit_compat import eid
+from icz.modeless import ExternalCall
+
+class ToolWindow(Window):
+    def __init__(self):
+        theme.apply_theme(self, "dark")            # one call, whole window themed
+        self._mutate = ExternalCall(self._commit)  # safe API context for edits
+        self._navigate = ExternalCall(self._zoom)  # separate event → never races
+
+    def key_for(self, element):
+        return eid(element.Id)                      # Int32/Int64 handled by shim</code></pre>
+        </div>
+      </section>
+
+      <hr class="divider">
+
+      <!-- CONVENTIONS -->
+      <section class="doc" id="conventions">
+        <div class="sec-head">
+          <div class="sec-glyph"><i class="fa-solid fa-scroll"></i></div>
+          <div class="sec-titles">
+            <h2>Conventions &amp; Design Principles</h2>
+            <div class="sub">The rules that keep the suite coherent and crash-free.</div>
+          </div>
+        </div>
+        <div class="sec-body">
+          <h3 style="font-size:1.05rem;margin:6px 0 2px">IronPython 2.7 constraints</h3>
+          <ul class="feat">
+            <li><i class="fa-solid fa-ban"></i><div class="ft"><b>No f-strings</b> — use <code>.format()</code>. <b>No</b> <code>open(encoding=…)</code> — use <code>io.open()</code> / <code>codecs.open()</code>.</div></li>
+            <li><i class="fa-solid fa-border-none"></i><div class="ft"><b>TemplateBinding padding:</b> <code>Padding</code> is valid only on <code>Border</code> / <code>Control</code> subclasses — never on <code>Grid</code>, <code>StackPanel</code>, <code>DockPanel</code>, <code>WrapPanel</code>. Use <code>Margin</code> on children or wrap in a <code>Border</code>.</div></li>
+            <li><i class="fa-solid fa-icons"></i><div class="ft"><b>Glyphs:</b> a <code>Segoe MDL2 Assets</code> glyph must sit in its own glyph-only <code>TextBlock</code>, declared <i>before</i> the label's TextBlock — never mixed in one block, or the glyph renders as a square.</div></li>
+            <li><i class="fa-solid fa-code-compare"></i><div class="ft"><b>Revit 2024+:</b> always use the <code>eid()</code> shim; never call <code>.IntegerValue</code> directly. Engine files must be <b>CRLF</b>.</div></li>
+          </ul>
+
+          <h3 style="font-size:1.05rem;margin:22px 0 2px">Design principles</h3>
+          <ul class="feat">
+            <li><i class="fa-solid fa-bullseye"></i><div class="ft"><b>Single source of truth</b> per concern — theme, grid builder, ElementId compat and each mapping table live in exactly one file.</div></li>
+            <li><i class="fa-solid fa-bolt"></i><div class="ft"><b>No auto-scan on open.</b> Every window opens instantly; grids fill only on explicit Rescan, Dry Run, or scope change.</div></li>
+            <li><i class="fa-solid fa-window-maximize"></i><div class="ft"><b>In-window results.</b> No pyRevit output window, no end-of-run <code>TaskDialog</code> — results render as metric chips and click-to-zoom tables inside the tool.</div></li>
+            <li><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>Modeless, persistent engine.</b> <code>__persistentengine__ = True</code> keeps ExternalEvents alive; navigation and mutation route through separate <code>ExternalCall</code> instances so they never race.</div></li>
+          </ul>
+
+          <div class="note"><i class="fa-solid fa-palette"></i><div class="nt"><b>Theming standard.</b> AA is the reference theme — patch other tools to match by <i>function</i>, not 1:1 pixels. The suite standardizes on one rounded-corner scale (window shell <code>6</code>, title bar <code>6,6,0,0</code>, cards <code>6</code>, buttons <code>4–6</code>, inputs <code>3–4</code>, scroll thumb <code>4</code>, traffic-light dots <code>7</code>). ComboBoxes stay themed via <code>DynamicResource</code> tokens.</div></div>
+        </div>
+      </section>
+
+    </div><!-- /content -->
+
+    <footer>
+      <p><b>IcZScripts.extension</b> · SuiteTools for Autodesk Revit 2023–2026 · built on pyRevit 6.4 (IronPython 2.7)</p>
+      <p>Maintained by <a href="https://github.com/MrGezz" target="_blank" rel="noopener">@MrGezz</a> · Hosted on GitHub Pages · &copy; 2026 IcZ</p>
+    </footer>
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<button id="toTop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const navLinks = Array.from(document.querySelectorAll('#nav a'));
+  const sections = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
+  const crumb = $('#crumb');
+
+  /* ---- Mobile menu ---- */
+  const sidebar = $('#sidebar'), backdrop = $('#backdrop');
+  const toggleMenu = open => { sidebar.classList.toggle('open', open); backdrop.classList.toggle('show', open); };
+  $('#menuBtn').addEventListener('click', () => toggleMenu(!sidebar.classList.contains('open')));
+  backdrop.addEventListener('click', () => toggleMenu(false));
+  navLinks.forEach(a => a.addEventListener('click', () => { if (window.innerWidth <= 960) toggleMenu(false); }));
+
+  /* ---- Theme toggle ---- */
+  const root = document.documentElement, themeBtn = $('#themeBtn'), prismLink = $('#prismTheme');
+  const PRISM_DARK = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css";
+  const PRISM_LIGHT = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css";
+  function setTheme(t){
+    root.setAttribute('data-theme', t);
+    themeBtn.innerHTML = t === 'light'
+      ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    prismLink.href = t === 'light' ? PRISM_LIGHT : PRISM_DARK;
+  }
+  let theme = 'dark';
+  setTheme(theme);
+  themeBtn.addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; setTheme(theme); });
+
+  /* ---- Search filter ---- */
+  const search = $('#search'), navEmpty = $('#navEmpty');
+  search.addEventListener('input', () => {
+    const q = search.value.trim().toLowerCase();
+    let anyVisible = false;
+    document.querySelectorAll('#nav [data-group]').forEach(group => {
+      let groupHas = false;
+      group.querySelectorAll('a').forEach(a => {
+        const hay = (a.dataset.name + ' ' + a.textContent).toLowerCase();
+        const match = !q || hay.includes(q);
+        a.style.display = match ? '' : 'none';
+        if (match) groupHas = true;
+      });
+      group.style.display = groupHas ? '' : 'none';
+      if (groupHas) anyVisible = true;
+    });
+    navEmpty.style.display = anyVisible ? 'none' : 'block';
+  });
+  // "/" focuses search
+  document.addEventListener('keydown', e => {
+    if (e.key === '/' && document.activeElement !== search) { e.preventDefault(); search.focus(); }
+    if (e.key === 'Escape' && document.activeElement === search) { search.value=''; search.dispatchEvent(new Event('input')); search.blur(); }
+  });
+
+  /* ---- Scrollspy ---- */
+  const byId = {};
+  navLinks.forEach(a => byId[a.getAttribute('href').slice(1)] = a);
+  const spy = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      if (en.isIntersecting){
+        navLinks.forEach(a => a.classList.remove('active'));
+        const link = byId[en.target.id];
+        if (link){
+          link.classList.add('active');
+          crumb.textContent = link.textContent.replace(/\s+[A-Z]{2,5}$/,'').trim();
+        }
+      }
+    });
+  }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
+  sections.forEach(s => spy.observe(s));
+
+  /* ---- Back to top ---- */
+  const toTop = $('#toTop');
+  window.addEventListener('scroll', () => toTop.classList.toggle('show', window.scrollY > 600));
+  toTop.addEventListener('click', () => window.scrollTo({ top:0, behavior:'smooth' }));
+})();
+</script>
+</body>
+</html>
