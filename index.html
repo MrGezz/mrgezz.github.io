@@ -477,7 +477,7 @@ footer a{font-weight:600}
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-layer-group"></i></div>
           <div class="sec-titles">
-            <h2>SPEC / CMMN Automation <span class="tag code">AA</span> <span class="tag">IcZ.panel</span></h2>
+            <h2>Project Audit Automation <span class="tag code">Edited Script to add interactived UI & Additional functionality</span> <span class="tag">IcZ.panel</span></h2>
             <div class="sub">One click takes raw MEP geometry to fully coordinated, parameterized, workset-sorted elements.</div>
           </div>
         </div>
@@ -507,21 +507,13 @@ footer a{font-weight:600}
           </div>
           <ul class="feat">
             <li><i class="fa-solid fa-wand-magic-sparkles"></i><div class="ft"><b>End-to-End Pipeline (Phases 0–8):</b> Seals open connectors, removes duplicate runs, writes standard parameters, assigns IFC export types, and routes worksets — all in a single pass. <span class="win">Collapses a full day of manual coordination into one run.</span></div></li>
-            <li><i class="fa-solid fa-pen-ruler"></i><div class="ft"><b>Geometry-Driven Parameters:</b> Populates <code>SPEC_SIZE</code>, <code>SPEC_SYSTEM</code>, <code>SPEC_QUANTITY</code> and <code>SPEC_ARTICLE_EN/DE</code> straight from model geometry and lookup tables — and verifies clamp counts on corrosive conduits. <span class="win">No typing, no transcription errors.</span></div></li>
+            <li><i class="fa-solid fa-pen-ruler"></i><div class="ft"><b>Geometry-Driven Parameters:</b> Populates <code>Project Specific Custom Param</code> straight from model geometry and lookup tables — and verifies standard within BEP. <span class="win">No typing, no transcription errors.</span></div></li>
             <li><i class="fa-solid fa-eye"></i><div class="ft"><b>Review Before Commit:</b> A pre-scan grid lists every proposed change with click-to-isolate and zoom, and the post-run report renders as live metric chips. <span class="win">Nothing touches the model until you approve it.</span></div></li>
           </ul>
           <div class="code-label"><i class="fa-brands fa-python"></i> the pipeline, end to end</div>
           <pre><code class="language-python">def run_pipeline(doc, elements):
-    with Transaction(doc, "AA · SPEC/CMMN") as t:
+    with Transaction(doc, "AA · XX) as t:
         t.Start()
-        seal_open_connectors(elements)               # Phase 0  — connection fix
-        drop_duplicate_runs(elements)                # Phase 1  — &lt;1mm centreline dups
-        for el in elements:
-            write_param(el, "SPEC_SIZE",       parse_size(el))
-            write_param(el, "SPEC_SYSTEM",     system_of(el))
-            write_param(el, "SPEC_ARTICLE_EN", spec_map.lookup(el))   # Phase 4
-            assign_ifc_type(el)                      # Phase 7  — IfcFlowFittingType…
-            route_to_workset(el, WORKSETS)           # Phase 8  — DX_STB / DX_EXH…
         t.Commit()</code></pre>
         </div>
       </section>
