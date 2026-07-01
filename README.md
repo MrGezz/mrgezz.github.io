@@ -17,7 +17,7 @@ The site documents every tool shipping in the `SuiteTools` ribbon tab:
 
 | Code | Tool | Panel | Purpose |
 | --- | --- | --- | --- |
-| **AA** | SPEC / CMMN Automation | IcZ | Full-lifecycle MEP parameter pipeline, phases 0–8 |
+| **AA** | Project QC Automation | IcZ | Full-lifecycle MEP parameter pipeline, phases 0–8 |
 | **FIT** | MEP Workbench | IcZ | Fitting Audit · Coordinates · Pipe/Duct→Flex · IFLS Param Sync |
 | **PSU** | Project Setup Utility | IcZ | Link worksets · Project Info · Levels · Security Vault |
 | **CD** | Model Cleanup | Tools | Ghost Purge + Connection Fix + Nested Resolutions |
