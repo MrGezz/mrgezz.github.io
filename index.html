@@ -45,6 +45,12 @@ code{font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:.86em}
 }
 html[data-theme="light"] :not(pre)>code{color:var(--accent)}
 
+/* ===== Custom Scrollbar (Recommendation) ===== */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
 /* ===== Layout ===== */
 .layout{display:flex; align-items:flex-start; min-height:100vh; width:100%}
 
@@ -73,8 +79,12 @@ html[data-theme="light"] :not(pre)>code{color:var(--accent)}
 .search input{
   width:100%; padding:9px 12px 9px 34px; border-radius:8px;
   background:var(--panel); border:1px solid var(--line); color:var(--text); font-size:13px; outline:none;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
-.search input:focus{border-color:var(--accent)}
+.search input:focus{
+  border-color:var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+}
 .search kbd{
   position:absolute; right:9px; top:50%; transform:translateY(-50%);
   font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 5px; background:var(--bg)
@@ -103,9 +113,10 @@ html[data-theme="light"] .nav a.active{color:var(--accent)}
 /* ===== Main ===== */
 .main{flex:1 1 auto; min-width:0; max-width:100%}
 .topbar{
-  position:sticky; top:0; z-index:6; display:flex; align-items:center; gap:14px;
-  padding:14px 34px; background:color-mix(in srgb,var(--bg) 86%,transparent);
-  backdrop-filter:blur(10px); border-bottom:1px solid var(--line);
+  position:sticky; top:0; z-index:10; display:flex; align-items:center; gap:14px;
+  padding:14px 34px; background:color-mix(in srgb,var(--bg) 75%,transparent);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--line);
 }
 .topbar .crumbs{font-size:13px; color:var(--muted)}
 .topbar .crumbs b{color:var(--text-2); font-weight:600}
@@ -113,13 +124,28 @@ html[data-theme="light"] .nav a.active{color:var(--accent)}
 .btn{
   display:inline-flex; align-items:center; gap:7px; padding:7px 13px; border-radius:8px;
   border:1px solid var(--line); background:var(--panel); color:var(--text-2);
-  font-size:13px; cursor:pointer; transition:.15s;
+  font-size:13px; cursor:pointer; transition:.2s ease;
 }
-.btn:hover{border-color:var(--accent); color:var(--accent)}
+.btn:hover{
+  border-color:var(--accent); color:var(--accent);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--accent) 15%, transparent);
+}
 .btn-accent{background:var(--accent); color:#04121a; border-color:var(--accent); font-weight:600}
 .btn-accent:hover{background:var(--accent-2); color:#04121a}
 
 .content{max-width:980px; margin:0 auto; padding:46px 34px 90px}
+
+/* ===== Scroll Reveal Animation ===== */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: opacity, transform;
+}
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
 
 /* ===== Hero ===== */
 .hero{margin-bottom:40px}
@@ -142,7 +168,15 @@ html[data-theme="light"] .nav a.active{color:var(--accent)}
 
 /* ===== Stats ===== */
 .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin:34px 0 8px}
-.stat{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px}
+.stat{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:18px 18px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -10px color-mix(in srgb, var(--accent) 15%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
 .stat .n{font-size:1.9rem; font-weight:800; color:var(--accent); line-height:1}
 .stat .l{font-size:12px; color:var(--muted); margin-top:7px; letter-spacing:.3px}
 
@@ -172,9 +206,14 @@ html[data-theme="light"] .tag.code{color:var(--accent)}
   position:relative; margin:6px 0 24px; border-radius:12px; overflow:hidden;
   border:1px solid var(--line); background:var(--bg-2);
   box-shadow:0 22px 58px -30px rgba(0,0,0,.85);
-  transition:transform .28s ease, box-shadow .28s ease; animation:rise .55s ease both;
+  transition:transform .35s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow .35s ease, border-color 0.3s;
+  animation:rise .55s ease both;
 }
-.shot:hover{transform:translateY(-3px); box-shadow:0 30px 64px -28px rgba(0,0,0,.9); border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.shot:hover{
+  transform:translateY(-4px); 
+  box-shadow:0 30px 64px -28px color-mix(in srgb, var(--accent) 30%, rgba(0,0,0,.9)); 
+  border-color:color-mix(in srgb,var(--accent) 45%,var(--line));
+}
 .shot.hero-shot{margin:30px 0 6px}
 .shot .bar{display:flex; align-items:center; gap:9px; padding:9px 14px; background:var(--panel); border-bottom:1px solid var(--line)}
 .shot .dots{display:inline-flex; gap:6px}
@@ -184,17 +223,22 @@ html[data-theme="light"] .tag.code{color:var(--accent)}
 .shot .ttl i{color:var(--accent)}
 .shot .ttl .code{font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:5px; padding:1px 6px; letter-spacing:.3px}
 .shot .frame{position:relative; aspect-ratio:16/9; overflow:hidden; background:radial-gradient(130% 120% at 50% 0,var(--panel-2),var(--bg-2))}
-.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
-/* faux app UI placeholder (shown until a real screenshot loads) */
-.ph{position:absolute; inset:0; display:flex; overflow:hidden}
+/* Object-fit changed to contain for images */
+.shot img{position:absolute; inset:0; width:100%; height:100%; object-fit:contain; display:block; z-index: 1;}
+
+/* faux app UI placeholder (Skeleton Loading Animation) */
+@keyframes pulseSkeleton { 0% { opacity: 0.4; } 50% { opacity: 0.85; } 100% { opacity: 0.4; } }
+.ph{position:absolute; inset:0; display:flex; overflow:hidden; z-index: 0;}
 .ph .rail{width:26%; max-width:155px; background:var(--bg); border-right:1px solid var(--line); padding:16px 14px; display:flex; flex-direction:column; gap:10px}
-.ph .rail .r{height:9px; border-radius:5px; background:var(--panel)}
+.ph .rail .r{height:9px; border-radius:5px; background:var(--panel); animation: pulseSkeleton 2s infinite ease-in-out;}
+.ph .rail .r:nth-child(2){animation-delay: 0.1s;} .ph .rail .r:nth-child(3){animation-delay: 0.2s;}
 .ph .rail .r.on{background:var(--accent-soft); width:86%}
 .ph .body{flex:1; padding:18px 22px; display:flex; flex-direction:column; gap:11px; position:relative; z-index:1; min-width:0}
-.ph .body .h{height:14px; width:42%; border-radius:6px; background:var(--accent-soft)}
-.ph .body .line{height:9px; border-radius:5px; background:var(--panel)}
+.ph .body .h{height:14px; width:42%; border-radius:6px; background:var(--accent-soft); animation: pulseSkeleton 2s infinite ease-in-out;}
+.ph .body .line{height:9px; border-radius:5px; background:var(--panel); animation: pulseSkeleton 2s infinite ease-in-out;}
 .ph .body .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:5px 0}
-.ph .body .cards .c{height:40px; border-radius:7px; background:var(--card); border:1px solid var(--line)}
+.ph .body .cards .c{height:40px; border-radius:7px; background:var(--card); border:1px solid var(--line); animation: pulseSkeleton 2s infinite ease-in-out;}
+.ph .body .cards .c:nth-child(1){animation-delay: 0.1s;} .ph .body .cards .c:nth-child(2){animation-delay: 0.2s;}
 .ph .wm{position:absolute; right:5%; bottom:6%; font-size:96px; color:var(--accent); opacity:.06; z-index:0; pointer-events:none}
 .ph .hint{position:absolute; bottom:9px; right:13px; font-size:10px; color:var(--muted); z-index:2; background:color-mix(in srgb,var(--bg) 70%,transparent); padding:2px 7px; border-radius:5px}
 .ph .hint code{font-size:10px; background:none; color:var(--accent-2); padding:0}
@@ -214,6 +258,12 @@ html[data-theme="light"] .ttag{color:var(--accent)}
 .feat li{
   display:flex; gap:12px; padding:13px 15px; background:var(--card);
   border:1px solid var(--line); border-radius:var(--radius-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.feat li:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
 }
 .feat li i{color:var(--accent); margin-top:3px; flex:0 0 auto}
 .feat li b{color:var(--text)}
@@ -223,7 +273,15 @@ html[data-theme="light"] .feat li .ft .win{color:var(--accent)}
 
 /* sub-cards (pages within a tool) */
 .subgrid{display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:18px 0}
-.subcard{background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); padding:16px 17px}
+.subcard{
+  background:var(--card); border:1px solid var(--line); border-radius:var(--radius-sm); padding:16px 17px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+.subcard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 20%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--line));
+}
 .subcard h4{margin:0 0 7px; font-size:14.5px; display:flex; align-items:center; gap:9px}
 .subcard h4 i{color:var(--accent)}
 .subcard p{margin:0; font-size:13.2px; color:var(--text-2)}
@@ -247,27 +305,23 @@ html[data-theme="light"] .feat li .ft .win{color:var(--accent)}
 /* code */
 pre[class*="language-"]{
   background:var(--code-bg)!important; border:1px solid var(--line); border-radius:var(--radius-sm);
-  margin:8px 0 4px; font-size:12.8px;
+  margin:8px 0 4px; font-size:12.8px; position: relative; padding-top: 1.5em; /* relative for copy btn */
 }
+/* Interactive Copy Button */
+.copy-btn {
+  position: absolute; top: 8px; right: 8px; 
+  background: var(--panel); border: 1px solid var(--line); 
+  color: var(--text-2); border-radius: 4px; padding: 4px 8px; 
+  font-size: 11px; font-family: inherit; cursor: pointer; 
+  transition: all 0.2s ease; z-index: 10; display: flex; align-items: center; gap: 5px;
+}
+.copy-btn:hover { color: var(--accent); border-color: var(--accent); background: var(--panel-2); }
+.copy-btn.copied { color: var(--ok); border-color: var(--ok); background: color-mix(in srgb, var(--ok) 15%, transparent); }
+
 .code-label{
   font-size:11px; color:var(--muted); margin:22px 0 -2px; letter-spacing:.4px; display:flex; align-items:center; gap:7px;
 }
 .code-label i{color:var(--accent)}
-
-/* math-ish formula box */
-.formula{
-  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius-sm);
-  padding:14px 18px; margin:16px 0; font-family:'Cascadia Code',Consolas,monospace;
-  font-size:13px; color:var(--accent-2); overflow-x:auto;
-}
-html[data-theme="light"] .formula{color:var(--accent)}
-
-/* ascii diagram */
-.ascii{
-  background:var(--code-bg); border:1px solid var(--line); border-radius:var(--radius-sm);
-  padding:16px; margin:18px 0; overflow-x:auto; font-family:'Cascadia Code',Consolas,monospace;
-  font-size:11.6px; color:var(--text-2); line-height:1.5; white-space:pre;
-}
 
 /* footer */
 footer{border-top:1px solid var(--line); padding:32px 34px; text-align:center; color:var(--muted); font-size:13px}
@@ -277,8 +331,10 @@ footer a{font-weight:600}
 #toTop{
   position:fixed; right:26px; bottom:26px; width:44px; height:44px; border-radius:50%;
   background:var(--accent); color:#04121a; border:none; display:none; place-items:center;
-  cursor:pointer; box-shadow:0 8px 22px -6px var(--accent); z-index:20; font-size:16px;
+  cursor:pointer; box-shadow:0 8px 22px -6px color-mix(in srgb, var(--accent) 60%, transparent); 
+  z-index:20; font-size:16px; transition: transform 0.2s, box-shadow 0.2s;
 }
+#toTop:hover { transform: translateY(-3px); box-shadow: 0 12px 28px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
 #toTop.show{display:grid}
 
 /* mobile */
@@ -371,7 +427,7 @@ footer a{font-weight:600}
     <div class="content">
 
       <!-- HERO / OVERVIEW -->
-      <section class="doc hero" id="overview" style="padding-top:4px">
+      <section class="doc hero reveal" id="overview" style="padding-top:4px">
         <span class="eyebrow"><i class="fa-solid fa-cube"></i> Revit 2023–2026 · pyRevit · IronPython</span>
         <h1>A custom <span class="grad">Revit automation</span><br>suite, built tool by tool</h1>
         <p class="lede">The <strong>IcZ SuiteTools</strong> turn slow, error-prone MEP coordination work into one-click
@@ -387,7 +443,7 @@ footer a{font-weight:600}
         <div class="stats">
           <div class="stat"><div class="n">7</div><div class="l">SHIPPING TOOLS</div></div>
           <div class="stat"><div class="n">4</div><div class="l">RIBBON PANELS</div></div>
-          <div class="stat"><div class="n">4</div><div class="l">SHARED LIB MODULES</div></div>
+          <div class="stat"><div class="n">13</div><div class="l">SHARED LIB MODULES</div></div>
           <div class="stat"><div class="n">2023–26</div><div class="l">REVIT SUPPORT</div></div>
         </div>
 
@@ -414,10 +470,10 @@ footer a{font-weight:600}
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- AA -->
-      <section class="doc" id="aa">
+      <section class="doc reveal" id="aa">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-layer-group"></i></div>
           <div class="sec-titles">
@@ -470,10 +526,10 @@ footer a{font-weight:600}
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- FIT -->
-      <section class="doc" id="fit">
+      <section class="doc reveal" id="fit">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-screwdriver-wrench"></i></div>
           <div class="sec-titles">
@@ -536,10 +592,10 @@ footer a{font-weight:600}
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- PSU -->
-      <section class="doc" id="psu">
+      <section class="doc reveal" id="psu">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-sliders"></i></div>
           <div class="sec-titles">
@@ -585,10 +641,10 @@ footer a{font-weight:600}
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- CD -->
-      <section class="doc" id="cd">
+      <section class="doc reveal" id="cd">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-broom"></i></div>
           <div class="sec-titles">
@@ -654,10 +710,10 @@ for group in buckets.values():                         # compare only like-with-
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- EXPORT -->
-      <section class="doc" id="export">
+      <section class="doc reveal" id="export">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-file-export"></i></div>
           <div class="sec-titles">
@@ -706,10 +762,10 @@ log_inwindow("NWC exported → {}".format(name))     # results render in-window<
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- RO1 -->
-      <section class="doc" id="ro1">
+      <section class="doc reveal" id="ro1">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-list-check"></i></div>
           <div class="sec-titles">
@@ -777,10 +833,10 @@ log_inwindow("NWC exported → {}".format(name))     # results render in-window<
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- WOT -->
-      <section class="doc" id="wot">
+      <section class="doc reveal" id="wot">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-vector-square"></i></div>
           <div class="sec-titles">
@@ -827,41 +883,68 @@ log_inwindow("NWC exported → {}".format(name))     # results render in-window<
         </div>
       </section>
 
-      <hr class="divider">
+      <hr class="divider reveal">
 
       <!-- LIB -->
-      <section class="doc" id="lib">
+      <section class="doc reveal" id="lib">
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-cubes"></i></div>
           <div class="sec-titles">
-            <h2>Shared Library <span class="tag">lib/icz/</span></h2>
-            <div class="sub">The four modules every tool is built on — write it once, reuse it everywhere.</div>
+            <h2>Shared Library <span class="tag code">icz/</span></h2>
+            <div class="sub">Battle-tested utilities for pyRevit &amp; Revit API add-ins. Write it once, reuse it everywhere.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="techtags">
-            <span class="ttag">Revit API</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
-            <span class="ttag alt">IExternalEventHandler</span><span class="ttag alt">DynamicResource theming</span>
+            <span class="ttag">Revit API</span><span class="ttag">IronPython 2.7</span><span class="ttag">WPF / XAML</span>
+            <span class="ttag alt">Dependency-Free</span><span class="ttag alt">Revit 2022–26 Safe</span>
           </div>
-          <ul class="feat">
-            <li><i class="fa-solid fa-palette"></i><div class="ft"><b>icz.theme</b> — one source of truth for Light/Dark palettes. Controls bind to <code>{DynamicResource}</code> and repaint instantly on toggle.</div></li>
-            <li><i class="fa-solid fa-table-list"></i><div class="ft"><b>icz.review_grid</b> — the shared in-window grid with hover, click-to-navigate and status pills that powers every tool's pre-scan review.</div></li>
-            <li><i class="fa-solid fa-code-compare"></i><div class="ft"><b>icz.revit_compat</b> — the <code>eid()</code> shim that papers over the ElementId Int32→Int64 change so one codebase runs on Revit 2023–2026.</div></li>
-            <li><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>icz.modeless</b> — <code>ExternalCall</code> wraps <code>IExternalEventHandler</code> so modeless windows mutate the model safely, without locking the Revit UI.</div></li>
-          </ul>
-          <div class="code-label"><i class="fa-brands fa-python"></i> what every tool imports</div>
-          <pre><code class="language-python">from icz import theme
-from icz.revit_compat import eid
-from icz.modeless import ExternalCall
+          <p>Every pyRevit tool in the suite solves the same fundamental problems: the Revit 2024 <code>ElementId</code> breaking change, modeless-window threading, theme duplication, worksharing guards, and MEP connector hashing. The <code>icz</code> module pulls all of it into one dependency-free library, so each tool imports instead of reimplementing.</p>
 
-class ToolWindow(Window):
-    def __init__(self):
-        theme.apply_theme(self, "dark")            # one call, whole window themed
-        self._mutate   = ExternalCall(self._commit)  # safe API context for edits
-        self._navigate = ExternalCall(self._zoom)    # separate event → never races
+          <div class="subgrid">
+            <div class="subcard">
+              <h4><i class="fa-solid fa-code-compare"></i> revit_compat</h4>
+              <p>The <code>ElementId</code> 32-bit ⇄ 64-bit shim for Revit 2024+. The <b>one change</b> every other module here is built to survive. Exposes <code>eid(id)</code> and <code>make_eid(int)</code>.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-plug"></i> mep</h4>
+              <p>O(n) spatial-hash connector engine. Finds open pipe/duct connections within tolerance and reconnects them inside safe isolated <code>SubTransaction</code> blocks.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-shield-halved"></i> modeless</h4>
+              <p>Wraps <code>IExternalEventHandler</code> into a reusable <code>ExternalCall</code> pattern. Ensures WPF button clicks safely mutate the model without crashing the UI thread.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-palette"></i> theme & shell</h4>
+              <p>One truth for Light/Dark palettes pushing into WPF <code>{DynamicResource}</code> properties, plus shared window chrome (traffic lights, collapsable nav-rail).</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-table-list"></i> review_grid</h4>
+              <p>Builds the shared in-window list rows (checkbox · ID · Family & Type · pill badges) used universally across tools for pre-scan reviews with click-to-isolate hooks.</p>
+            </div>
+            <div class="subcard">
+              <h4><i class="fa-solid fa-database"></i> mappings & params</h4>
+              <p>Data-driven classification loaded from <code>spec_mappings.json</code>, alongside robust param-read functions handling Instance-then-Type fallback chains.</p>
+            </div>
+          </div>
+
+          <div class="code-label"><i class="fa-brands fa-python"></i> a modeless shell window integrating the shared library</div>
+          <pre><code class="language-python">from icz import theme
+from icz.revit_compat import eid, make_eid
+from icz.modeless import ExternalCall
+from icz.shell import ShellWindow
+
+class ToolWindow(ShellWindow):
+    def __init__(self, xaml):
+        ShellWindow.__init__(self, xaml)
+        self.init_shell(is_dark=True, rail_width=232)  # Shared chrome
+        
+        # Valid API context on init, safe threading
+        self._mutate   = ExternalCall(self._commit)
+        self._navigate = ExternalCall(self._zoom)
 
     def key_for(self, element):
-        return eid(element.Id)                      # Int32 / Int64 handled by shim</code></pre>
+        return eid(element.Id)                         # Int32 / Int64 safe</code></pre>
         </div>
       </section>
 
@@ -885,6 +968,25 @@ class ToolWindow(Window):
   const navLinks = Array.from(document.querySelectorAll('#nav a'));
   const sections = navLinks.map(a => document.querySelector(a.getAttribute('href'))).filter(Boolean);
   const crumb = $('#crumb');
+
+  /* ---- Interactive Copy Buttons ---- */
+  document.querySelectorAll('pre[class*="language-"]').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+    btn.title = 'Copy code to clipboard';
+    btn.addEventListener('click', () => {
+      navigator.clipboard.writeText(pre.textContent).then(() => {
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { 
+          btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy'; 
+          btn.classList.remove('copied'); 
+        }, 2000);
+      }).catch(err => console.error("Failed to copy", err));
+    });
+    pre.appendChild(btn);
+  });
 
   /* ---- Mobile menu ---- */
   const sidebar = $('#sidebar'), backdrop = $('#backdrop');
@@ -946,6 +1048,19 @@ class ToolWindow(Window):
     });
   }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
   sections.forEach(s => spy.observe(s));
+
+  /* ---- Scroll Reveal Animation ---- */
+  const reveals = document.querySelectorAll('.reveal');
+  const revealObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('active');
+        // Optional: Stop observing once revealed for a one-time effect
+        // observer.unobserve(entry.target); 
+      }
+    });
+  }, { rootMargin: '0px 0px -10% 0px', threshold: 0.05 });
+  reveals.forEach(reveal => revealObserver.observe(reveal));
 
   /* ---- Back to top ---- */
   const toTop = $('#toTop');
