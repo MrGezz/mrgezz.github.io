@@ -21,7 +21,7 @@ The site documents every tool shipping in the `SuiteTools` ribbon tab:
 | **FIT** | MEP Workbench | IcZ | Fitting Audit · Coordinates · Pipe/Duct→Flex · IFLS Param Sync |
 | **PSU** | Project Setup Utility | IcZ | Link worksets · Project Info · Levels · Security Vault |
 | **CD** | Model Cleanup | Tools | Ghost Purge + Connection Fix + Nested Resolutions |
-| **EXP** | ExportDocTools | Tools | NWC / PDF / DWG / formatted Excel export via COM |
+| **EXP** | IssueOne | Tools | NWC / PDF / DWG / formatted Excel export via COM |
 | **RO1** | BOQ Lookup | Parameter | Size → Nominal Width → BOQ designation/description |
 | **WOT** | Wall Opening Report | Report | MEP ↔ wall intersection detection across linked files |
 
