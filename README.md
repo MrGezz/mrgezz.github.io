@@ -20,7 +20,7 @@ The site documents every tool shipping in the `SuiteTools` ribbon tab — **9 to
 | **AA** | Project QC Automation | IcZ | Full-lifecycle MEP parameter pipeline (phases 0–8) with a pre-scan review grid |
 | **FIT** | MEP Workbench | IcZ | Fittings/Accessories audit · Write X/Y coordinates · Pipe/Duct→Flex · copy params between systems |
 | **PSU** | Project Setup | IcZ | Link worksets · guarded Project Info · elevation-safe level swap |
-| **CD** | Model Cleanup | Tools | Ghost Purge + Connection Fix + Nested Align + Nested Resolve |
+| **CD** | Model Cleanup | Tools | Ghost Purge + Connection Fix + Nested Fix (review-then-run) |
 | **EXP** | IssueOne | Tools | Batch export to DWG / PDF / NWC / IFC / images / Excel with profiles, filename builder & sheet index |
 | **DOC** | Auto-Doc Tools | Tools | Auto plans/sections/elevations/3D, dimensions, tags, sheet placement & naming conventions |
 | **RO1** | BOQ Lookup | Parameter | Size → Nominal Width → BOQ designation/description |
@@ -86,41 +86,4 @@ Revit 2024 replaced `ElementId.IntegerValue` with `ElementId.Value` (Int64). Thi
 from icz.revit_compat import eid, make_eid, is_valid
 
 element_id_int = eid(my_element.Id)         # ElementId -> int, any Revit version
-new_id         = make_eid(element_id_int)   # int -> ElementId, any Revit version
-if is_valid(my_element):                    # guards against mid-run deletions
-    ...
-```
-
-*(Only the public call surface is published here; internal logic remains private.)*
-
----
-
-## 🎨 Site Features & Tech Stack
-
-This documentation site is a single-page, zero-build portal.
-
-* **Interactive architecture diagram** — hover any tool to trace the `icz` modules it consumes, or hover a module to see which tools depend on it.
-* **Module explorer** — all 20 library modules as filterable/searchable cards, grouped by domain, each showing its consuming tools.
-* **Animated suite metrics** — count-up stats for tools, panels, modules and Revit versions.
-* **UI/UX** — scroll-reveal animations, glassmorphism components, sidebar scrollspy, and a full Light/Dark theme toggle tied into CSS variables.
-* **Privacy-first** — capabilities and architecture are documented in prose; no proprietary implementation is exposed beyond public import signatures.
-* **Tech Stack** — HTML5/CSS3 (no heavy frameworks), Prism.js for the one usage stub, FontAwesome 6 for iconography.
-
-## Local Preview
-
-No build step or server required.
-
-```bash
-git clone https://github.com/MrGezz/MrGezz.github.io.git
-cd MrGezz.github.io
-# Open index.html in any modern browser
-```
-
-### Screenshots
-
-Drop tool screenshots into `images/` using these filenames to replace the placeholders:
-`suite.png`, `aa.png`, `fit.png`, `psu.png`, `cd.png`, `export.png`, `mepauto.png`, `ro1.png`, `wot.png`.
-
----
-**Maintainer:** [@MrGezz](https://github.com/MrGezz) — BIM Coordinator & Revit API developer.
-&copy; 2026 IcZ. Hosted on GitHub Pages.
+new_id         = make_eid(element_id_int)   # int -> ElementId

@@ -12,7 +12,7 @@
 | Tools documented | 7 | **9** |
 | Ribbon panels | 4 | **5** |
 | Library modules shown | ~13 (6 detailed) | **20** (all, with a filterable explorer) |
-| Real code snippets | 31 blocks (internal logic) | **1** public-surface usage stub |
+| Real code snippets | 31 blocks (internal logic) | **4** curated snippets (patterns/usage, not internals) |
 | Interactive elements | scrollspy, search, theme toggle | + architecture diagram, module explorer, count-up metrics |
 | Branding | neutral, but sourced from `GmBH`/`DX`/`DEAXO` metadata | fully scrubbed to **IcZ** |
 
@@ -28,7 +28,11 @@
 **Refreshed**
 
 - **IssueOne (EXP)** re-cast from a COM-centric exporter to its current form: six formats (DWG/PDF/NWC/IFC/images/Excel), reusable **profiles v2**, token-based **filename builder**, split output folders, mid-batch **warning suppression**, and a **pure-Python XLSX** path (COM now opt-in only). Tied to the shared `exportcfg`, `xlsxlite`, `perftracker`, `failures`, `lastused` modules.
-- **AA, FIT, PSU, CD, RO1, WOT** descriptions tightened to match the current `bundle.yaml` tooltips (e.g. FIT's four pages and per-page gear/Settings view; CD's Nested Align/Resolve; WOT's review grid + filters + XLS report).
+- **AA, FIT, PSU, CD, RO1, WOT** descriptions tightened to match the current source (e.g. FIT's four pages and per-page gear/Settings view; WOT's review grid + filters + XLS report). **CD corrected to its actual three engines** — Ghost Purge, Connection Fix, Nested Fix (the earlier draft wrongly split the nested engine into "Align" + "Resolve").
+
+### On-site legacy provenance
+
+Per request, the site now documents each tool's origins the way good tool docs credit their legacy scripts. Collapsible **"from script to suite"** cards were added to **AA** (from the ~2,600-line RevitPythonShell macro) and **FIT** (from the WinForms flex converter + the coordinate-filler macro), each with a before → after comparison. A small number of **curated, section-specific code snippets** were also added (AA commit convention, FIT config-over-hardcoding, CD isolate/verify/rollback pattern) — each captioned "illustrative", showing the *shape or public surface* only, never the proprietary algorithm.
 
 ---
 
@@ -43,7 +47,14 @@
 
 ## 4. Code-privacy handling
 
-Per the decision to **keep tiny usage stubs only**, all 31 internal-logic Python blocks (duplicate-grouping loops, flex-conversion math, BOQ size parsing, NWC flag handling, level-offset math, etc.) were removed. They were replaced with prose capability descriptions, sub-cards, and workflow steps. A single **public-surface stub** remains in the Shared Library section — imports plus call signatures only (`ShellWindow`, `ExternalCall`, `eid`) — with an explicit note that internal logic stays private.
+All 31 internal-logic Python blocks (duplicate-grouping loops, flex-conversion math, BOQ size parsing, NWC flag handling, level-offset math, etc.) were removed. They were replaced with prose, sub-cards, and workflow steps. Then a small, **carefully curated** set of snippets was added back for credibility and "wow" — chosen per section so each reveals only a *pattern or public surface*, never the proprietary algorithm:
+
+- **Library** — public import signatures (`ShellWindow`, `ExternalCall`, `eid`).
+- **AA** — the approve-then-commit transaction convention (generic shape).
+- **FIT** — config-over-hardcoding with an overwrite guard (shows JSON-driven defaults).
+- **CD** — the isolate → verify → roll-back safety pattern (a standard Revit best practice, shared by all three engines).
+
+Each is captioned "illustrative", and the library block carries an explicit note that internal logic stays private.
 
 ---
 
