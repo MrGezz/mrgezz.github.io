@@ -102,9 +102,12 @@ This documentation site is a single-page, zero-build portal.
 * **Interactive architecture diagram** — hover any tool to trace the `icz` modules it consumes, or hover a module to see which tools depend on it.
 * **Module explorer** — all 20 library modules as filterable/searchable cards, grouped by domain, each showing its consuming tools.
 * **Animated suite metrics** — count-up stats for tools, panels, modules and Revit versions.
+* **CyanogenMod-inspired theme** — charcoal blue-grey surfaces with the signature `#00BCD4` cyan accent in dark mode, and a Material blue-grey light variant (`#0097A7` cyan-700 accent). Both modes drive every component through CSS variables; the toggle choice persists across visits.
+* **Collapsible sidebar** — on desktop the navigation collapses to a 68 px icon rail (native tooltips, active-item indicator, persisted state) — the same pattern as the suite's `ShellWindow` nav-rail. On mobile it stays an off-canvas drawer.
+* **Thin themed scrollbars** — 6 px accent-tinted scrollbars (WebKit + Firefox `scrollbar-width: thin`) that re-tint automatically with the Light/Dark toggle.
 * **UI/UX** — scroll-reveal animations, glassmorphism components, sidebar scrollspy, and a full Light/Dark theme toggle tied into CSS variables.
 * **Privacy-first** — capabilities and architecture are documented in prose; no proprietary implementation is exposed beyond public import signatures.
-* **Tech Stack** — HTML5/CSS3 (no heavy frameworks), Prism.js for the one usage stub, FontAwesome 6 for iconography.
+* **Tech Stack** — HTML5/CSS3 (no heavy frameworks), Prism.js for the one usage stub, FontAwesome 6 for iconography, `localStorage` for theme + nav-state persistence.
 
 ## Local Preview
 

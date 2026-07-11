@@ -11,23 +11,28 @@
 <link id="prismTheme" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
 <style>
-/* ===== AA base theme — Deep Navy & Cyan (from theme.py) ===== */
+/* ===== AA base theme — CyanogenMod-inspired · charcoal blue-grey + signature cyan ===== */
 :root{
-  --bg:#090C10; --bg-2:#0D1117; --panel:#161B22; --panel-2:#21262D; --card:#161B22;
-  --line:#30363D; --line-soft:#21262D;
-  --text:#F0F6FC; --text-2:#8B949E; --muted:#6E7681;
-  --accent:#00C8FF; --accent-2:#33D4FF; --accent-soft:rgba(0, 200, 255, 0.1);
-  --ok:#3FB950; --warn:#D29922; --danger:#F85149; --violet:#A371F7;
-  --code-bg:#0D1117;
+  --bg:#0B1013; --bg-2:#0F161A; --panel:#152026; --panel-2:#1C2B33; --card:#141E24;
+  --line:#283B45; --line-soft:#1C2B33;
+  --text:#ECF4F7; --text-2:#8FA6B2; --muted:#5F7885;
+  --accent:#00BCD4; --accent-2:#4DD0E1; --accent-soft:rgba(0, 188, 212, 0.12);
+  --ok:#4CAF50; --warn:#FFB300; --danger:#FF5252; --violet:#7C4DFF;
+  --code-bg:#0D1417;
   --radius:12px; --radius-sm:8px;
-  --sidebar-w:288px;
+  --sidebar-w:288px; --sidebar-rail:68px;
+  --sb-thumb:color-mix(in srgb, var(--accent) 40%, var(--panel-2));
+  --sb-thumb-hover:var(--accent);
 }
 html[data-theme="light"]{
-  --bg:#F6F8FA; --bg-2:#FFFFFF; --panel:#FFFFFF; --panel-2:#F3F4F6; --card:#FFFFFF;
-  --line:#D0D7DE; --line-soft:#E5E7EB;
-  --text:#1F2328; --text-2:#656D76; --muted:#8C959F;
-  --accent:#0969DA; --accent-2:#005CC5; --accent-soft:rgba(9, 105, 218, 0.1);
-  --code-bg:#F6F8FA;
+  --bg:#ECEFF1; --bg-2:#FFFFFF; --panel:#FFFFFF; --panel-2:#E7EDF0; --card:#FFFFFF;
+  --line:#CFD8DC; --line-soft:#E3EAEE;
+  --text:#263238; --text-2:#546E7A; --muted:#78909C;
+  --accent:#0097A7; --accent-2:#00838F; --accent-soft:rgba(0, 151, 167, 0.10);
+  --ok:#2E7D32; --warn:#F57F17; --danger:#D32F2F; --violet:#651FFF;
+  --code-bg:#ECEFF1;
+  --sb-thumb:color-mix(in srgb, var(--accent) 45%, var(--line));
+  --sb-thumb-hover:var(--accent);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
@@ -47,12 +52,16 @@ body{
 .blob-2 { bottom: -300px; right: -200px; background: color-mix(in srgb, var(--violet) 40%, transparent); }
 html[data-theme="light"] .bg-glow { opacity: 0.15; filter: blur(100px); }
 
-/* ===== Custom Selection & Scrollbar ===== */
+/* ===== Custom Selection & Thin Themed Scrollbar ===== */
 ::selection { background: color-mix(in srgb, var(--accent) 30%, transparent); color: var(--text); }
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: var(--line); border-radius: 6px; border: 2px solid var(--bg); }
-::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--sb-thumb) transparent; }
+/* WebKit / Chromium */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--sb-thumb); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sb-thumb-hover); }
 
 a{color:var(--accent); text-decoration:none}
 a:hover{color:var(--accent-2)}
@@ -72,15 +81,23 @@ code{font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:.86em}
   background:color-mix(in srgb, var(--bg-2) 80%, transparent);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-right:1px solid var(--line); padding:0 0 40px; z-index: 20;
+  transition:flex-basis .3s cubic-bezier(0.16,1,0.3,1), width .3s cubic-bezier(0.16,1,0.3,1);
 }
 .brand{
   display:flex; align-items:center; gap:12px; padding:24px 22px 20px;
   position:sticky; top:0; background:color-mix(in srgb, var(--bg-2) 90%, transparent);
   backdrop-filter: blur(10px); z-index:5; border-bottom:1px solid var(--line-soft);
 }
+.rail-btn{
+  margin-left:auto; width:28px; height:28px; flex:0 0 auto; border-radius:8px;
+  border:1px solid var(--line); background:transparent; color:var(--muted);
+  cursor:pointer; display:grid; place-items:center; font-size:11px; transition:all .2s ease;
+}
+.rail-btn:hover{color:var(--accent); border-color:var(--accent); background:var(--accent-soft)}
+.rail-btn i{transition:transform .3s cubic-bezier(0.16,1,0.3,1)}
 .brand-mark{
   width:40px; height:40px; border-radius:10px; flex:0 0 auto;
-  background:linear-gradient(135deg,var(--accent),#005CC5);
+  background:linear-gradient(135deg,var(--accent),#00838F);
   display:grid; place-items:center; color:#FFF; font-weight:800; font-size:16px;
   box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--accent) 70%, transparent), inset 0 2px 4px rgba(255,255,255,0.4);
 }
@@ -464,9 +481,30 @@ footer a:hover{color: var(--accent);}
 #toTop:hover { transform: translateY(-4px); box-shadow: 0 16px 32px -6px color-mix(in srgb, var(--accent) 90%, transparent); }
 #toTop.show{display:grid}
 
+/* ===== Desktop collapsible icon rail ===== */
+@media (min-width:961px){
+  body.nav-collapsed .sidebar{flex:0 0 var(--sidebar-rail); width:var(--sidebar-rail)}
+  body.nav-collapsed .brand{flex-direction:column; gap:12px; padding:18px 10px 14px}
+  body.nav-collapsed .brand-txt{display:none}
+  body.nav-collapsed .rail-btn{margin-left:0}
+  body.nav-collapsed .rail-btn i{transform:rotate(180deg)}
+  body.nav-collapsed .search-wrap{display:none}
+  body.nav-collapsed .nav{padding:8px 10px}
+  body.nav-collapsed .nav-group{margin-top:8px; border-top:1px solid var(--line-soft); padding-top:8px}
+  body.nav-collapsed .nav-group:first-child{border-top:none; padding-top:0}
+  body.nav-collapsed .nav-group>.nav-label{display:none}
+  body.nav-collapsed .nav a{justify-content:center; gap:0; padding:11px 0; font-size:0; line-height:0}
+  body.nav-collapsed .nav a:hover{transform:none}
+  body.nav-collapsed .nav a .gi{width:auto}
+  body.nav-collapsed .nav a .gi i{font-size:16px; line-height:1}
+  body.nav-collapsed .nav a .tcode{display:none}
+  body.nav-collapsed .nav a.active{box-shadow:inset 3px 0 0 var(--accent)}
+}
+
 /* mobile */
 .menu-btn{display:none}
 @media (max-width:960px){
+  .rail-btn{display:none}
   .layout{flex-direction:column}
   .sidebar{
     flex:none; position:fixed; left:0; top:0; bottom:0; height:100vh; width:300px; z-index:50;
@@ -502,6 +540,7 @@ footer a:hover{color: var(--accent);}
         <b>IcZScripts</b>
         <span>SuiteTools · pyRevit 6.4</span>
       </div>
+      <button class="rail-btn" id="railBtn" title="Collapse sidebar" aria-label="Collapse sidebar" aria-expanded="true"><i class="fa-solid fa-angles-left"></i></button>
     </div>
 
     <div class="search-wrap">
@@ -1425,6 +1464,23 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   backdrop.addEventListener('click', () => toggleMenu(false));
   navLinks.forEach(a => a.addEventListener('click', () => { if (window.innerWidth <= 960) toggleMenu(false); }));
 
+  /* ---- Desktop collapsible icon rail ---- */
+  const railBtn = $('#railBtn');
+  // Label = the link's own text node (excludes the .tcode badge), used as native tooltip when collapsed.
+  navLinks.forEach(a => {
+    a.dataset.tip = Array.from(a.childNodes).filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim();
+  });
+  const isCollapsed = () => document.body.classList.contains('nav-collapsed');
+  const setRail = collapsed => {
+    document.body.classList.toggle('nav-collapsed', collapsed);
+    railBtn.title = collapsed ? 'Expand sidebar' : 'Collapse sidebar';
+    railBtn.setAttribute('aria-expanded', String(!collapsed));
+    navLinks.forEach(a => { if (collapsed) a.title = a.dataset.tip; else a.removeAttribute('title'); });
+    try { localStorage.setItem('icz-nav', collapsed ? '1' : '0'); } catch(e){}
+  };
+  railBtn.addEventListener('click', () => setRail(!isCollapsed()));
+  try { if (localStorage.getItem('icz-nav') === '1' && window.innerWidth > 960) setRail(true); } catch(e){}
+
   /* ---- Theme toggle ---- */
   const root = document.documentElement, themeBtn = $('#themeBtn'), prismLink = $('#prismTheme');
   const PRISM_DARK = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css";
@@ -1435,8 +1491,13 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
     prismLink.href = t === 'light' ? PRISM_LIGHT : PRISM_DARK;
   }
   let theme = 'dark';
+  try { theme = localStorage.getItem('icz-theme') || theme; } catch(e){}
   setTheme(theme);
-  themeBtn.addEventListener('click', () => { theme = theme === 'dark' ? 'light' : 'dark'; setTheme(theme); });
+  themeBtn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(theme);
+    try { localStorage.setItem('icz-theme', theme); } catch(e){}
+  });
 
   /* ---- Sidebar search filter ---- */
   const search = $('#search'), navEmpty = $('#navEmpty');
@@ -1457,7 +1518,11 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
     navEmpty.style.display = anyVisible ? 'none' : 'block';
   });
   document.addEventListener('keydown', e => {
-    if (e.key === '/' && document.activeElement !== search && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); search.focus(); }
+    if (e.key === '/' && document.activeElement !== search && document.activeElement.tagName !== 'INPUT') {
+      e.preventDefault();
+      if (isCollapsed()) setRail(false);   // expand the rail so search is reachable
+      search.focus();
+    }
     if (e.key === 'Escape' && document.activeElement === search) { search.value=''; search.dispatchEvent(new Event('input')); search.blur(); }
   });
 

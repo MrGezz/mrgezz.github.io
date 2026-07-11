@@ -1,7 +1,35 @@
 # Web Update Report — MrGezz.github.io
 
-**Date:** 2026-07-06
+**Date:** 2026-07-06 · **Last pass:** 2026-07-11
 **Scope:** Refresh the SuiteTools documentation site to reflect the current `IcZScripts.extension`, add presentation/interactivity ("wow factor"), expand the shared-library documentation, strip legacy branding, and avoid exposing proprietary code. README aligned to match.
+
+---
+
+## Update pass — 2026-07-11 · Theme & navigation
+
+Three UI changes to `index.html`; README feature list aligned. No content, tool, or module documentation changed.
+
+### 1. CyanogenMod-inspired theme (both modes)
+
+The palette was re-tuned from Deep Navy/GitHub colors to a CyanogenMod/Material identity — the layout was already close, so this was a variable-level restyle, not a rebuild:
+
+- **Dark:** charcoal blue-grey surfaces (`--bg #0B1013`, `--panel #152026`, lines `#283B45`) with the signature CM cyan `#00BCD4` / `#4DD0E1` accents; secondary moved to Material deep purple `#7C4DFF`; status colors to Material (`#4CAF50` / `#FFB300` / `#FF5252`).
+- **Light:** Material blue-grey — `#ECEFF1` background, `#263238` text, `#CFD8DC` lines — with cyan-700 `#0097A7` accent (kept dark enough for WCAG contrast on white).
+- Hardcoded `#005CC5` in the brand-mark gradient replaced with `#00838F` so nothing off-palette remains.
+- Theme choice now **persists in `localStorage`** (`icz-theme`).
+
+### 2. Thin themed scrollbars
+
+10 px grey WebKit scrollbars replaced with 6 px accent-tinted ones (`--sb-thumb`, cyan-mixed, transparent track) plus Firefox `scrollbar-width: thin` / `scrollbar-color`. The thumb re-tints automatically with the theme toggle.
+
+### 3. Collapsible sidebar (desktop icon rail)
+
+- New toggle in the brand row collapses the 288 px sidebar to a **68 px icon rail** — mirroring the suite's own `ShellWindow` collapsible nav-rail pattern.
+- Collapsed state: icon-only links with native tooltips (label read from the link's text node, excluding the `tcode` badge), centered active pill with a 3 px cyan inset bar, group dividers instead of labels; search and text hidden.
+- State **persists in `localStorage`** (`icz-nav`); `aria-expanded` kept in sync; the `/` search shortcut auto-expands the rail first so search stays reachable.
+- Scoped to `@media (min-width: 961px)` — the mobile off-canvas drawer is untouched.
+
+**Verification:** headless Chromium pass — no JS errors; collapse width, tooltips, reload persistence (rail + theme), and `/`-focus behavior all confirmed. Screenshots taken in dark, light and collapsed states.
 
 ---
 
