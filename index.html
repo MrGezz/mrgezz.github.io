@@ -560,7 +560,7 @@ footer a:hover{color: var(--accent);}
 
       <div class="nav-group" data-group>
         <div class="nav-label">IcZ Panel</div>
-        <a href="#aa" data-name="aa project qc automation phases pipeline"><span class="gi"><i class="fa-solid fa-layer-group"></i></span>Project QC Automation<span class="tcode">AA</span></a>
+        <a href="#aa" data-name="aa qaqc suite quality model health scan apply stages pipeline"><span class="gi"><i class="fa-solid fa-layer-group"></i></span>IcZ QAQC Suite<span class="tcode">AA</span></a>
         <a href="#fit" data-name="fit mep workbench fitting audit coordinates flex param sync"><span class="gi"><i class="fa-solid fa-screwdriver-wrench"></i></span>MEP Workbench<span class="tcode">FIT</span></a>
         <a href="#psu" data-name="psu project setup links levels project info"><span class="gi"><i class="fa-solid fa-sliders"></i></span>Project Setup<span class="tcode">PSU</span></a>
       </div>
@@ -568,8 +568,8 @@ footer a:hover{color: var(--accent);}
       <div class="nav-group" data-group>
         <div class="nav-label">Tools Panel</div>
         <a href="#cd" data-name="cd model cleanup ghost purge connection fix nested"><span class="gi"><i class="fa-solid fa-broom"></i></span>Model Cleanup<span class="tcode">CD</span></a>
-        <a href="#issueone" data-name="issueone export nwc pdf dwg ifc excel images schedules"><span class="gi"><i class="fa-solid fa-file-export"></i></span>IssueOne<span class="tcode">EXP</span></a>
-        <a href="#mepauto" data-name="mep auto doc tools plans sections elevations dimensions tags sheets naming"><span class="gi"><i class="fa-solid fa-drafting-compass"></i></span>Auto-Doc Tools<span class="tcode">DOC</span></a>
+        <a href="#issueone" data-name="issueone transmit export nwc pdf dwg ifc excel images schedules transmittal ole"><span class="gi"><i class="fa-solid fa-file-export"></i></span>IcZ Transmit<span class="tcode">EXP</span></a>
+        <a href="#mepauto" data-name="mep autodoc auto doc tools plans sections elevations dimensions tags sheets naming layout engine profiles"><span class="gi"><i class="fa-solid fa-drafting-compass"></i></span>IcZ AutoDoc<span class="tcode">DOC</span></a>
       </div>
 
       <div class="nav-group" data-group>
@@ -579,8 +579,8 @@ footer a:hover{color: var(--accent);}
 
       <div class="nav-group" data-group>
         <div class="nav-label">Quality · Report</div>
-        <a href="#guide" data-name="guide guideline standards documents pdf word quality check"><span class="gi"><i class="fa-solid fa-book-open"></i></span>Guideline Library<span class="tcode">GUIDE</span></a>
-        <a href="#wot" data-name="wot wall opening report intersection linked family mep"><span class="gi"><i class="fa-solid fa-vector-square"></i></span>Wall Opening<span class="tcode">WOT</span></a>
+        <a href="#guide" data-name="guide guideline viewer standards documents pdf word excel markdown preview annotate quality check"><span class="gi"><i class="fa-solid fa-book-open"></i></span>IcZ Guideline<span class="tcode">GUIDE</span></a>
+        <a href="#wot" data-name="wot mep opening tool wall intersection linked family report"><span class="gi"><i class="fa-solid fa-vector-square"></i></span>MEP Opening Tool<span class="tcode">WOT</span></a>
       </div>
 
       <div class="nav-group" data-group>
@@ -614,7 +614,7 @@ footer a:hover{color: var(--accent);}
         drawings, and batch-issuing deliverables. Every tool is a modeless WPF app sharing one themeable shell and one
         dependency-free core library.</p>
         <div class="hero-meta">
-          <span class="pill"><i class="fa-brands fa-python"></i> IronPython 2.7</span>
+          <span class="pill"><i class="fa-brands fa-python"></i> IronPython 2.7 ⇋ IronPython 3</span>
           <span class="pill"><i class="fa-solid fa-window-restore"></i> Modeless WPF / XAML</span>
           <span class="pill"><i class="fa-solid fa-shield-halved"></i> ExternalEvent-safe</span>
           <span class="pill"><i class="fa-solid fa-palette"></i> Light / Dark themed</span>
@@ -623,7 +623,7 @@ footer a:hover{color: var(--accent);}
         <div class="stats">
           <div class="stat glass-card"><div class="n" data-count="9">0</div><div class="l">SHIPPING TOOLS</div></div>
           <div class="stat glass-card"><div class="n" data-count="5">0</div><div class="l">RIBBON PANELS</div></div>
-          <div class="stat glass-card"><div class="n" data-count="20">0</div><div class="l">SHARED MODULES</div></div>
+          <div class="stat glass-card"><div class="n" data-count="32">0</div><div class="l">SHARED MODULES</div></div>
           <div class="stat glass-card"><div class="n" data-count="4" data-suffix=" vers.">0</div><div class="l">REVIT 2023–26</div></div>
         </div>
 
@@ -660,37 +660,48 @@ footer a:hover{color: var(--accent);}
           <div class="sec-glyph"><i class="fa-solid fa-diagram-project"></i></div>
           <div class="sec-titles">
             <h2>Suite Architecture <span class="tag">hybrid core</span></h2>
-            <div class="sub">Nine tools across five ribbon panels, all resting on one shared <code>icz</code> library. Hover a tool to trace the modules it consumes.</div>
+            <div class="sub">Nine tools across five ribbon panels, all resting on one shared <code>icz</code> library of 32 modules. Hover a tool to trace the modules it consumes.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="arch glass-card" id="arch">
             <div class="arch-lab"><i class="fa-solid fa-toolbox"></i> SuiteTools ribbon <span class="cnt">· 9 tools</span></div>
             <div class="arch-row">
-              <span class="node tool" data-tool="aa"  data-uses="revit_compat theme shell modeless review_grid mep naming params mappings worksets ownership units revit_utils">Project QC <span class="nc">AA</span></span>
-              <span class="node tool" data-tool="fit" data-uses="revit_compat theme shell modeless mep params units validation lastused revit_utils">MEP Workbench <span class="nc">FIT</span></span>
-              <span class="node tool" data-tool="psu" data-uses="revit_compat theme shell modeless worksets ownership revit_utils">Project Setup <span class="nc">PSU</span></span>
+              <span class="node tool" data-tool="aa"  data-uses="revit_compat theme shell modeless review_grid mep naming params paramreg configstore scorecard failures worksets ownership units revit_utils">QAQC Suite <span class="nc">AA</span></span>
+              <span class="node tool" data-tool="fit" data-uses="revit_compat theme shell modeless mep geom route params units validation lastused revit_utils">MEP Workbench <span class="nc">FIT</span></span>
+              <span class="node tool" data-tool="psu" data-uses="revit_compat theme shell modeless configstore worksets ownership revit_utils">Project Setup <span class="nc">PSU</span></span>
               <span class="node tool" data-tool="cd"  data-uses="revit_compat theme shell modeless review_grid mep naming units ownership">Model Cleanup <span class="nc">CD</span></span>
-              <span class="node tool" data-tool="issueone" data-uses="revit_compat theme exportcfg xlsxlite perftracker failures lastused validation">IssueOne <span class="nc">EXP</span></span>
-              <span class="node tool" data-tool="mepauto" data-uses="revit_compat theme shell naming">Auto-Doc <span class="nc">DOC</span></span>
-              <span class="node tool" data-tool="ro1" data-uses="revit_compat theme params">BOQ Lookup <span class="nc">RO1</span></span>
-              <span class="node tool" data-tool="guide" data-uses="">Guideline <span class="nc">GUIDE</span></span>
-              <span class="node tool" data-tool="wot" data-uses="revit_compat theme shell modeless mep naming units">Wall Opening <span class="nc">WOT</span></span>
+              <span class="node tool" data-tool="issueone" data-uses="revit_compat theme exportcfg xlsxlite perftracker failures lastused validation configstore">Transmit <span class="nc">EXP</span></span>
+              <span class="node tool" data-tool="mepauto" data-uses="revit_compat theme shell doclayout naming">AutoDoc <span class="nc">DOC</span></span>
+              <span class="node tool" data-tool="ro1" data-uses="revit_compat theme params paramreg">BOQ Lookup <span class="nc">RO1</span></span>
+              <span class="node tool" data-tool="guide" data-uses="theme shell pdfview dialogs">Guideline <span class="nc">GUIDE</span></span>
+              <span class="node tool" data-tool="wot" data-uses="revit_compat theme shell modeless mep naming units xlsxlite pycompat">MEP Opening <span class="nc">WOT</span></span>
             </div>
 
-            <div class="arch-lab"><i class="fa-solid fa-cubes"></i> icz shared library <span class="cnt">· 20 modules</span></div>
+            <div class="arch-lab"><i class="fa-solid fa-cubes"></i> icz shared library <span class="cnt">· 32 modules</span></div>
             <div class="arch-row">
               <span class="node mod" id="m-revit_compat" data-mod="revit_compat">revit_compat</span>
+              <span class="node mod" id="m-pycompat" data-mod="pycompat">pycompat</span>
               <span class="node mod" id="m-theme" data-mod="theme">theme</span>
               <span class="node mod" id="m-shell" data-mod="shell">shell</span>
               <span class="node mod" id="m-modeless" data-mod="modeless">modeless</span>
               <span class="node mod" id="m-review_grid" data-mod="review_grid">review_grid</span>
+              <span class="node mod" id="m-dialogs" data-mod="dialogs">dialogs</span>
               <span class="node mod" id="m-validation" data-mod="validation">validation</span>
+              <span class="node mod" id="m-pdfview" data-mod="pdfview">pdfview</span>
               <span class="node mod" id="m-mep" data-mod="mep">mep</span>
+              <span class="node mod" id="m-geom" data-mod="geom">geom</span>
+              <span class="node mod" id="m-route" data-mod="route">route</span>
               <span class="node mod" id="m-naming" data-mod="naming">naming</span>
+              <span class="node mod" id="m-tags" data-mod="tags">tags</span>
               <span class="node mod" id="m-params" data-mod="params">params</span>
-              <span class="node mod" id="m-mappings" data-mod="mappings">mappings</span>
+              <span class="node mod" id="m-paramreg" data-mod="paramreg">paramreg</span>
+              <span class="node mod" id="m-configstore" data-mod="configstore">configstore</span>
               <span class="node mod" id="m-serdes" data-mod="serdes">serdes</span>
+              <span class="node mod" id="m-doclayout" data-mod="doclayout">doclayout</span>
+              <span class="node mod" id="m-scorecard" data-mod="scorecard">scorecard</span>
+              <span class="node mod" id="m-mcheck" data-mod="mcheck">mcheck</span>
+              <span class="node mod" id="m-famqa" data-mod="famqa">famqa</span>
               <span class="node mod" id="m-worksets" data-mod="worksets">worksets</span>
               <span class="node mod" id="m-ownership" data-mod="ownership">ownership</span>
               <span class="node mod" id="m-exportcfg" data-mod="exportcfg">exportcfg</span>
@@ -698,6 +709,7 @@ footer a:hover{color: var(--accent);}
               <span class="node mod" id="m-perftracker" data-mod="perftracker">perftracker</span>
               <span class="node mod" id="m-failures" data-mod="failures">failures</span>
               <span class="node mod" id="m-lastused" data-mod="lastused">lastused</span>
+              <span class="node mod" id="m-apiclient" data-mod="apiclient">apiclient</span>
               <span class="node mod" id="m-units" data-mod="units">units</span>
               <span class="node mod" id="m-revit_utils" data-mod="revit_utils">revit_utils</span>
             </div>
@@ -715,15 +727,15 @@ footer a:hover{color: var(--accent);}
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-layer-group"></i></div>
           <div class="sec-titles">
-            <h2>Project QC Automation <span class="tag code">AA</span> <span class="tag">IcZ.panel</span></h2>
-            <div class="sub">One click takes raw MEP geometry to fully coordinated, parameterized, workset-sorted elements. Redesigned from a prompt-driven macro into a dedicated modeless UI with in-depth reporting, a modernized code base for newer Revit APIs, and JSON-driven configuration so it runs across multiple projects.</div>
+            <h2>IcZ QAQC Suite <span class="tag code">AA</span> <span class="tag">IcZ.panel</span></h2>
+            <div class="sub">A modeless model-maintenance and QA/QC workbench that runs a governed sequence of remediation stages over raw MEP geometry — Scan (dry-run review) then Apply on each, with click-to-zoom result grids and a live Model Health score. Redesigned from a prompt-driven macro into a canonical modeless UI, modernized for newer Revit APIs, with mapping tables edited in-window and persisted to JSON.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="shot">
             <div class="bar">
               <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
-              <span class="ttl"><i class="fa-solid fa-layer-group"></i> Project QC Automation <span class="code">AA</span></span>
+              <span class="ttl"><i class="fa-solid fa-layer-group"></i> IcZ QAQC Suite <span class="code">AA</span></span>
             </div>
             <div class="frame">
               <img src="images/aa.png" alt="AA screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
@@ -744,26 +756,26 @@ footer a:hover{color: var(--accent);}
             <span class="ttag alt">FilteredElementCollector</span><span class="ttag alt">SubTransaction</span><span class="ttag alt">JSON config</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-wand-magic-sparkles"></i><div class="ft"><b>End-to-End Pipeline (Phases 0–8):</b> Seals open connectors, removes duplicate runs, writes standard parameters, assigns IFC export types, and routes worksets — all in a single pass. <span class="win">Collapses a full day of manual coordination into one run.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-pen-ruler"></i><div class="ft"><b>Geometry-Driven Parameters:</b> Populates project custom parameters straight from model geometry and lookup tables. <span class="win">No typing, no transcription errors.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-eye"></i><div class="ft"><b>Review Before Commit:</b> A pre-scan grid lists every proposed change with click-to-isolate and zoom, and the post-run report renders as live metric chips. <span class="win">Nothing touches the model until you approve it.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-wand-magic-sparkles"></i><div class="ft"><b>Six Governed Stages:</b> Cleanup, CMMN, SPEC, Flags, Classification and Worksets run in sequence — sealing connectors, removing duplicate runs, writing standard parameters, classifying for IFC export, and routing worksets. <span class="win">Collapses a full day of manual coordination into one governed pass.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-pen-ruler"></i><div class="ft"><b>Geometry-Driven Parameters:</b> Populates project custom parameters straight from model geometry and editable mapping tables (<code>spec_mappings.json</code>), edited in-window on the Settings page — no raw JSON. <span class="win">No typing, no transcription errors.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-eye"></i><div class="ft"><b>Scan → Apply, One Resolver:</b> Each stage previews as a click-to-isolate grid before it writes; preview and run share one function so they can never disagree, and a live Model Health score summarizes the result. <span class="win">Nothing touches the model until you approve it.</span></div></li>
           </ul>
 
           <div class="flow glass-card">
-            <div class="step"><span class="st">Collect</span><span class="sd">Quick-filtered scan of the target MEP categories in the active scope.</span></div>
-            <div class="step"><span class="st">Pre-scan review</span><span class="sd">Every proposed edit is listed with isolate + zoom — approve or skip.</span></div>
-            <div class="step"><span class="st">Commit phases 0–8</span><span class="sd">Seal · de-dupe · parameterize · classify · workset, each phase isolated.</span></div>
-            <div class="step"><span class="st">Report</span><span class="sd">Live metric chips summarize what changed, exportable for the record.</span></div>
+            <div class="step"><span class="st">Scan</span><span class="sd">Dry-run pass of the target MEP categories — every proposed edit listed with isolate + zoom.</span></div>
+            <div class="step"><span class="st">Review</span><span class="sd">Approve or skip per row; the same resolver that previews is the one that will run.</span></div>
+            <div class="step"><span class="st">Apply six stages</span><span class="sd">Cleanup · CMMN · SPEC · Flags · Classification · Worksets, each stage isolated.</span></div>
+            <div class="step"><span class="st">Model Health</span><span class="sd">Live score + metric chips summarize what changed, exportable for the record.</span></div>
           </div>
 
           <div class="code-label-wrap">
             <div class="code-label"><i class="fa-brands fa-python"></i> the commit convention — approve, then run</div>
           </div>
-          <pre><code class="language-python"># Nothing touches the model until the review grid is approved.
-for phase in pipeline:                          # phases 0–8
-    with revit.Transaction(phase.name, doc):    # each phase, one guarded tx
-        phase.run(doc, approved_elements)
-report.chips(results)                           # live metrics — no TaskDialog</code></pre>
+          <pre><code class="language-python"># Scan and Apply share one resolver — preview can never disagree with the run.
+for stage in stages:                            # Cleanup · CMMN · SPEC · Flags · Classification · Worksets
+    with revit.Transaction(stage.name, doc):    # each stage, one guarded tx
+        stage.apply(doc, approved_elements)     # only what the review grid approved
+health.score(results)                           # live Model Health — no TaskDialog</code></pre>
           <p class="illus"><i class="fa-solid fa-circle-info"></i> Illustrative — the workflow shape, not the internal phase logic.</p>
 
           <details class="legacy">
@@ -789,10 +801,10 @@ report.chips(results)                           # live metrics — no TaskDialog
                 </div>
                 <div class="arrow"><i class="fa-solid fa-arrow-right"></i></div>
                 <div class="col after">
-                  <div class="lab"><i class="fa-solid fa-layer-group"></i> Project QC Automation</div>
+                  <div class="lab"><i class="fa-solid fa-layer-group"></i> IcZ QAQC Suite</div>
                   <ul>
                     <li>Modeless WPF with a <b>pre-scan review grid</b> (isolate/zoom)</li>
-                    <li>Phases 0–8 commit only what you <b>approve</b>; results as chips</li>
+                    <li>Six stages (Scan→Apply) commit only what you <b>approve</b>; live Model Health score</li>
                     <li>Mappings externalized to <b><code>spec_mappings.json</code></b></li>
                     <li>Logic factored into <b><code>icz</code></b> modules; Revit 2023–26 safe</li>
                   </ul>
@@ -1019,18 +1031,18 @@ with SubTransaction(doc) as st:
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-file-export"></i></div>
           <div class="sec-titles">
-            <h2>IssueOne <span class="tag code">EXP</span> <span class="tag">Tools.panel</span></h2>
-            <div class="sub">One issue, every format. Batch-export the sheets, models and schedules you pick to DWG, PDF, Navisworks, IFC, images and Excel in a single run — with a consistent filename builder and a ready-to-send sheet index.</div>
+            <h2>IcZ Transmit <span class="tag code">EXP</span> <span class="tag">Tools.panel</span></h2>
+            <div class="sub">One transmittal, every format. Batch-export the sheets, models and schedules you pick into structured transmittal packages — DWG, PDF, Navisworks, IFC, images and Excel in a single run — with embedded logos, clean schedule tables in the CAD files, a consistent filename builder and a ready-to-send sheet index.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="shot">
             <div class="bar">
               <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
-              <span class="ttl"><i class="fa-solid fa-file-export"></i> IssueOne <span class="code">EXP</span></span>
+              <span class="ttl"><i class="fa-solid fa-file-export"></i> IcZ Transmit <span class="code">EXP</span></span>
             </div>
             <div class="frame">
-              <img src="images/export.png" alt="IssueOne screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <img src="images/export.png" alt="IcZ Transmit screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
               <div class="ph">
                 <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
                 <div class="body">
@@ -1054,7 +1066,7 @@ with SubTransaction(doc) as st:
             <li class="glass-card"><i class="fa-solid fa-gears"></i><div class="ft"><b>Profiles, Naming &amp; Guards:</b> Reusable export profiles, a token-based filename builder, split output folders, and mid-batch Revit warning suppression so a run never stalls on a popup. <span class="win">The fiddly parts of batch export, solved once.</span></div></li>
           </ul>
 
-          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">IssueOne is the evolution of the earlier ExportDocTools button — rebuilt around reusable profiles, a dependency-free spreadsheet writer, and reliable schedule embedding. It leans on the shared <code>exportcfg</code>, <code>xlsxlite</code>, <code>perftracker</code>, <code>failures</code> and <code>lastused</code> modules.</div></div>
+          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">IcZ Transmit is the evolution of the earlier ExportDocTools button (folder and module names kept deliberately under the rebrand) — rebuilt around profiles v2, a dependency-free spreadsheet writer, ICZOLE schedule/legend OLE embeds, and NWC preflight that runs with no open transaction. It leans on the shared <code>exportcfg</code>, <code>xlsxlite</code>, <code>perftracker</code>, <code>failures</code> and <code>lastused</code> modules.</div></div>
         </div>
       </section>
 
@@ -1065,18 +1077,18 @@ with SubTransaction(doc) as st:
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-drafting-compass"></i></div>
           <div class="sec-titles">
-            <h2>Auto-Doc Tools <span class="tag code">DOC</span> <span class="tag">Tools.panel</span> <span class="tag new">new</span></h2>
-            <div class="sub">Turns a modeled element into a fully documented drawing set — plans, sections, elevations, an isometric 3D, dimensions, tags and sheet placement — with naming conventions enforced end to end.</div>
+            <h2>IcZ AutoDoc <span class="tag code">DOC</span> <span class="tag">Tools.panel</span> <span class="tag new">new</span></h2>
+            <div class="sub">Data-driven sheet generation on a Universal Layout Engine (<code>icz.doclayout</code>). Stage any number of elements — current selection or multi-pick — and generate one detail sheet per element: plan, longitudinal + cross sections, a 3D isometric with section box, auto tags and an optional BOQ schedule, all docked to anchor points defined in <code>sheet_profiles.json</code> so BIM standards live in a profile, not in code. One Transaction per element: a bad element rolls back alone, the batch continues.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="shot">
             <div class="bar">
               <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
-              <span class="ttl"><i class="fa-solid fa-drafting-compass"></i> Auto-Doc Tools <span class="code">DOC</span></span>
+              <span class="ttl"><i class="fa-solid fa-drafting-compass"></i> IcZ AutoDoc <span class="code">DOC</span></span>
             </div>
             <div class="frame">
-              <img src="images/mepauto.png" alt="Auto-Doc Tools screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
+              <img src="images/mepauto.png" alt="IcZ AutoDoc screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
               <div class="ph">
                 <div class="rail"><span class="r on"></span><span class="r"></span><span class="r"></span><span class="r"></span><span class="r"></span></div>
                 <div class="body">
@@ -1113,7 +1125,7 @@ with SubTransaction(doc) as st:
             </div>
           </div>
 
-          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">Ported onto the shared master theme (<code>icz.theme</code> via <code>ShellWindow</code>) and version-safe element Ids (<code>icz.revit_compat</code>), so it looks and behaves like the rest of the suite across Revit 2023–2026.</div></div>
+          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">Layout logic is factored into the transaction-free <code>icz.doclayout</code> engine and runs on the shared master theme (<code>icz.theme</code> via <code>ShellWindow</code>) with version-safe element Ids (<code>icz.revit_compat</code>), so it looks and behaves like the rest of the suite across Revit 2023–2026. Group mode (scale-tiling, own 3D sheet, isolation) and a full Settings/profile CRUD page ship in v9.</div></div>
         </div>
       </section>
 
@@ -1167,18 +1179,19 @@ with SubTransaction(doc) as st:
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-book-open"></i></div>
           <div class="sec-titles">
-            <h2>Guideline Library <span class="tag code">GUIDE</span> <span class="tag">QualityCheck.panel</span> <span class="tag new">new</span></h2>
-            <div class="sub">One button to the company standards. Surfaces the approved guideline documents from shared folders and opens the one you pick — no more hunting network drives.</div>
+            <h2>IcZ Guideline <span class="tag code">GUIDE</span> <span class="tag">QualityCheck.panel</span> <span class="tag new">new</span></h2>
+            <div class="sub">The project standards library, inside Revit: browse, preview, annotate and edit reference documents without leaving the model. One governed library folder plus pinned files, a resizable list with live search, and inline preview for every common format — keeping modelers on the current standard instead of stale local copies.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="techtags">
-            <span class="ttag">pyRevit</span><span class="ttag">IronPython</span>
-            <span class="ttag alt">Shared / network folders</span><span class="ttag alt">PDF · Word</span><span class="ttag alt">Zero config</span>
+            <span class="ttag">pyRevit</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
+            <span class="ttag alt">IcZ.PdfView · PDFium</span><span class="ttag alt">PDF · Excel · Word · Markdown</span><span class="ttag alt">Inline annotate</span><span class="ttag alt">Notes sidecar</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-folder-tree"></i><div class="ft"><b>Standards At Your Fingertips:</b> Scans the configured standards folders (structural, architectural, MEP, manuals) and lists every PDF and Word guideline as <i>Folder&nbsp;›&nbsp;File</i>. <span class="win">The whole standards library, one click from the ribbon.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-up-right-from-square"></i><div class="ft"><b>Pick &amp; Open:</b> Choose a document and it opens in the default Windows app — nothing to configure, nothing to remember. <span class="win">Zero friction between a question and the answer.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-folder-tree"></i><div class="ft"><b>Standards At Your Fingertips:</b> One governed library folder plus pinned files, in a resizable list with live search — every reference document one click from the ribbon. <span class="win">Superseded local copies stop circulating.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-file-pdf"></i><div class="ft"><b>Native PDF Viewer/Editor:</b> PDFs open in the suite's own <code>IcZ.PdfView</code> (PDFium rendering, zero external dependencies): continuous scroll, full-document search, text selection, highlight / text-box / freehand markup, page rotate-reorder-insert-delete-extract-merge, print, and save with annotations burned in. <span class="win">No Acrobat, no locked-down-machine failures.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-file-lines"></i><div class="ft"><b>Preview &amp; Edit In Place:</b> Inline preview for Excel, Word (extracted text), Markdown, code/text and images; Markdown and text files edit in place with crash-safe writes, and every file carries a plain-text Notes sidecar for redlines that never touches the original. <span class="win">Annotate the standard without altering it.</span></div></li>
           </ul>
         </div>
       </section>
@@ -1190,15 +1203,15 @@ with SubTransaction(doc) as st:
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-vector-square"></i></div>
           <div class="sec-titles">
-            <h2>Wall Opening Report <span class="tag code">WOT</span> <span class="tag">Report.panel</span></h2>
-            <div class="sub">Finds every place an MEP run pierces a wall — across linked files — reports it, and can mark it.</div>
+            <h2>MEP Opening Tool <span class="tag code">WOT</span> <span class="tag">Report.Panel</span></h2>
+            <div class="sub">Finds every place an MEP run pierces a wall — across host and linked files — reports it, and can mark it. The suite's ipy3 pilot tool on Revit 2026.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="shot">
             <div class="bar">
               <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
-              <span class="ttl"><i class="fa-solid fa-vector-square"></i> Wall Opening <span class="code">WOT</span></span>
+              <span class="ttl"><i class="fa-solid fa-vector-square"></i> MEP Opening Tool <span class="code">WOT</span></span>
             </div>
             <div class="frame">
               <img src="images/wot.png" alt="WOT screenshot" onload="this.nextElementSibling.style.display='none'" onerror="this.style.display='none'">
@@ -1234,12 +1247,12 @@ with SubTransaction(doc) as st:
           <div class="sec-glyph"><i class="fa-solid fa-cubes"></i></div>
           <div class="sec-titles">
             <h2>Shared Library <span class="tag code">icz/</span></h2>
-            <div class="sub">Battle-tested utilities for pyRevit &amp; Revit API add-ins. Write it once, reuse it everywhere — 20 modules, zero external dependencies.</div>
+            <div class="sub">Battle-tested utilities for pyRevit &amp; Revit API add-ins. Write it once, reuse it everywhere — 32 modules, zero external dependencies.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="techtags">
-            <span class="ttag">Revit API</span><span class="ttag">IronPython 2.7</span><span class="ttag">WPF / XAML</span>
+            <span class="ttag">Revit API</span><span class="ttag">IronPython 2.7 ⇋ IronPython 3</span><span class="ttag">WPF / XAML</span>
             <span class="ttag alt">Dependency-Free</span><span class="ttag alt">Revit 2023–26 Safe</span><span class="ttag alt">Single source of truth</span>
           </div>
           <p>Every pyRevit tool in the suite once re-solved the same problems: the Revit 2024 <code>ElementId</code> breaking change, modeless-window threading, theme duplication, worksharing guards, MEP connector hashing, and batch-export plumbing. The <code>icz</code> package pulls all of it into one dependency-free library, so each tool imports instead of reimplementing.</p>
@@ -1274,6 +1287,20 @@ with SubTransaction(doc) as st:
               <div class="uses"><span class="u">FIT</span><span class="u">CD</span><span class="u">WOT</span><span class="u">AA</span></div>
             </div>
 
+            <div class="modcard glass-card" data-domain="core" data-name="pycompat ironpython 2.7 3 python 3 compatibility shim to_text text_type iteritems unicode xrange basestring">
+              <div class="dom">Core</div>
+              <h4><i class="fa-solid fa-code-branch"></i> pycompat</h4>
+              <p>The IronPython 2.7 ⇄ 3 seam — import <code>to_text</code>, <code>text_type</code>, <code>iteritems</code> and friends here instead of touching removed builtins (<code>unicode</code>, <code>xrange</code>, <code>basestring</code>). The prerequisite that unblocked the ipy3 flip.</p>
+              <div class="uses"><span class="u all">suite-wide</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="core" data-name="apiclient protected logic api client system.net tls 1.2 server tier token">
+              <div class="dom">Core</div>
+              <h4><i class="fa-solid fa-server"></i> apiclient</h4>
+              <p>IronPython client for the protected-logic API — .NET networking (<code>System.Net</code>, forced TLS 1.2) so crown-jewel algorithms can run server-side and the pyRevit tools still reach them.</p>
+              <div class="uses"><span class="u staged">staged</span></div>
+            </div>
+
             <div class="modcard glass-card" data-domain="ui" data-name="theme light dark palette dynamicresource wpf colors">
               <div class="dom">UI / Shell</div>
               <h4><i class="fa-solid fa-palette"></i> theme</h4>
@@ -1295,6 +1322,20 @@ with SubTransaction(doc) as st:
               <div class="uses"><span class="u">AA</span><span class="u">CD</span><span class="u">PSU</span><span class="u">FIT</span><span class="u">WOT</span></div>
             </div>
 
+            <div class="modcard glass-card" data-domain="ui" data-name="pdfview pdf viewer editor pdfium docnet pdfsharpcore annotate ink markup native control">
+              <div class="dom">UI / Shell</div>
+              <h4><i class="fa-solid fa-file-pdf"></i> pdfview</h4>
+              <p>Shared loader for <code>IcZ.PdfView.dll</code> — the suite's native WPF PDF viewer/editor (PDFium render, PdfSharpCore edit): scroll, search, ink/text/highlight markup, page rotate-reorder-insert-delete-extract-merge, and annotation burn-in.</p>
+              <div class="uses"><span class="u">GUIDE</span><span class="u">EXP</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="ui" data-name="dialogs file folder picker openfiledialog folderbrowserdialog hybrid safe no pyrevit forms">
+              <div class="dom">UI / Shell</div>
+              <h4><i class="fa-solid fa-folder-open"></i> dialogs</h4>
+              <p>One hybrid-safe file/folder picker wrapping the .NET dialogs directly, so pickers work under IronPython 2.7 / 3 and CPython-in-Revit with no pyRevit <code>forms</code> dependency.</p>
+              <div class="uses"><span class="u">GUIDE</span><span class="u">EXP</span><span class="u">WOT</span></div>
+            </div>
+
             <div class="modcard glass-card" data-domain="ui" data-name="review_grid rows checkbox id family type badge click navigate isolate">
               <div class="dom">UI / Shell</div>
               <h4><i class="fa-solid fa-table-list"></i> review_grid</h4>
@@ -1306,7 +1347,7 @@ with SubTransaction(doc) as st:
               <div class="dom">UI / Shell</div>
               <h4><i class="fa-solid fa-square-check"></i> validation</h4>
               <p>Reusable WPF <code>ValidationRule</code> subclasses for settings pages — inline red-outline feedback on empty or non-numeric input, wired straight from XAML.</p>
-              <div class="uses"><span class="u">FIT</span><span class="u">IssueOne</span></div>
+              <div class="uses"><span class="u">FIT</span><span class="u">Transmit</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="mep" data-name="mep connector engine spatial hash grid pair finder unused connectors">
@@ -1314,6 +1355,27 @@ with SubTransaction(doc) as st:
               <h4><i class="fa-solid fa-diagram-successor"></i> mep</h4>
               <p>The suite's MEP connector engine: unused-connector detection, string-domain matching, an O(n) spatial-grid pair finder, and safe auto-connecting.</p>
               <div class="uses"><span class="u">CD</span><span class="u">FIT</span><span class="u">WOT</span><span class="u">AA</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="mep" data-name="geom true geometry solid intersection primitives boolean overlap rotated fittings insulation">
+              <div class="dom">MEP</div>
+              <h4><i class="fa-solid fa-shapes"></i> geom</h4>
+              <p>True-geometry (solid-level) intersection primitives — catches the cases axis-aligned bbox tests miss: rotated elbows, L-shaped fittings and insulation shells whose boxes overlap while the solids never touch.</p>
+              <div class="uses"><span class="u">CD</span><span class="u">FIT</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="mep" data-name="route a star astar pathfinding generative routing icz.core voxel fallback ironpython">
+              <div class="dom">MEP</div>
+              <h4><i class="fa-solid fa-diagram-project"></i> route</h4>
+              <p>Generative A* routing behind one call — <code>IcZ.Core.dll</code>'s fast voxel pathfinder when the binary is present, an identical-semantics pure-IronPython fallback (lower node cap) when it isn't. One netstandard2.0 binary serves Revit 2023–2026.</p>
+              <div class="uses"><span class="u">FIT</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="mep" data-name="tags tag audit engine missing duplicate independenttag view owned category">
+              <div class="dom">MEP</div>
+              <h4><i class="fa-solid fa-tags"></i> tags</h4>
+              <p>Generic tag-audit engine — one pass parameterized by (element category, tag category) finds untagged (missing) and over-tagged (duplicate) elements per view, replacing seven single-purpose buttons.</p>
+              <div class="uses"><span class="u staged">shared</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="mep" data-name="naming family type name resolution familyinstance label">
@@ -1330,11 +1392,39 @@ with SubTransaction(doc) as st:
               <div class="uses"><span class="u">AA</span><span class="u">RO1</span><span class="u">FIT</span></div>
             </div>
 
-            <div class="modcard glass-card" data-domain="data" data-name="mappings json spec_mappings classification ifc routing tables">
+            <div class="modcard glass-card" data-domain="data" data-name="configstore json config store atomic write deep merge load settings persistence spec_mappings">
               <div class="dom">Data</div>
-              <h4><i class="fa-solid fa-sitemap"></i> mappings</h4>
-              <p>Loads editable classification tables from <code>spec_mappings.json</code> and rebuilds the exact structures the logic expects — hand-edit the JSON, no code change.</p>
+              <h4><i class="fa-solid fa-database"></i> configstore</h4>
+              <p>One hardened JSON config store the whole suite delegates to — load, deep-merge and atomic write behind export profiles, guideline folders, AA mapping tables and the param registry. No more per-tool copies of the same dance.</p>
+              <div class="uses"><span class="u all">suite-wide</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="data" data-name="paramreg parameter registry param_registry json managed spec cmmn globalization">
+              <div class="dom">Data</div>
+              <h4><i class="fa-solid fa-list-ol"></i> paramreg</h4>
+              <p>Managed-parameter registry — reads <code>param_registry.json</code> so AA's SPEC/CMMN handling comes off hardcoded name literals; retarget a firm by swapping the JSON, no code change.</p>
+              <div class="uses"><span class="u">AA</span><span class="u">RO1</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="data" data-name="scorecard scored test table framework health check score band label aggregate">
+              <div class="dom">Data</div>
+              <h4><i class="fa-solid fa-clipboard-list"></i> scorecard</h4>
+              <p>A generic scored test-table framework — named tests each returning a 0..1 score + comment, aggregated per group and overall with score→label banding. Scores anything, not just families.</p>
               <div class="uses"><span class="u">AA</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="data" data-name="mcheck model checker ruleset loi parameters completeness scorecard xml">
+              <div class="dom">Data</div>
+              <h4><i class="fa-solid fa-list-check"></i> mcheck</h4>
+              <p>Turns the firm's Autodesk Model Checker ruleset (the ~709-rule LOI parameters check) into a report-only score AA runs against the open model — no external Model Checker install, no separate run.</p>
+              <div class="uses"><span class="u">AA</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="data" data-name="famqa family health check profile driven qa test registry scoring profiles">
+              <div class="dom">Data</div>
+              <h4><i class="fa-solid fa-cube"></i> famqa</h4>
+              <p>Profile-driven family health-check engine — a firm-agnostic test/scoring core reading <code>famqa_profiles</code>, generalized from a single-vendor content standard into a reusable QA pass.</p>
+              <div class="uses"><span class="u staged">shared</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="data" data-name="serdes json safe deep clone serialisation round trip">
@@ -1362,35 +1452,42 @@ with SubTransaction(doc) as st:
               <div class="dom">Export / IO</div>
               <h4><i class="fa-solid fa-gears"></i> exportcfg</h4>
               <p>The shared <code>profiles.json</code> handler (schema v2) for the export tools — reusable export profiles read and written through one contract.</p>
-              <div class="uses"><span class="u">IssueOne</span></div>
+              <div class="uses"><span class="u">Transmit</span></div>
+            </div>
+
+            <div class="modcard glass-card" data-domain="io" data-name="doclayout universal layout engine autodoc sheet generation json profile anchor viewport docking transaction free">
+              <div class="dom">Export / IO</div>
+              <h4><i class="fa-solid fa-drafting-compass"></i> doclayout</h4>
+              <p>The AutoDoc Universal Layout Engine — a JSON profile says which views a sheet carries and where they dock (anchor + margin); this does the matrix math, view creation, place-and-shift viewport docking, schedule placement and tagging. Transaction-free.</p>
+              <div class="uses"><span class="u">DOC</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="io" data-name="xlsxlite pure python xlsx writer ooxml no com dependency free spreadsheet">
               <div class="dom">Export / IO</div>
               <h4><i class="fa-solid fa-file-excel"></i> xlsxlite</h4>
               <p>A minimal pure-Python <code>.xlsx</code> writer — real OOXML (zip + XML), no COM and no third-party packages — the Excel-free fallback for schedule and register exports.</p>
-              <div class="uses"><span class="u">IssueOne</span></div>
+              <div class="uses"><span class="u">Transmit</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="io" data-name="perftracker performance tracker per format count elapsed warn errors summary">
               <div class="dom">Export / IO</div>
               <h4><i class="fa-solid fa-gauge-high"></i> perftracker</h4>
               <p>A lightweight per-format performance tracker that gives users an actionable count / elapsed / warn / error summary at the end of a batch run.</p>
-              <div class="uses"><span class="u">IssueOne</span></div>
+              <div class="uses"><span class="u">Transmit</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="io" data-name="failures ifailurespreprocessor warning suppression batch popups transaction">
               <div class="dom">Export / IO</div>
               <h4><i class="fa-solid fa-shield-halved"></i> failures</h4>
               <p>Shared warning/failure suppression via <code>IFailuresPreprocessor</code>, so batch operations dismiss Revit's mid-run popups instead of stalling on them.</p>
-              <div class="uses"><span class="u">IssueOne</span><span class="u">batch ops</span></div>
+              <div class="uses"><span class="u">Transmit</span><span class="u">batch ops</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="io" data-name="lastused persistent per purpose folder file memory pick slot">
               <div class="dom">Export / IO</div>
               <h4><i class="fa-solid fa-clock-rotate-left"></i> lastused</h4>
               <p>Persistent per-purpose folder/file memory with slots (profile, template, output…), so each picker seeds from the right place instead of the last path used anywhere.</p>
-              <div class="uses"><span class="u">IssueOne</span><span class="u">FIT</span></div>
+              <div class="uses"><span class="u">Transmit</span><span class="u">FIT</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="ui" data-name="revit_utils selection isolation ui helpers shared parameter binding">
@@ -1423,7 +1520,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
     </div><!-- /content -->
 
     <footer>
-      <p><b>IcZScripts.extension</b> · SuiteTools for Autodesk Revit 2023–2026 · built on pyRevit 6.4 (IronPython 2.7)</p>
+      <p><b>IcZScripts.extension</b> · SuiteTools for Autodesk Revit 2023–2026 · built on pyRevit 6.4 (IronPython 2.7 ⇋ IronPython 3)</p>
       <p>Built by <a href="https://github.com/MrGezz" target="_blank" rel="noopener">@MrGezz</a> · Hosted on GitHub Pages · &copy; 2026 IcZ</p>
     </footer>
   </div><!-- /main -->
