@@ -1,7 +1,58 @@
 # Web Update Report — MrGezz.github.io
 
-**Date:** 2026-07-06 · **Last pass:** 2026-07-11
+**Date:** 2026-07-06 · **Last pass:** 2026-07-16
 **Scope:** Refresh the SuiteTools documentation site to reflect the current `IcZScripts.extension`, add presentation/interactivity ("wow factor"), expand the shared-library documentation, strip legacy branding, and avoid exposing proprietary code. README aligned to match.
+
+---
+
+## Update pass — 2026-07-16 · Per-tool "How you use it" operations
+
+Added a **usage / operations block to every tool section** (10 tools), presenting each tool's real operations the way the in-app dashboards do (icon + operation name + concise "what it does / how you'd use it" blurb) but elevated beyond the flat in-app cards.
+
+**Content — pulled from source, not invented.** FIT and PSU match their in-app dashboards verbatim (the two reference screenshots); every other tool's operations were read from its `script.py` / `ui.xaml` (nav pages, dashboard cards, `PHASES`/`AUDITS` tables, action buttons):
+
+- **AA** — grouped: QC phase pipeline (Cleanup 0–2, CMMN 3, SPEC 4a–4f, Flags 5–6, IFC Classification 7, Workset Orchestration 8) + the 5 standing audits (Tag, LOI, Model Health, View Filters, Colorize by Value).
+- **FIT** — the six engines (Fittings & Accessories Audit, Coordinate Stamping, Flex Conversion, Parameter Synchronization, Prefabrication Auto-Slicer, Spatial Routing Engine).
+- **PSU** — Link Worksets, Project Info, Levels (+ the `psu_config.json` note).
+- **CD** — Ghost Purge, Connection Fix, Nested Fix, Scan & Commit, Configuration.
+- **IssueOne** — Transmit Center, Pick Drawings, Pick 3D & Schedules, Formats, Issue History, PDF Preview, Settings & Profiles.
+- **AutoDoc** — Generate Sheets, Layout Profiles, Element Staging, Templates & Auto-Tag, Auto-Dimensioning.
+- **RO1** — Scan Model, Run BOQ Lookup, Results, BOQ Data Browser, Data Editor.
+- **Guideline** — Browse Standards, Multi-Format Preview, Edit & Save, Notes / Redlines, Folders & Settings.
+- **WOT** — Configure & Run, Review Results, Place Openings, Parameter Settings.
+- **Family QC** — Scan Family, Health Scorecard, Export Report, Profile Settings.
+
+**Styling — new `.usage` / `.op-grid` / `.op-card` component** (single CSS block, uses the existing design tokens; no restructure). Responsive auto-fill grid of operation cards; each card has an accent-gradient rounded icon badge, bold title and concise blurb, a panel→bg gradient surface, and on hover lifts with an accent border, deepened shadow and a wipe-in 3&nbsp;px accent bar down the left edge. An uppercase "How you use it" header rule (with the step flow, e.g. "Scan → review → Apply") tops each block; AA additionally uses full-width `.op-group` sub-headers ("QC phase pipeline" / "Standing audits"). Matches the site's cyan-accent glass aesthetic and re-tints with the Light/Dark toggle.
+
+**Verification:** re-read post-edit — 10 usage blocks (one per tool section), section tags balanced, one block spot-checked in context for clean nesting. (No headless-browser pass this cycle.)
+
+---
+
+## Update pass — 2026-07-16 · Suite state refresh
+
+Content brought current with the suite as of 2026-07-16 (no restructure — numbers, cards, one new tool, and descriptions updated in place). `README.md` aligned to match.
+
+### 1. New tool documented — Family QC (FQC)
+
+**Family QC** (`QualityCheck.panel`) added as the suite's 10th shipping tool: a modeless health-check for the family open in the family editor, scoring its definition against a firm profile (bundled default + `%APPDATA%` overlay via a schema-generated settings form) and reporting a per-check pass/warn/fail table + overall health number, with a themed HTML export. Added its nav-link, architecture-diagram node (`data-tool="familyqc"`), and a full tool section; wired to `famqa`, `settingsform`, `reporthtml`, `configstore`, `serdes`, `host`.
+
+### 2. Shared-library documentation caught up
+
+- **Canonical JSON path** — `serdes` re-cast from "staged for a future config rewire" to **adopted suite-wide**: with `configstore` it is the one JSON persistence path (deep-clone + single atomic `.tmp→.bak→rename` writer + `read_json` best-effort/fail-loud seed reads). Every tool's config load/save routes through the pair.
+- **New module cards + diagram nodes** — `host` (host-application seam + `IcZ.Core.dll` resolver), `availability` (launch-time document guards), `tristate` (hierarchical tri-state selection tree), plus `settingsform` / `reporthtml` nodes.
+- **`params`** — now notes `describe()` (per-parameter storage/read-only/modifiable metadata for edit-time validation); consumer tag `WOT` added.
+- **`famqa`** re-tagged from "shared" to its real consumer, **FQC**.
+
+### 3. WOT first-consumer features + engine status
+
+- WOT gains a **tri-state element scope** feature (parent toggles ducts/pipes/conduit/tray) and a note that opening dimensions are written only into a genuinely-writable parameter, flagging names that don't resolve (`params.describe` gate).
+- **ipy3 rollout** reflected: the "ipy3 pilot tool" line updated to state the suite now runs on the IronPython 3 engine (ipy2.7 retained for Revit ≤2023); WOT was the pilot.
+
+### 4. Metrics
+
+`SHIPPING TOOLS` 9 → **10**, `SHARED MODULES` 32 → **37** (count-up counters + architecture-diagram nodes updated to match). Panels unchanged at 5.
+
+**Verification:** all edits applied via file tools and confirmed by re-read; the diagram/explorer JS reads `data-uses` / `data-mod` / `data-domain` generically, so the new tool and module nodes wire in without JS changes. (No headless-browser pass run this cycle.)
 
 ---
 
@@ -67,70 +118,4 @@ Per request, the site now documents each tool's origins the way good tool docs c
 ## 3. "Wow factor" & informativeness
 
 - **Interactive architecture diagram** — a layered view (ribbon → `icz` library → Revit API). Hovering any tool lights up exactly the modules it consumes; hovering a module reverse-highlights its consuming tools. Keyboard-focusable.
-- **Module explorer** — all 20 modules as cards grouped by domain (Core, UI/Shell, MEP, Data, Worksharing, Export/IO), each tagged with its consuming tools, with a live text filter and domain chips.
-- **Animated suite metrics** — count-up counters (9 tools / 5 panels / 20 modules / Revit 2023–26) that run on scroll into view.
-- **Polish** — retained glassmorphism, scroll-reveal, gradient hero, sidebar scrollspy and Light/Dark toggle; added workflow "step" strips for AA in place of code.
-
----
-
-## 4. Code-privacy handling
-
-All 31 internal-logic Python blocks (duplicate-grouping loops, flex-conversion math, BOQ size parsing, NWC flag handling, level-offset math, etc.) were removed. They were replaced with prose, sub-cards, and workflow steps. Then a small, **carefully curated** set of snippets was added back for credibility and "wow" — chosen per section so each reveals only a *pattern or public surface*, never the proprietary algorithm:
-
-- **Library** — public import signatures (`ShellWindow`, `ExternalCall`, `eid`).
-- **AA** — the approve-then-commit transaction convention (generic shape).
-- **FIT** — config-over-hardcoding with an overwrite guard (shows JSON-driven defaults).
-- **CD** — the isolate → verify → roll-back safety pattern (a standard Revit best practice, shared by all three engines).
-
-Each is captioned "illustrative", and the library block carries an explicit note that internal logic stays private.
-
----
-
-## 5. Branding scrub
-
-The site had no visible `GmBH`/`DEAXO` strings, but tool metadata did. Verified the final `index.html` and `README.md` contain **no** `GmBH`, `DEAXO`, `ACCDocs` paths, or bare `DX` tokens. The AA tool is presented as "Project QC Automation"; GUIDE as "Guideline Library"; workset/branding specifics (e.g. `DX_*` names) are not surfaced publicly.
-
----
-
-## 6. Files changed
-
-- `index.html` — full rebuild (new Architecture section, GUIDE + Auto-Doc sections, IssueOne refresh, 20-module explorer, count-up + diagram JS, nav reorganized into 5 panels).
-- `README.md` — rewritten to mirror the site (9-tool table, 20-module map, feature list, privacy stance, screenshot filenames).
-
----
-
-## 7. Appendix — Legacy script provenance (what improved vs. the originals)
-
-Context requested separately: a summary of the improvements in the three legacy DX scripts in `IcZWorkSpace`. Each has since evolved into a productionized suite tool. The through-line is the same across all three: **blocking prompts → modeless WPF UI, hardcoded values → JSON config, console prints → in-window reporting, monolithic inline logic → shared `icz` modules, and single-version → Revit 2023–2026 safe.**
-
-### `DX_B37_X and Y coordinates filling.py` → FIT ▸ *Write X/Y Coordinates*
-
-*Original (64 lines):* wrote world X/Y into hardcoded params `H.2 Position X` / `H.3 Position Y` for the current selection; hardcoded offsets (`OFFSET_X_MM = 651200`, `OFFSET_Y_MM = 597200`); single flat `Transaction`; `print()` feedback; no overwrite guard; point-based families only.
-
-*Improvements now in the suite:*
-- Offset and target parameter names are **editable and persisted** (`coords_config.json`) instead of hardcoded.
-- An **overwrite guard** protects existing values.
-- Runs inside the **modeless MEP Workbench** with in-window feedback instead of console prints.
-- Operates over a **scope** (model/view/selection) rather than selection-only, and is version-safe via `icz.revit_compat`.
-
-### `XXX_BIM_MI_Script_002_DX.py` → FIT ▸ *Pipe/Duct → Flex*
-
-*Original (625 lines):* a WinForms (`System.Windows.Forms`) picker titled "DX | Pipe to Flex Pipe" to choose flex type / diameter / workset, converting rigid pipe to flex; console logging.
-
-*Improvements now in the suite:*
-- Rebuilt on **WPF** inside the shared themeable shell (WinForms dropped).
-- Adds **Replace** vs **Containment** modes with three containment sub-modes, plus tunable rank / snap / smoothing / branch count — persisted to `flex_config.json`.
-- Reconnection and connector logic consolidated into the shared **`icz.mep`** engine.
-- Neutral naming (no "DX" title) and Revit 2023–2026 safe.
-
-### `XXX_BIM_MI_Script_001_DX.py` → AA ▸ *Project QC Automation*
-
-*Original (2664 lines):* a monolithic RevitPythonShell script — "BOM SPEC Extended Parameters Update" — driving the pipeline through chained blocking `TaskDialog` prompts: Phase 0 duplicate check, Phase 0.5 slope correction, … Phase 7 IFC category assignment, inline size formatters (`convert_pipe_size`, duct/cable-tray formatting), and hardcoded workset routing (`DX_STB`, `DX_EXH`, `DX_ELT`, `DX_RR`) with inline SPEC mappings.
-
-*Improvements now in the suite:*
-- Reworked into a **dedicated modeless WPF UI** with a **pre-scan review grid** (isolate/zoom, approve before commit) and a post-run **metric-chip report** — replacing the chain of `TaskDialog` prompts.
-- Classification/routing tables externalized to **`spec_mappings.json`** (`icz.mappings`) instead of hardcoded inline dicts.
-- Shared logic factored into **`icz`** modules — `params`, `mep`, `worksets`, `ownership`, `naming` — instead of one 2,600-line file.
-- **Version-safe** across Revit 2023–2026 (`icz.revit_compat`) and JSON-driven so it runs across multiple projects.
-
-*Note:* these `DX_*`/`XXX_*` files are the private originals; none of their internal logic or `DX`/`DEAXO` naming is exposed on the public site.
+- **Module explorer** — all 20 modules as cards grouped by domain (Core, UI/Shell, MEP, Data, Worksharing, Export/IO), each tagged with its consuming tools, 
