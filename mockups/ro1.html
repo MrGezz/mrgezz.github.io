@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "RO1 BOQ Lookup R14",
+  "schemaVersion": 1,
+  "description": "RO1 BOQ Lookup round-14 restructure reference: CM2 language (theme.py tokens), KPI strips, classification donut + material-segment breakdown, and the headline NEW capability - a Quantity Takeoff / BOQ Schedule page (group classified elements by atomic -> count/length/area -> icz.xlsxlite export) that turns RO1 from a param-writer into a real Bill-of-Quantities producer. Every control tagged with its REAL x:Name / handler / code-built method. Round-14 catalogue model: PROJECT-AWARE picker (each project points to its own boq_data.json, remembered via configstore) - the DLL embed was withdrawn (the catalogue is project data, not firm IP). Interactive: rail switches pages, theme toggle, console collapse. APPROVAL GATE - not full-replaced until green light.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RO1 — BOQ Lookup · Round 14 Restructure</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  body.light{background:#cfd8dc}
+  .window{width:1180px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .titlebar{position:relative;display:flex;align-items:center;gap:10px;background:var(--titlebar);border-bottom:1px solid var(--border);padding:9px 14px}
+  .hamb{color:var(--text-2);font-size:14px;cursor:pointer}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .title{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:7px}
+  .title .ti{color:var(--accent);font-size:12px}
+  .title b{color:var(--text-main);font-weight:600}
+  .chip{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);font:11px Consolas,monospace;border-radius:6px;padding:3px 12px}
+  .chip .ci{color:var(--accent);font-size:10px}
+  .tbtn{margin-left:auto;background:none;border:none;color:var(--text-2);font-size:13px;padding:2px 6px;cursor:pointer}
+  .main{display:flex;min-height:648px}
+  .rail{width:222px;background:var(--nav);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+  .nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;font-size:12px;color:var(--text-2);cursor:pointer;white-space:nowrap;border-left:3px solid transparent}
+  .nav .g{font-family:"Segoe UI Symbol";width:20px;text-align:center;font-size:13px;color:var(--accent)}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600;border-left-color:var(--accent)}
+  .nav .np{margin-left:auto;font-size:8.5px;font-weight:700;letter-spacing:.04em;background:rgba(0,188,212,.16);color:var(--accent);border-radius:99px;padding:1px 6px}
+  .railcap{margin-top:auto;padding:10px 10px 4px;font-size:10px;color:var(--text-2);line-height:1.5}
+  /* collapsed = icon-only rail (real tool: on_rail_toggled -> apply_rail_icon_rows) */
+  .rail.collapsed{width:60px}
+  .rail.collapsed .nav{justify-content:center;padding:9px 0;gap:0}
+  .rail.collapsed .nav .txt,.rail.collapsed .nav .np{display:none}
+  .rail.collapsed .nav .g{width:auto;font-size:16px}
+  .rail.collapsed .railcap{display:none}
+  .content{flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:14px;background:var(--window-bg);overflow:auto}
+  .page{display:none;flex-direction:column;gap:14px}
+  .page.on{display:flex}
+  h2.pg{font-size:15px;font-weight:600}
+  .sub{font-size:11px;color:var(--text-2)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+  .tile .lab{font-size:10px;letter-spacing:.06em;color:var(--text-2)}
+  .tile .val{font-size:25px;font-weight:700;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+  .tile .s{font-size:10px;color:var(--text-2)}
+  .hero{display:grid;grid-template-columns:330px 1fr;gap:12px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+  .card h3{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card h3 .hg{color:var(--accent);font-family:"Segoe UI Symbol"}
+  .donutwrap{display:flex;gap:16px;align-items:center}
+  .leg{font-size:11.5px;display:flex;flex-direction:column;gap:7px}
+  .leg .r{display:flex;align-items:center;gap:8px}
+  .sw{width:12px;height:12px;border-radius:3px}
+  .leg b{margin-left:4px;color:var(--text-2);font-weight:600}
+  .bar{display:grid;grid-template-columns:180px 1fr 46px;gap:10px;align-items:center;font-size:11.5px;margin:6px 0}
+  .track{height:10px;background:var(--track);border-radius:5px;overflow:hidden}
+  .fill{height:10px;border-radius:5px}
+  .ct{text-align:right;color:var(--text-2);font-variant-numeric:tabular-nums}
+  .scanbtn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-fg);font-weight:600;font-size:12px;border:none;border-radius:7px;padding:9px 16px;cursor:pointer}
+  .ghostbtn{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);color:var(--text-main);border:1px solid var(--border);font-size:11.5px;border-radius:6px;padding:7px 12px;cursor:pointer}
+  .hint{font-size:10.5px;color:var(--text-2);margin-top:8px;line-height:1.5}
+  .seam{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1fr;gap:8px;align-items:center;font-size:10.5px}
+  .node{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 8px;text-align:center}
+  .node b{display:block;font-size:10.5px;margin-bottom:2px}
+  .node.acc{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .arrow{color:var(--accent);font-size:14px;text-align:center}
+  .qa{display:flex;flex-wrap:wrap;gap:10px}
+  .qtile{width:120px;height:82px;background:var(--panel);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;cursor:pointer}
+  .qtile .qg{font-size:22px;color:var(--accent);font-family:"Segoe UI Symbol"}
+  .qtile .ql{font-size:11px;font-weight:600}
+  .pill{font-size:9.5px;border-radius:99px;padding:2px 8px;font-weight:600}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.pass{background:rgba(76,175,80,.16);color:var(--pass)}
+  .pill.warn{background:rgba(255,179,0,.16);color:var(--warn)}
+  .pill.fail{background:rgba(255,82,82,.16);color:var(--fail)}
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;color:var(--text-2);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card)}
+  td{padding:6px 8px;border-bottom:1px solid var(--border)}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .mono{font-family:Consolas,monospace;color:var(--accent)}
+  .idlink{font-family:Consolas,monospace;color:var(--accent);cursor:pointer;text-decoration:underline dotted}
+  tr:hover td{background:var(--hover)}
+  .toolrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .toolrow .grow{flex:1}
+  input.search,input.cell{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:6px 9px;font-size:11.5px;font-family:inherit}
+  input.search{width:100%}
+  .tab{font-size:11px;border:1px solid var(--border);background:var(--panel);color:var(--text-2);border-radius:6px;padding:5px 11px;cursor:pointer}
+  .tab.sel{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600}
+  .chk{width:13px;height:13px;border:1.5px solid var(--accent);border-radius:3px;display:inline-block;vertical-align:middle;background:var(--accent);position:relative}
+  .chk.off{background:transparent}
+  .chk::after{content:"✓";position:absolute;left:1px;top:-3px;color:var(--accent-fg);font-size:10px}
+  .chk.off::after{content:""}
+  .steps{display:flex;flex-direction:column;gap:10px}
+  .step{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:13px 15px}
+  .step h4{font-size:12.5px;display:flex;align-items:center;gap:9px;margin-bottom:6px}
+  .step h4 .sg{color:var(--accent);font-family:"Segoe UI Symbol"}
+  .step p{font-size:11px;color:var(--text-2);line-height:1.6}
+  .callout{border-left:2px solid var(--accent);background:var(--card);border-radius:0 6px 6px 0;padding:11px 14px;font-size:11px;color:var(--text-main);line-height:1.6}
+  /* console */
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .chead{display:flex;align-items:center;gap:12px;padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .chead .chev{margin-left:auto;cursor:pointer;background:none;border:none;color:var(--text-main);font-size:11px;padding:2px 8px}
+  .cbody{padding:0 16px 12px}
+  .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.7 Consolas,monospace;padding:10px;height:96px;overflow:auto}
+  .console.collapsed .cbody{display:none}
+  .footer{display:flex;align-items:center;gap:10px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .sep{width:1px;height:14px;background:var(--border)}
+  .gdot{width:8px;height:8px;border-radius:50%;background:var(--pass)}
+  .fright{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .chkline{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--text-2)}
+  .runbtn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;border:none;border-radius:7px;padding:9px 18px;cursor:pointer;box-shadow:0 0 16px rgba(0,188,212,.35)}
+  .note{width:1180px;max-width:100%;font-size:11px;color:#8FA6B2;line-height:1.6}
+  .map{width:1180px;max-width:100%;background:#0c1418;border:1px solid #22323b;border-radius:10px;padding:16px 18px;font-size:11px;color:#b8c9d2}
+  .map h4{color:#dfeef4;font-size:12px;margin-bottom:8px}
+  .map code{font-family:Consolas,monospace;color:#00BCD4}
+  .map table{font-size:10.5px}
+  .map td{border-color:#22323b;vertical-align:top;padding:5px 8px}
+  .tag{font-family:Consolas,monospace;font-size:9.5px;color:var(--accent);opacity:.8}
+</style>
+</head>
+<body>
+<div class="window">
+  <!-- ===== CHROME (ui.xaml — unchanged shell) ===== -->
+  <div class="titlebar">
+    <span class="hamb" title="btn_burger · ToggleRail (icz.shell)" onclick="rail()">☰</span>
+    <div class="title"><span class="ti">▤</span> <b>BOQ Lookup</b></div>
+    <div class="chip" title="lbl_file — ActiveUIDocument.Title"><span class="ci">▤</span> Snowdon Towers Sample Plumbing</div>
+    <button class="tbtn" onclick="document.body.classList.toggle('light')" title="btn_theme · ToggleTheme (icz.shell)">☀</button>
+    <div class="dot" style="background:#FEBC2E" title="btn_min"></div>
+    <div class="dot" style="background:#28C840" title="btn_max"></div>
+    <div class="dot" style="background:#FF5F57" title="btn_close"></div>
+  </div>
+
+  <div class="main">
+    <!-- ===== NAV RAIL (nav_panel · _nav_row · _show_page) ===== -->
+    <div class="rail" id="rail">
+      <div class="nav sel" data-p="dash" onclick="go(this)" title="Dashboard (nav_row · icon E80F)"><span class="g">⌂</span><span class="txt">Dashboard</span></div>
+      <div class="nav" data-p="take" onclick="go(this)" title="Quantity Takeoff (NEW · icon E9D5)"><span class="g">▦</span><span class="txt">Quantity Takeoff</span> <span class="np">NEW</span></div>
+      <div class="nav" data-p="res" onclick="go(this)" title="Results (icon E9F9)"><span class="g">▤</span><span class="txt">Results</span></div>
+      <div class="nav" data-p="data" onclick="go(this)" title="BOQ Data (icon E8A5)"><span class="g">▥</span><span class="txt">BOQ Data</span></div>
+      <div class="nav" data-p="set" onclick="go(this)" title="Settings (icon E713)"><span class="g">⚙</span><span class="txt">Settings</span></div>
+      <div class="nav" data-p="how" onclick="go(this)" title="How It Works (icon E946)"><span class="g">?</span><span class="txt">How It Works</span></div>
+      <div class="railcap">Catalogue: <b style="color:var(--accent)">per-project</b> · remembered by configstore <span class="tag">(round 14)</span></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ================= DASHBOARD ================= -->
+      <div class="page on" id="pg-dash">
+        <div><h2 class="pg">Dashboard</h2>
+          <div class="sub">Classify MEP elements against the firm BOQ catalogue, then write SPEC_DESIGNATION + SPEC_DESCRIPTION. One scan seam feeds every surface below.</div></div>
+        <div class="kpis">
+          <div class="tile"><div class="lab">MODEL ELEMENTS</div><div class="val">1,904</div><div class="s">pipe · duct · tray · fitting · equip</div></div>
+          <div class="tile"><div class="lab">WILL CLASSIFY</div><div class="val" style="color:var(--pass)">1,642</div><div class="s">material + fitting + size resolved</div></div>
+          <div class="tile"><div class="lab">NEEDS MAPPING</div><div class="val" style="color:var(--warn)">248</div><div class="s">material / fitting / size unmapped</div></div>
+          <div class="tile"><div class="lab">COVERAGE</div><div class="val" style="color:var(--accent)">86%</div><div class="s">scanned just now · preview only</div></div>
+        </div>
+        <div class="hero">
+          <div class="card">
+            <h3><span class="hg">◔</span> CLASSIFICATION</h3>
+            <div class="donutwrap">
+              <svg width="140" height="140" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7.5"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--pass)" stroke-width="7.5" stroke-dasharray="86 14" stroke-dashoffset="25"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--warn)" stroke-width="7.5" stroke-dasharray="11 89" stroke-dashoffset="-61"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--fail)" stroke-width="7.5" stroke-dasharray="3 97" stroke-dashoffset="-72"/>
+                <text x="21" y="22.6" text-anchor="middle" font-size="8" font-weight="700" fill="var(--text-main)">86%</text>
+              </svg>
+              <div class="leg">
+                <div class="r"><div class="sw" style="background:var(--pass)"></div>Matched <b>1,642</b></div>
+                <div class="r"><div class="sw" style="background:var(--warn)"></div>Needs mapping <b>248</b></div>
+                <div class="r"><div class="sw" style="background:var(--fail)"></div>Read-only <b>14</b></div>
+              </div>
+            </div>
+            <button class="scanbtn" style="margin-top:14px" title="_on_scan → _scan_ev (ExternalCall) · preview, no writes">⟲&nbsp; SCAN MODEL</button>
+            <div class="hint">Preview only — counts what will be written and fills the Results grid + this donut. No parameters change until <b>Run BOQ Lookup</b>.</div>
+          </div>
+          <div class="card">
+            <h3><span class="hg">▤</span> UNMAPPED — TOP MATERIALS <span class="sub">(what to add next in Settings)</span></h3>
+            <div class="bar"><span>Aluminium</span><div class="track"><div class="fill" style="width:100%;background:var(--warn)"></div></div><span class="ct">93</span></div>
+            <div class="bar"><span>PPR grey</span><div class="track"><div class="fill" style="width:56%;background:var(--warn)"></div></div><span class="ct">52</span></div>
+            <div class="bar"><span>PP-H</span><div class="track"><div class="fill" style="width:40%;background:var(--warn)"></div></div><span class="ct">37</span></div>
+            <div class="bar"><span>PE 100-RC black</span><div class="track"><div class="fill" style="width:33%;background:var(--warn)"></div></div><span class="ct">31</span></div>
+            <div class="bar"><span>(no SPEC_MATERIAL_TEXT_EN)</span><div class="track"><div class="fill" style="width:37%;background:var(--fail)"></div></div><span class="ct">35</span></div>
+            <div class="hint">Ranked by element count so the highest-impact catalogue gaps surface first — click a bar to jump to those elements in Results. Pure read-only aggregation from the same scan cache.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3><span class="hg">↳</span> CLASSIFICATION PIPELINE <span class="sub">(_param_card — the firm's material→fitting→size→atomic path)</span></h3>
+          <div class="seam">
+            <div class="node"><b>SPEC_MATERIAL_TEXT_EN</b>material seg<br>XX.</div>
+            <div class="arrow">→</div>
+            <div class="node"><b>SPEC_NAME_EN / Fam&amp;Type</b>fitting seg<br>XX.YY.</div>
+            <div class="arrow">→</div>
+            <div class="node"><b>SPEC_SIZE / RBS_CALCULATED_SIZE</b>NW leaf<br>XX.YY.ZZZ</div>
+            <div class="arrow">→</div>
+            <div class="node acc"><b>SPEC_DESIGNATION</b>+ SPEC_DESCRIPTION<br>written</div>
+          </div>
+          <div class="hint">Name wins over Family&amp;Type (firm priority); a disagreement is flagged as a <b>Name/Family mismatch</b> in Results, never silently guessed. The active catalogue is this project's — switch it per project in Settings.</div>
+        </div>
+        <div class="card" style="padding:12px 14px">
+          <h3><span class="hg">⚙</span> MATCHING OPTIONS</h3>
+          <label class="chkline" style="font-size:12px" title="cb_add_dn_fallback · persisted per project via configstore"><span class="chk off"></span> Assume <b>DN100</b> for ducts with an unreadable size</label>
+          <div class="hint">When a duct's SPEC_SIZE has no numeric NW — a plain "mm" that lost its Ø / digits on import — classify it as DN100 rather than leaving it unmatched. Off by default, remembered per project. The one leniency toggle; everything else classifies strictly.</div>
+        </div>
+      </div>
+
+      <!-- ================= QUANTITY TAKEOFF (NEW) ================= -->
+      <div class="page" id="pg-take">
+        <div><h2 class="pg">Quantity Takeoff <span class="pill new">NEW capability</span></h2>
+          <div class="sub">The Bill of Quantities itself: classified elements rolled up by atomic BOQ code — count, total length, total area — exportable to a themed .xlsx. RO1 stops being just a param-writer.</div></div>
+        <div class="kpis">
+          <div class="tile"><div class="lab">DISTINCT BOQ CODES</div><div class="val">137</div><div class="s">atomic designations present</div></div>
+          <div class="tile"><div class="lab">LINE ITEMS</div><div class="val">1,642</div><div class="s">classified elements rolled up</div></div>
+          <div class="tile"><div class="lab">TOTAL LENGTH</div><div class="val">2,318<span style="font-size:13px;color:var(--text-2)"> m</span></div><div class="s">pipe · duct · tray runs</div></div>
+          <div class="tile"><div class="lab">TOTAL AREA</div><div class="val">486<span style="font-size:13px;color:var(--text-2)"> m²</span></div><div class="s">insulation surfaces</div></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="toolrow" style="padding:11px 14px">
+            <span style="font-size:12px;font-weight:600">BOQ Schedule</span>
+            <span class="pill pass">grouped by atomic</span>
+            <div class="grow"></div>
+            <button class="ghostbtn" title="_takeoff_group — regroup in memory">⌸ Group: Atomic ▾</button>
+            <button class="scanbtn" title="_on_export_takeoff → icz.xlsxlite.write_xlsx(rows, style='icz_light')">⭳&nbsp; Export XLSX</button>
+          </div>
+          <div style="max-height:300px;overflow:auto">
+          <table>
+            <thead><tr><th>Atomic</th><th>Description</th><th>Category</th><th class="num">Count</th><th class="num">Length (m)</th><th class="num">Area (m²)</th></tr></thead>
+            <tbody>
+              <tr><td class="mono">xx.xx.yy.zzz</td><td>Pipe stainless steel XXX system NW 50</td><td>Pipe Curves</td><td class="num">214</td><td class="num">642.8</td><td class="num">—</td></tr>
+              <tr><td class="mono">xx.xx.yy.zzz</td><td>Bend 45–90° stainless steel XXX NW 50</td><td>Pipe Fitting</td><td class="num">96</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td class="mono">xx.xx.yy.zzz</td><td>Pipe galvanized steel system NW 80</td><td>Pipe Curves</td><td class="num">142</td><td class="num">418.2</td><td class="num">—</td></tr>
+              <tr><td class="mono">xx.xx.yy.zzz</td><td>Duct GI rectangular transition NW 200</td><td>Duct Fitting</td><td class="num">88</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td class="mono">xx.xx.yy.zzz</td><td>Tee stainless XXX NW 100</td><td>Pipe Fitting</td><td class="num">61</td><td class="num">—</td><td class="num">—</td></tr>
+              <tr><td class="mono">xx.xx.yy.zzz</td><td>Duct insulation mineral wool 40 mm</td><td>Duct Insulation</td><td class="num">173</td><td class="num">—</td><td class="num">312.4</td></tr>
+              <tr style="opacity:.6"><td colspan="6" style="text-align:center;font-style:italic">… 131 more codes — sortable, click a row to select every element on that line in the model</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="callout"><b>Why this belongs in RO1:</b> the tool already resolves each element's atomic BOQ code — the takeoff is just the aggregation the code exists to produce. Length via <code>CURVE_ELEM_LENGTH</code> (pipe/duct/tray), count for fittings/accessories/equipment, area for insulation; feet→metres via <code>icz.units</code>, export via the shared <code>icz.xlsxlite</code> writer (no new dependency, no duplicate). Rows are clickable (suite clickable-ID rule). <b>Proposed — awaiting your green light before implementation.</b></div>
+      </div>
+
+      <!-- ================= RESULTS ================= -->
+      <div class="page" id="pg-res">
+        <div style="display:flex;align-items:baseline"><h2 class="pg">Classification Results</h2><span class="sub" style="margin-left:auto">1,904 elements · click an ID to select + zoom</span></div>
+        <div class="sub">Problems sort first. Uncheck a row to exclude it from the next <b>Run BOQ Lookup</b>. Linked-safe.</div>
+        <div class="toolrow">
+          <span class="pill pass">Matched 1,642</span>
+          <span class="pill warn">Needs mapping 248</span>
+          <span class="pill fail">Read-only 14</span>
+          <div class="grow"></div>
+          <button class="ghostbtn" title="_remove_checked → remove_checked_rows">Remove ✓</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="max-height:330px;overflow:auto">
+          <table>
+            <thead><tr><th style="width:26px"></th><th>Status</th><th>Element</th><th>ID</th><th>Detail</th></tr></thead>
+            <tbody>
+              <tr><td><span class="chk off"></span></td><td><span class="pill fail">Read-only</span></td><td>Pipe Types : XXX NW50</td><td><span class="idlink">1284507</span></td><td class="sub">SPEC_DESIGNATION is read-only</td></tr>
+              <tr><td><span class="chk off"></span></td><td><span class="pill warn">Name/Family mismatch</span></td><td>M_Elbow : 45deg</td><td><span class="idlink">1285120</span></td><td class="sub">wrote xx.xx.yy. (name); Family suggests xx.xx.yy.</td></tr>
+              <tr><td><span class="chk off"></span></td><td><span class="pill warn">No match</span></td><td>Aluminium Duct : 300x200</td><td><span class="idlink">1290044</span></td><td class="sub">Material 'aluminium' not in catalogue</td></tr>
+              <tr><td><span class="chk"></span></td><td><span class="pill pass">Matched</span></td><td>Pipe : XXX NW50</td><td><span class="idlink">1284980</span></td><td class="mono">xx.xx.yy.zzz</td></tr>
+              <tr><td><span class="chk"></span></td><td><span class="pill pass">Matched</span></td><td>Tee : XXX NW100</td><td><span class="idlink">1285760</span></td><td class="mono">xx.xx.yy.zzz</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="hint">Grid + status pills come from the shared <b>icz.review_grid</b> (populate_review_grid / build_summary_strip / remove_checked_rows) — no per-tool table code. Navigation routes through <b>_row_nav → _nav_ev</b> (modeless-safe select + zoom).</div>
+      </div>
+
+      <!-- ================= BOQ DATA ================= -->
+      <div class="page" id="pg-data">
+        <div><h2 class="pg">BOQ Data Browser</h2>
+          <div class="sub">Search across every mapping table — material, fitting name, atomic number. Browsing this project's active catalogue (switch it in Settings).</div></div>
+        <input class="search" placeholder="🔍  Type a material, fitting name, or atomic number…  (_data_filter → _refresh_data_results)">
+        <div class="hero" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="tile"><div class="lab">MATERIALS</div><div class="val" style="font-size:20px">95</div><div class="s">material_to_segment</div></div>
+          <div class="tile"><div class="lab">FITTING RULES</div><div class="val" style="font-size:20px">144 + 61</div><div class="s">name · family fallback</div></div>
+          <div class="tile"><div class="lab">CATALOGUE LEAVES</div><div class="val" style="font-size:20px">855</div><div class="s">672 sized · 33 non-NW</div></div>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="max-height:230px;overflow:auto">
+          <table>
+            <thead><tr><th>Key</th><th>→ Maps to</th></tr></thead>
+            <tbody>
+              <tr><td>stainless steel v4a</td><td class="mono">xx.xx.</td></tr>
+              <tr><td>xx.xx. + bend</td><td class="mono">xx.xx.yy.</td></tr>
+              <tr><td>xx.xx. | xx.xx.yy. | NW 50</td><td class="mono">xx.xx.yy.zzz — Pipe stainless XXX NW 50</td></tr>
+              <tr><td>galvanized steel</td><td class="mono">xx.xx.</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="hint">Read-only browse (_section_header / _data_row). To change the catalogue, use <b>Settings</b> — no raw JSON editing (suite Interactive-Config rule).</div>
+      </div>
+
+      <!-- ================= SETTINGS ================= -->
+      <div class="page" id="pg-set">
+        <div><h2 class="pg">BOQ Data Editor</h2>
+          <div class="sub">Point RO1 at this project's catalogue, then edit the mapping tables → Save. Crash-safe (.bak rotate), live in-session — no pyRevit reload.</div></div>
+        <div class="card" style="padding:12px 14px">
+          <h3><span class="hg">▤</span> CATALOGUE SOURCE <span class="pill new">project-aware</span></h3>
+          <div class="toolrow">
+            <div class="grow">
+              <div style="font-size:11.5px">Active: <b class="mono">…\Projects\SnowdonTowers\boq_data.json</b></div>
+              <div class="sub">Remembered for this project (Snowdon Towers) · configstore <span class="mono">boq_catalogues.json</span></div>
+            </div>
+            <button class="ghostbtn" title="_on_pick_catalogue → boq_data.switch_catalogue(path) + remember per project">⭱ Load catalogue…</button>
+            <button class="ghostbtn" title="_on_new_catalogue → boq_data.new_catalogue(path) (empty, structured) → switch">＋ New catalogue…</button>
+          </div>
+          <div class="hint">Each project has its own BOQ. Point RO1 at this project's catalogue file — the path is <b>remembered per project</b>, so opening a different Revit file loads that project's catalogue automatically. "New catalogue" creates an empty-but-structured file to start from; "Load catalogue" reuses any existing one (e.g. copy a similar project's). No single "default" catalogue — the file bundled with the tool is just the sample it was built from.</div>
+        </div>
+        <div class="toolrow">
+          <span class="tab sel">Materials (95)</span><span class="tab">Fitting Names (144)</span><span class="tab">Family Fallback (61)</span><span class="tab">Full Index (855)</span><span class="tab">Size Index (672)</span><span class="tab">Non-NW (33)</span>
+        </div>
+        <div class="toolrow">
+          <input class="search" style="max-width:280px" placeholder="🔍 filter rows (_edit_filter)">
+          <div class="grow"></div>
+          <button class="ghostbtn" title="_on_edit_add">+ Add Row</button>
+          <button class="ghostbtn" title="_on_edit_reload">Reload</button>
+          <button class="scanbtn" title="_on_edit_save → boq_data.save() (validate + .bak + rebuild)">Save Changes</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="max-height:250px;overflow:auto">
+          <table>
+            <thead><tr><th>Material text (lowercase)</th><th>Segment (XX.XX.)</th><th style="width:34px"></th></tr></thead>
+            <tbody>
+              <tr><td><input class="cell" style="width:100%" value="stainless steel v4a"></td><td><input class="cell" value="xx.xx."></td><td><span style="color:var(--fail);cursor:pointer">✕</span></td></tr>
+              <tr><td><input class="cell" style="width:100%" value="galvanized steel"></td><td><input class="cell" value="xx.xx."></td><td><span style="color:var(--fail);cursor:pointer">✕</span></td></tr>
+              <tr><td><input class="cell" style="width:100%" value="stainless steel v2a"></td><td><input class="cell" value="xx.xx."></td><td><span style="color:var(--fail);cursor:pointer">✕</span></td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="hint">Six tables drive the classifier (EDIT_TABLES). Same <b>_initializing/_closing</b> guard pattern as every suite settings page; save routes through <b>boq_data.save()</b> — validated + atomic.</div>
+      </div>
+
+      <!-- ================= HOW IT WORKS ================= -->
+      <div class="page" id="pg-how">
+        <div><h2 class="pg">How the BOQ Classifier Works</h2></div>
+        <div class="steps">
+          <div class="step"><h4><span class="sg">◐</span> Step 1 · Material Segment</h4><p>Reads SPEC_MATERIAL_TEXT_EN → looks up MATERIAL_TO_SEGMENT for the two-part material code (e.g. xx.xx. = stainless XXX). Exact match, then substring fallback. 95 materials mapped.</p></div>
+          <div class="step"><h4><span class="sg">◑</span> Step 2 · Fitting Segment</h4><p>Reads SPEC_NAME_EN → (material, name) in FITTING_TO_SEGMENT for the three-part fitting code. Family &amp; Type resolves too — fallback when the name is absent, cross-check otherwise (name wins; a disagreement is flagged). 144 + 61 rules.</p></div>
+          <div class="step"><h4><span class="sg">◒</span> Step 3 · Size Leaf (NW)</h4><p>Reads SPEC_SIZE (or RBS_CALCULATED_SIZE) → parses NW (imperial fractions, DN, multi-port) → (mat, fit, NW) in BOQ_SIZE_INDEX → the atomic number + description. 672 sized leaves.</p></div>
+        </div>
+        <div class="callout">Each project has its own BOQ — point RO1 at this project's catalogue in <b>Settings → Catalogue Source</b> (remembered per project), or start a new one. Then add materials, fitting names, size rows; saving is crash-safe and live. Coverage check: use <b>BOQ Data</b> + the Dashboard "Unmapped" ranking.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== CONSOLE (icz.shell Console_Toggle · activity log) ===== -->
+  <div class="console" id="cons">
+    <div class="chead">
+      <span style="color:var(--text-main)" id="cstat">Scan complete: 1,904 elements, 1,642 will classify (86%).</span>
+      <span class="sep"></span><span>Activity log</span>
+      <button class="chev" id="chev" onclick="tog()" title="footer_status mirror → collapsible console">⌄</button>
+    </div>
+    <div class="cbody">
+      <pre>BOQ Lookup — session log
+------------------------
+Scan: 1904 elements · 1642 classify · 248 need mapping · 14 read-only.
+Top unmapped material: Aluminium (93 elements) — add in Settings to lift coverage.
+Takeoff: 137 distinct BOQ codes · 2,318 m runs · 486 m² insulation (preview).
+Catalogue: SnowdonTowers\boq_data.json (this project) · switch per project in Settings.</pre>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER (ui.xaml — hallmark · footer_status · Run) ===== -->
+  <div class="footer">
+    <div class="hallmark"><b>IcZ</b> <span>Workspace</span></div>
+    <span class="sep"></span><div class="gdot"></div><span id="fstat">1,642 of 1,904 will classify · Dashboard</span>
+    <div class="fright">
+      <button class="runbtn" title="btn_run · Run_Click → _run_ev (writes SPEC_DESIGNATION + SPEC_DESCRIPTION)">▶ Run BOQ Lookup</button>
+    </div>
+  </div>
+</div>
+
+<div class="note"><b>RO1 — BOQ Lookup · round 14 restructure (approval gate).</b> CM2 tokens from <code>theme.py</code>; interactive — click rail pages, the ☀ theme toggle, and the console chevron ⌄. Pages are code-built (Python control construction), so the restructure FULL-REPLACES the <code>_show_*</code> page builders in <code>script.py</code>; the <code>ui.xaml</code> shell (chrome/rail/footer/content_host) is already canonical and stays. Headline: the <b>Quantity Takeoff</b> page (the missing "what else should it have"). Not built until you green-light 1:1.</div>
+
+<div class="map">
+  <h4>WIRING MAP — every control → its real seam (for a 1:1 implementation)</h4>
+  <table>
+    <tr><td style="width:150px"><b>Area</b></td><td style="width:230px"><b>Mockup control</b></td><td><b>Real x:Name / handler / method</b></td></tr>
+    <tr><td>Chrome (ui.xaml)</td><td>☰ · title · doc chip · ☀ · dots</td><td><code>btn_burger/ToggleRail</code> · <code>lbl_file</code> · <code>btn_theme/ToggleTheme</code> · <code>btn_min/max/close</code> — unchanged shell</td></tr>
+    <tr><td>Rail</td><td>6 nav rows</td><td><code>nav_panel</code> · <code>_nav_row</code> · <code>_show_page(key)</code>; PAGES gets a new <code>("take", …, "Quantity Takeoff")</code> entry</td></tr>
+    <tr><td>Dashboard</td><td>KPI strip · donut · unmapped bars · pipeline · scan</td><td>rebuilt <code>_show_dashboard</code>: new <code>_kpi_strip</code> + <code>_donut_card</code> (icz.piechart) + <code>_unmapped_card</code>; <code>_param_card</code> kept; <code>_on_scan → _scan_ev</code></td></tr>
+    <tr><td>Quantity Takeoff (NEW)</td><td>KPI · schedule table · Export XLSX · group-by</td><td>NEW <code>_show_takeoff</code> + <code>_takeoff_ev</code> (ExternalCall rollup) → <code>{atomic:{desc,count,len_ft,area_ft2,cat}}</code>; <code>_on_export_takeoff → icz.xlsxlite.write_xlsx(style="icz_light")</code>; length via <code>CURVE_ELEM_LENGTH</code>, ft→m via <code>icz.units</code></td></tr>
+    <tr><td>Results</td><td>summary strip · grid · Remove ✓ · IDs</td><td><code>_show_results</code> → <code>build_summary_strip</code> / <code>populate_review_grid</code> / <code>remove_checked_rows</code> (icz.review_grid); <code>_row_nav → _nav_ev</code>; <code>_STATUS_TAG</code> pills</td></tr>
+    <tr><td>BOQ Data</td><td>search · count tiles · rows</td><td><code>_show_data_browser</code> / <code>_refresh_data_results</code> / <code>_data_filter</code> / <code>_section_header</code> / <code>_data_row</code></td></tr>
+    <tr><td>Settings</td><td>tabs · add/reload/save · filter · cells</td><td><code>_show_settings</code> · <code>_edit_tabs</code> · <code>_edit_action_bar</code> · <code>_edit_render</code> · <code>_on_edit_add/reload/save/delete</code> → <code>boq_data.save()</code>; EDIT_TABLES</td></tr>
+    <tr><td>Console (NEW)</td><td>collapsible activity log</td><td><code>icz.shell.Console_Toggle</code> (centralized; WOT r12 precedent) — mirrors <code>footer_status</code></td></tr>
+    <tr><td>Dashboard · Matching Options</td><td>"Assume DN100 …" toggle</td><td><code>cb_add_dn_fallback</code> — <b>relocated out of the footer</b> into a legible Dashboard card, read by <code>_is_dn_fallback_on</code>; now persisted per project via <code>icz.configstore</code> (was an ephemeral footer checkbox). Same matching logic.</td></tr>
+    <tr><td>Footer (ui.xaml)</td><td>hallmark · status · Run</td><td><code>footer_status</code> · <code>btn_run/Run_Click/lbl_run</code> — cleaned to hallmark + status + Run only</td></tr>
+    <tr><td>Catalogue picker (NEW)</td><td>Settings "Catalogue Source" card + rail caption</td><td><code>_on_pick_catalogue</code> / <code>_on_new_catalogue</code> → <code>boq_data.switch_catalogue(path)</code> / <code>new_catalogue(path)</code>; per-project path remembered via <code>icz.configstore</code> (<code>boq_catalogues.json</code>, keyed by doc title/path), resolved at launch in <code>script.py</code>. No DLL embed.</td></tr>
+  </table>
+</div>
+
+<script>
+  function go(el){
+    document.querySelectorAll('.nav').forEach(n=>n.classList.remove('sel'));
+    el.classList.add('sel');
+    var p = el.getAttribute('data-p');
+    document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('on'));
+    document.getElementById('pg-'+p).classList.add('on');
+    var names={dash:'Dashboard',take:'Quantity Takeoff',res:'Results',data:'BOQ Data',set:'Settings',how:'How It Works'};
+    document.getElementById('fstat').textContent = (p==='take'?'137 BOQ codes · 2,318 m · ':'1,642 of 1,904 will classify · ') + names[p];
+  }
+  function tog(){
+    var c=document.getElementById('cons'), v=document.getElementById('chev');
+    c.classList.toggle('collapsed');
+    v.textContent = c.classList.contains('collapsed') ? '⌃' : '⌄';
+  }
+  function rail(){
+    document.getElementById('rail').classList.toggle('collapsed');
+  }
+</script>
+</body>
+</html>

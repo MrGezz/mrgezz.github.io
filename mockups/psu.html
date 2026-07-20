@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "PSU Project Setup R15",
+  "schemaVersion": 1,
+  "description": "PSU (Project Setup) round-15 restructure reference. The ONE gap: PSU is the only de-facto UX-reference tool still on a static WrapPanel-of-cards dashboard while CD (#1), FIT (#2) and AA (#3) all migrated to the shared icz.dashboard data-viz language (KPI band + status donut + stat bars + SCAN MODEL). This mockup makes PSU consumer #4 of icz.dashboard: a Setup Readiness dashboard that aggregates the SIX read-only audits PSU already computes (links/CAD-imports/unpinned, broken link paths, IFD metadata drift, view-template drift, missing shared params, unit/object-style drift) into one glance, with click-through deep-links to each page (CD-style). No new lib module (reuses icz.dashboard); no C# port (PSU's hot path is Revit API reads/writes = I/O-bound, not compute-bound math or proprietary data - same disposition as RO1 round 14). The nine tool pages + shell are UNCHANGED - only page_dashboard is full-replaced. Every control tagged with its REAL x:Name / handler / method. APPROVAL GATE - not full-replaced until green light (1:1).",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PSU — Project Setup · Round 15 Restructure</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  body.light{background:#cfd8dc}
+  .window{width:1180px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .titlebar{position:relative;display:flex;align-items:center;gap:10px;background:var(--titlebar);border-bottom:1px solid var(--border);padding:9px 14px}
+  .hamb{color:var(--text-2);font-size:14px;cursor:pointer}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .title{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:7px}
+  .title .ti{color:var(--accent);font-size:12px}
+  .title b{color:var(--text-main);font-weight:600}
+  .chip{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);font:11px Consolas,monospace;border-radius:6px;padding:3px 12px}
+  .chip .ci{color:var(--accent);font-size:10px}
+  .tbtn{margin-left:auto;background:none;border:none;color:var(--text-2);font-size:13px;padding:2px 6px;cursor:pointer}
+  .main{display:flex;min-height:660px}
+  .rail{width:222px;background:var(--nav);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+  .nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;font-size:12px;color:var(--text-2);cursor:pointer;white-space:nowrap;border-left:3px solid transparent}
+  .nav .g{font-family:"Segoe UI Symbol";width:20px;text-align:center;font-size:13px;color:var(--accent)}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600;border-left-color:var(--accent)}
+  .nav .badge{margin-left:auto;font-size:9px;font-weight:700;border-radius:99px;padding:1px 6px;min-width:17px;text-align:center}
+  .nav .badge.warn{background:rgba(255,179,0,.18);color:var(--warn)}
+  .nav .badge.fail{background:rgba(255,82,82,.18);color:var(--fail)}
+  .nav .badge.pass{background:rgba(76,175,80,.16);color:var(--pass)}
+  .railcap{margin-top:auto;padding:10px 10px 4px;font-size:10px;color:var(--text-2);line-height:1.5}
+  .rail.collapsed{width:60px}
+  .rail.collapsed .nav{justify-content:center;padding:9px 0;gap:0}
+  .rail.collapsed .nav .txt,.rail.collapsed .nav .badge{display:none}
+  .rail.collapsed .nav .g{width:auto;font-size:16px}
+  .rail.collapsed .railcap{display:none}
+  .content{flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:14px;background:var(--window-bg);overflow:auto}
+  .page{display:none;flex-direction:column;gap:14px}
+  .page.on{display:flex}
+  h2.pg{font-size:15px;font-weight:600}
+  .sub{font-size:11px;color:var(--text-2)}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+  .tile .lab{font-size:10px;letter-spacing:.06em;color:var(--text-2)}
+  .tile .val{font-size:25px;font-weight:700;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+  .tile .s{font-size:10px;color:var(--text-2)}
+  .hero{display:grid;grid-template-columns:330px 1fr;gap:12px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+  .card h3{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card h3 .hg{color:var(--accent);font-family:"Segoe UI Symbol"}
+  .card h3 .sub{margin-left:2px;font-weight:400}
+  .donutwrap{display:flex;gap:16px;align-items:center}
+  .leg{font-size:11.5px;display:flex;flex-direction:column;gap:7px}
+  .leg .r{display:flex;align-items:center;gap:8px}
+  .sw{width:12px;height:12px;border-radius:3px}
+  .leg b{margin-left:4px;color:var(--text-2);font-weight:600}
+  .bar{display:grid;grid-template-columns:170px 1fr 46px;gap:10px;align-items:center;font-size:11.5px;margin:7px 0;cursor:pointer;border-radius:6px;padding:2px 4px}
+  .bar:hover{background:var(--hover)}
+  .bar .bl{display:flex;align-items:center;gap:7px}
+  .bar .bl .bg{font-family:"Segoe UI Symbol";color:var(--accent);font-size:12px;width:15px}
+  .track{height:10px;background:var(--track);border-radius:5px;overflow:hidden}
+  .fill{height:10px;border-radius:5px;transition:width .5s ease}
+  .ct{text-align:right;color:var(--text-2);font-variant-numeric:tabular-nums}
+  .scanbtn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-fg);font-weight:600;font-size:12px;border:none;border-radius:7px;padding:9px 16px;cursor:pointer}
+  .ghostbtn{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);color:var(--text-main);border:1px solid var(--border);font-size:11.5px;border-radius:6px;padding:7px 12px;cursor:pointer}
+  .hint{font-size:10.5px;color:var(--text-2);margin-top:8px;line-height:1.5}
+  .qa{display:flex;flex-wrap:wrap;gap:10px}
+  .qtile{width:126px;height:90px;background:var(--panel);border:1px solid var(--border);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;cursor:pointer;position:relative}
+  .qtile:hover{border-color:var(--accent)}
+  .qtile .qg{font-size:20px;color:var(--accent);font-family:"Segoe UI Symbol"}
+  .qtile .ql{font-size:10.5px;font-weight:600;text-align:center}
+  .qtile .qs{position:absolute;top:6px;right:8px;font-size:9px;font-weight:700}
+  .qtile .qs.warn{color:var(--warn)}.qtile .qs.fail{color:var(--fail)}.qtile .qs.pass{color:var(--pass)}.qtile .qs.na{color:var(--text-2)}
+  .pill{font-size:9.5px;border-radius:99px;padding:2px 8px;font-weight:600}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.pass{background:rgba(76,175,80,.16);color:var(--pass)}
+  .pill.warn{background:rgba(255,179,0,.16);color:var(--warn)}
+  .pill.fail{background:rgba(255,82,82,.16);color:var(--fail)}
+  .pill.na{background:var(--panel2);color:var(--text-2)}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;color:var(--text-2);font-weight:600;padding:6px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card)}
+  td{padding:6px 8px;border-bottom:1px solid var(--border)}
+  td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .mono{font-family:Consolas,monospace;color:var(--accent)}
+  .idlink{font-family:Consolas,monospace;color:var(--accent);cursor:pointer;text-decoration:underline dotted}
+  tr:hover td{background:var(--hover)}
+  .toolrow{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .toolrow .grow{flex:1}
+  input.search,input.cell{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:6px 9px;font-size:11.5px;font-family:inherit}
+  .chk{width:13px;height:13px;border:1.5px solid var(--accent);border-radius:3px;display:inline-block;vertical-align:middle;background:var(--accent);position:relative}
+  .chk.off{background:transparent}
+  .chk::after{content:"✓";position:absolute;left:1px;top:-3px;color:var(--accent-fg);font-size:10px}
+  .chk.off::after{content:""}
+  .callout{border-left:2px solid var(--accent);background:var(--card);border-radius:0 6px 6px 0;padding:11px 14px;font-size:11px;color:var(--text-main);line-height:1.6}
+  .callout.warn{border-left-color:var(--warn)}
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .chead{display:flex;align-items:center;gap:12px;padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .chead .chev{margin-left:auto;cursor:pointer;background:none;border:none;color:var(--text-main);font-size:11px;padding:2px 8px}
+  .cbody{padding:0 16px 12px}
+  .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.7 Consolas,monospace;padding:10px;height:96px;overflow:auto}
+  .console.collapsed .cbody{display:none}
+  .footer{display:flex;align-items:center;gap:10px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .sep{width:1px;height:14px;background:var(--border)}
+  .gdot{width:8px;height:8px;border-radius:50%;background:var(--pass)}
+  .fright{margin-left:auto;display:flex;align-items:center;gap:12px}
+  .runbtn{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;border:none;border-radius:7px;padding:9px 18px;cursor:pointer;box-shadow:0 0 16px rgba(0,188,212,.35)}
+  .note{width:1180px;max-width:100%;font-size:11px;color:#8FA6B2;line-height:1.6}
+  .map{width:1180px;max-width:100%;background:#0c1418;border:1px solid #22323b;border-radius:10px;padding:16px 18px;font-size:11px;color:#b8c9d2}
+  .map h4{color:#dfeef4;font-size:12px;margin-bottom:8px}
+  .map code{font-family:Consolas,monospace;color:#00BCD4}
+  .map table{font-size:10.5px}
+  .map td{border-color:#22323b;vertical-align:top;padding:5px 8px}
+  .tag{font-family:Consolas,monospace;font-size:9.5px;color:var(--accent);opacity:.8}
+  .unchanged{border:1px dashed var(--border);border-radius:8px;padding:11px 14px;font-size:11px;color:var(--text-2);line-height:1.6}
+  .unchanged b{color:var(--text-main)}
+</style>
+</head>
+<body>
+<div class="window">
+  <!-- ===== CHROME (ui.xaml — unchanged shell, CaptionHeight=0 variant) ===== -->
+  <div class="titlebar">
+    <span class="hamb" title="btn_burger · ToggleRail (icz.shell)" onclick="rail()">☰</span>
+    <div class="title"><span class="ti">▤</span> <b>Project Setup</b></div>
+    <div class="chip" title="lbl_file — host.doc().Title"><span class="ci">▤</span> Infineon_Hook Up M4</div>
+    <button class="tbtn" onclick="document.body.classList.toggle('light')" title="btn_theme · ToggleTheme (icz.shell)">☀</button>
+    <div class="dot" style="background:#FEBC2E" title="btn_min"></div>
+    <div class="dot" style="background:#28C840" title="btn_max"></div>
+    <div class="dot" style="background:#FF5F57" title="btn_close"></div>
+  </div>
+
+  <div class="main">
+    <!-- ===== NAV RAIL (nav_panel · Nav_Click · _select_page) — 9 real entries, real MDL2 glyphs ===== -->
+    <div class="rail" id="rail">
+      <div class="nav sel" data-p="dash" onclick="go(this)" title="nav_dashboard · Tag=dashboard · glyph E80F"><span class="g">⌂</span><span class="txt">Dashboard</span></div>
+      <div class="nav" data-p="lnk" onclick="go(this)" title="nav_lnk · Tag=lnk · glyph E71B"><span class="g">🔗</span><span class="txt">Link Worksets</span><span class="badge warn">7</span></div>
+      <div class="nav" data-p="pri" onclick="go(this)" title="nav_pri · Tag=pri · glyph E946"><span class="g">ⓘ</span><span class="txt">Project Info</span><span class="badge pass">0</span></div>
+      <div class="nav" data-p="lvl" onclick="go(this)" title="nav_lvl · Tag=lvl · glyph E1D4"><span class="g">▤</span><span class="txt">Levels</span><span class="badge pass">0</span></div>
+      <div class="nav" data-p="vtpl" onclick="go(this)" title="nav_vtpl · Tag=vtpl · glyph E8A9"><span class="g">▦</span><span class="txt">View Templates</span><span class="badge warn">14</span></div>
+      <div class="nav" data-p="lpath" onclick="go(this)" title="nav_lpath · Tag=lpath · glyph E71B"><span class="g">🖇</span><span class="txt">Link Paths</span><span class="badge fail">1</span></div>
+      <div class="nav" data-p="sparam" onclick="go(this)" title="nav_sparam · Tag=sparam · glyph E7C1"><span class="g">▧</span><span class="txt">Shared Parameters</span><span class="badge pass">0</span></div>
+      <div class="nav" data-p="std" onclick="go(this)" title="nav_std · Tag=std · glyph E9D9"><span class="g">⚖</span><span class="txt">Standards Sync</span><span class="badge na">—</span></div>
+      <div class="nav" data-p="bep" onclick="go(this)" title="nav_bep · Tag=bep · glyph E8A5"><span class="g">▥</span><span class="txt">BEP Import</span></div>
+      <div class="railcap">Setup readiness: <b style="color:var(--accent)">67%</b> · 4 of 6 domains compliant <span class="tag">(round 15)</span></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ================= DASHBOARD (RESTRUCTURED — the only full-replaced page) ================= -->
+      <div class="page on" id="pg-dash">
+        <div><h2 class="pg">Project Setup — Readiness</h2>
+          <div class="sub">One scan answers "is this model set up to firm standard?". The dashboard aggregates the six read-only audits PSU already runs — links, link paths, project metadata, levels, view templates, shared parameters, standards — into a single readiness view. Click any domain to jump straight to its page.</div></div>
+
+        <!-- KPI band → icz.dashboard.kpi_band -->
+        <div class="kpis">
+          <div class="tile"><div class="lab">LINKED MODELS</div><div class="val">12</div><div class="s">8 Revit · 3 CAD · 1 Navis</div></div>
+          <div class="tile"><div class="lab">COMPLIANCE ISSUES</div><div class="val" style="color:var(--warn)" id="kpi-issues">15</div><div class="s">across all configured domains</div></div>
+          <div class="tile"><div class="lab">DOMAINS COMPLIANT</div><div class="val" style="color:var(--pass)">4<span style="font-size:14px;color:var(--text-2)"> / 6</span></div><div class="s">1 not yet configured</div></div>
+          <div class="tile"><div class="lab">SETUP READINESS</div><div class="val" style="color:var(--accent)" id="kpi-ready">67%</div><div class="s">scanned just now · preview only</div></div>
+        </div>
+
+        <div class="hero">
+          <!-- Readiness donut → icz.dashboard.donut + legend -->
+          <div class="card">
+            <h3><span class="hg">◔</span> SETUP READINESS</h3>
+            <div class="donutwrap">
+              <svg width="140" height="140" viewBox="0 0 42 42">
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7.5"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--pass)" stroke-width="7.5" stroke-dasharray="67 33" stroke-dashoffset="25"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--warn)" stroke-width="7.5" stroke-dasharray="16 84" stroke-dashoffset="-42"/>
+                <circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--fail)" stroke-width="7.5" stroke-dasharray="17 83" stroke-dashoffset="-58"/>
+                <text x="21" y="20.4" text-anchor="middle" font-size="7" font-weight="700" fill="var(--text-main)">67%</text>
+                <text x="21" y="25" text-anchor="middle" font-size="2.6" fill="var(--text-2)">READY</text>
+              </svg>
+              <div class="leg">
+                <div class="r"><div class="sw" style="background:var(--pass)"></div>Compliant <b>4</b></div>
+                <div class="r"><div class="sw" style="background:var(--warn)"></div>Needs attention <b>1</b></div>
+                <div class="r"><div class="sw" style="background:var(--fail)"></div>Blocked <b>1</b></div>
+                <div class="r"><div class="sw" style="background:var(--panel2);border:1px solid var(--border)"></div>Not configured <b>1</b></div>
+              </div>
+            </div>
+            <button class="scanbtn" style="margin-top:14px" onclick="scanall()" title="btn_scan_all · Scan_Click → _scan_ev (ExternalCall) · runs all 6 read-only audits, preview only">⟲&nbsp; SCAN MODEL</button>
+            <div class="hint">Runs every audit once (read-only) and fills this dashboard + each page's grid. Nothing is written — each domain still applies from its own page with preview-before-commit.</div>
+          </div>
+
+          <!-- Compliance by domain → icz.dashboard.bars (click = deep-link, CD-style) -->
+          <div class="card">
+            <h3><span class="hg">▤</span> COMPLIANCE BY DOMAIN <span class="sub">(click a row to open that page)</span></h3>
+            <div class="bar" onclick="go(qnav('lnk'))"><div class="bl"><span class="bg">🔗</span><span>Link Worksets</span></div><div class="track"><div class="fill" style="width:50%;background:var(--warn)"></div></div><span class="ct">7</span></div>
+            <div class="bar" onclick="go(qnav('lpath'))"><div class="bl"><span class="bg">🖇</span><span>Link Paths</span></div><div class="track"><div class="fill" style="width:8%;background:var(--fail)"></div></div><span class="ct">1</span></div>
+            <div class="bar" onclick="go(qnav('pri'))"><div class="bl"><span class="bg">ⓘ</span><span>Project Info (IFD)</span></div><div class="track"><div class="fill" style="width:0%;background:var(--pass)"></div></div><span class="ct">0</span></div>
+            <div class="bar" onclick="go(qnav('lvl'))"><div class="bl"><span class="bg">▤</span><span>Levels</span></div><div class="track"><div class="fill" style="width:0%;background:var(--pass)"></div></div><span class="ct">0</span></div>
+            <div class="bar" onclick="go(qnav('vtpl'))"><div class="bl"><span class="bg">▦</span><span>View Templates</span></div><div class="track"><div class="fill" style="width:100%;background:var(--warn)"></div></div><span class="ct">14</span></div>
+            <div class="bar" onclick="go(qnav('sparam'))"><div class="bl"><span class="bg">▧</span><span>Shared Parameters</span></div><div class="track"><div class="fill" style="width:0%;background:var(--pass)"></div></div><span class="ct">0</span></div>
+            <div class="bar" onclick="go(qnav('std'))"><div class="bl"><span class="bg">⚖</span><span>Standards Sync</span></div><div class="track"><div class="fill" style="width:0%;background:var(--track)"></div></div><span class="ct" style="color:var(--text-2)">—</span></div>
+            <div class="hint">Bar length auto-scales to the largest issue count (icz.dashboard.bars). "—" = domain has no standard file configured yet (Standards Sync needs a standards JSON; set it on that page's gear). Bars are the read side of the same engines the pages apply.</div>
+          </div>
+        </div>
+
+        <!-- Quick-launch domain tiles (the current dashboard's navigation value, kept + compacted) -->
+        <div class="card">
+          <h3><span class="hg">▦</span> SETUP ENGINES <span class="sub">(Dash_* → _select_page — every page reachable in one click)</span></h3>
+          <div class="qa">
+            <div class="qtile" onclick="go(qnav('lnk'))" title="Dash_Lnk"><span class="qs warn">7</span><span class="qg">🔗</span><span class="ql">Link Worksets</span></div>
+            <div class="qtile" onclick="go(qnav('pri'))" title="Dash_Pri"><span class="qs pass">✓</span><span class="qg">ⓘ</span><span class="ql">Project Info</span></div>
+            <div class="qtile" onclick="go(qnav('lvl'))" title="Dash_Lvl"><span class="qs pass">✓</span><span class="qg">▤</span><span class="ql">Levels</span></div>
+            <div class="qtile" onclick="go(qnav('vtpl'))" title="Dash_Vtpl"><span class="qs warn">14</span><span class="qg">▦</span><span class="ql">View Templates</span></div>
+            <div class="qtile" onclick="go(qnav('lpath'))" title="Dash_Lpath"><span class="qs fail">1</span><span class="qg">🖇</span><span class="ql">Link Paths</span></div>
+            <div class="qtile" onclick="go(qnav('sparam'))" title="Dash_Sparam"><span class="qs pass">✓</span><span class="qg">▧</span><span class="ql">Shared Params</span></div>
+            <div class="qtile" onclick="go(qnav('std'))" title="Dash_Std"><span class="qs na">—</span><span class="qg">⚖</span><span class="ql">Standards Sync</span></div>
+            <div class="qtile" onclick="go(qnav('bep'))" title="Dash_Bep"><span class="qg">▥</span><span class="ql">BEP Import</span></div>
+          </div>
+          <div class="hint">The badge on each tile mirrors the domain's live issue count from the last scan — so the dashboard now <b>tells you where to go</b> instead of just listing what exists. Same Dash_* handlers, no new navigation code.</div>
+        </div>
+
+        <div class="callout"><b>Why the restructure:</b> PSU is the de-facto UX reference (with FIT) yet the only such tool still on a static WrapPanel of description cards. CD, FIT and AA all render the shared CM2 data-viz language from <code>icz.dashboard</code>. This makes PSU <b>consumer #4</b> — <code>kpi_band</code> + <code>donut</code>/<code>legend</code> + <code>bars</code> — feeding on the six audits already in the logic modules. <b>No new lib module. No C# port</b> (PSU's hot path is Revit API reads/writes = I/O-bound, not compute-bound math or proprietary data — the same gate that struck the RO1 port in round 14). <b>Proposed — awaiting your green light before implementation (1:1).</b></div>
+      </div>
+
+      <!-- ================= LINK WORKSETS (UNCHANGED — shown for continuity) ================= -->
+      <div class="page" id="pg-lnk">
+        <div><h2 class="pg">Link Worksets — Compliance Engine</h2>
+          <div class="sub">Auto-assign Revit / CAD / Navis link instances to their standard worksets by pattern rule. UNCHANGED this round — reachable from the dashboard; its scan now also feeds the readiness donut.</div></div>
+        <div class="toolrow">
+          <span class="pill warn">3 CAD imports (should be linked)</span>
+          <span class="pill warn">4 links unpinned</span>
+          <span class="pill pass">12 links routed</span>
+          <div class="grow"></div>
+          <button class="ghostbtn" title="Lnk_Refresh → link_logic.count_links / detect_cad_imports">◐ Audit Model</button>
+          <button class="ghostbtn" title="Settings_Click Tag=lnk → _load_settings_lnk (routing rules + live-workset picker)">⚙ Settings</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="max-height:250px;overflow:auto">
+          <table>
+            <thead><tr><th>Link</th><th>Kind</th><th>Current workset</th><th>→ Target</th><th>Pinned</th></tr></thead>
+            <tbody>
+              <tr><td>IFN-M4-ARC.rvt</td><td>Revit</td><td>Workset1</td><td class="mono">XXX_Links_Revit</td><td><span class="pill fail">no</span></td></tr>
+              <tr><td>IFN-M4-STR.rvt</td><td>Revit</td><td class="mono">XXX_Links_Revit</td><td class="mono">XXX_Links_Revit</td><td><span class="pill pass">yes</span></td></tr>
+              <tr><td>SURVEY_M4.dwg</td><td>CAD (import!)</td><td>—</td><td class="sub">delete + re-link</td><td>—</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+        <div class="hint">Real seams: <b>link_logic.assign_link_worksets_routed</b> (Lnk_Run, inside Transaction), <b>detect_cad_imports</b>, <b>pin_all_links</b>. NEW read-only helper for the dashboard: <b>count_unpinned(doc)</b> (the read side of pin_all_links — iterates <code>_collect</code> + <code>Element.Pinned</code>, verified 2023–2026). No page-layout change.</div>
+      </div>
+
+      <!-- ================= LEVELS (UNCHANGED — shown for continuity) ================= -->
+      <div class="page" id="pg-lvl">
+        <div><h2 class="pg">Level Consolidator</h2>
+          <div class="sub">Bulk-rehost elements across levels with offset compensation; optionally delete a redundant source level (views rehosted first). UNCHANGED this round.</div></div>
+        <div class="unchanged">This page and its engine (<b>level_logic.py</b>: <code>list_levels</code> · <code>change_levels</code> · <code>delete_level</code> · <code>_rehost_views</code>) are untouched. The dashboard reads <code>list_levels(doc)</code> for its Levels count only. Preview-before-commit, source-level filter, and the view-rehost guard all stay as-is.</div>
+        <div class="callout warn"><b>Follow-up noted (not this round):</b> PSU mutates workshared models (workset moves, level rehosts) without <code>WorksharingUtils.CheckoutElements</code> first — the B9 "checkout seam" from the mining report (verified 2023–2026). Worth folding into the shared mutation seam, but it's a behaviour change gated on the suite's ≥2-model diff-harness rule, so it stays a follow-up, not a mockup item.</div>
+      </div>
+
+      <!-- ================= OTHER PAGES (UNCHANGED — collapsed for brevity) ================= -->
+      <div class="page" id="pg-pri"><div><h2 class="pg">Project Info — Federated JSON Sync</h2><div class="sub">UNCHANGED.</div></div>
+        <div class="unchanged"><b>proj_info_logic.py</b> — <code>collect_params</code> / <code>compare_to_master</code> / <code>sync_to_master</code>. Dashboard reads the IFD/master mismatch count from <code>compare_to_master</code> (0 issues when the model matches the master JSON, or when no <code>master_sync_path</code> is set the domain shows "not configured").</div></div>
+      <div class="page" id="pg-vtpl"><div><h2 class="pg">View Template Sweep</h2><div class="sub">UNCHANGED.</div></div>
+        <div class="unchanged"><b>viewtpl_logic.py</b> — <code>scan(doc, rules)</code> returns views whose template differs from the rule-matched target; that count (14) drives the dashboard bar + nav badge. Apply Selected via the shared <code>icz.review_grid</code>.</div></div>
+      <div class="page" id="pg-lpath"><div><h2 class="pg">Link Paths &amp; Coordinates</h2><div class="sub">UNCHANGED.</div></div>
+        <div class="unchanged"><b>link_logic.audit_link_paths</b> flags broken/cloud link paths (1 broken → the fail bar); <b>repair_link_path</b> (outside a Transaction) + <b>acquire_coordinates_from</b> (inside one) apply. Dashboard reads the broken count.</div></div>
+      <div class="page" id="pg-sparam"><div><h2 class="pg">Shared Parameters — Audit + Bind + Drift</h2><div class="sub">UNCHANGED.</div></div>
+        <div class="unchanged"><b>sparam_logic.py</b> — <code>scan_shared_parameters</code> (bound params) + <code>missing_standard_params</code> (drift vs icz.paramreg). The drift count (0 here) drives the dashboard.</div></div>
+      <div class="page" id="pg-std"><div><h2 class="pg">Standards Sync — Units + Object Styles</h2><div class="sub">UNCHANGED.</div></div>
+        <div class="unchanged"><b>standards_logic.py</b> — <code>audit_units</code> + <code>audit_object_styles</code> vs a firm standards JSON. No <code>standards_file</code> set → the dashboard shows this domain as "not configured" (grey), not a false pass. Configure the file on this page's gear to activate it.</div></div>
+      <div class="page" id="pg-bep"><div><h2 class="pg">BEP Rule Import</h2><div class="sub">UNCHANGED.</div></div>
+        <div class="unchanged"><b>bepimport_logic.py</b> — extract a .docx table → map columns → write <code>link_routing_rules</code>. Not an audited domain (it's an importer), so it has no dashboard bar — only a quick-launch tile.</div></div>
+
+    </div>
+  </div>
+
+  <!-- ===== CONSOLE (icz.shell Console_Toggle · activity log) ===== -->
+  <div class="console" id="cons">
+    <div class="chead">
+      <span style="color:var(--text-main)" id="cstat">Scan complete: 6 domains audited · 15 issues · readiness 67%.</span>
+      <span class="sep"></span><span>Compliance Log</span>
+      <button class="chev" id="chev" onclick="tog()" title="lbl_status mirror → collapsible console">⌄</button>
+    </div>
+    <div class="cbody">
+      <pre>Project Setup — session log
+---------------------------
+Scan: 12 links (3 CAD imports, 4 unpinned) · 1 broken path · IFD matches master.
+View templates: 14 views off the rule-matched template.
+Shared params: firm standard fully bound (0 drift).
+Standards Sync: no standards JSON configured — domain skipped (set it on the page).</pre>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER (ui.xaml — hallmark · lbl_status · Run) ===== -->
+  <div class="footer">
+    <div class="hallmark"><b>IcZ</b> <span>Workspace</span></div>
+    <span class="sep"></span><div class="gdot"></div><span id="fstat">Readiness 67% · 4 of 6 domains compliant · Dashboard</span>
+    <div class="fright">
+      <button class="runbtn" title="btn_run · Run_Click → the active page's apply action (per-page)">▶ Apply (per page)</button>
+    </div>
+  </div>
+</div>
+
+<div class="note"><b>PSU — Project Setup · round 15 restructure (approval gate).</b> CM2 tokens from <code>theme.py</code>; interactive — click the rail pages, the ☀ theme toggle, the console chevron ⌄, and <b>SCAN MODEL</b>. Only <code>page_dashboard</code> is restructured (full-replaced); the nine tool pages and the shell chrome/rail/footer stay canonical. The dashboard is <b>code-built</b> like CD's, so the full-replace targets the <code>page_dashboard</code> XAML scaffold (named host panels) + a new <code>_build_dashboard</code>/<code>_scan_all</code>/<code>_readiness</code> in <code>script.py</code>. Not built until you green-light 1:1.</div>
+
+<div class="map">
+  <h4>WIRING MAP — every control → its real seam (for a 1:1 implementation)</h4>
+  <table>
+    <tr><td style="width:150px"><b>Area</b></td><td style="width:250px"><b>Mockup control</b></td><td><b>Real x:Name / handler / method</b></td></tr>
+    <tr><td>Chrome (ui.xaml)</td><td>☰ · title · doc chip · ☀ · dots</td><td><code>btn_burger/ToggleRail</code> · <code>lbl_file</code> · <code>btn_theme/ToggleTheme</code> · <code>btn_min/max/close</code> — unchanged shell (CaptionHeight=0)</td></tr>
+    <tr><td>Rail (unchanged)</td><td>9 nav rows + issue badges</td><td><code>nav_panel</code> · <code>nav_dashboard/lnk/pri/lvl/vtpl/lpath/sparam/std/bep</code> · <code>Nav_Click → _select_page(Tag)</code>; badges = NEW <code>_set_nav_badges(counts)</code> updating a small TextBlock per NavButton (glyph stays segregated — badge is a 3rd sibling)</td></tr>
+    <tr><td>Dashboard KPI band</td><td>Linked models · Issues · Domains compliant · Readiness</td><td>rebuilt <code>page_dashboard</code>: <code>icz.dashboard.kpi_band([...])</code> into <code>dash_kpi_host</code>; handles updated in place after scan (no rebuild)</td></tr>
+    <tr><td>Dashboard donut</td><td>readiness donut + legend</td><td><code>icz.dashboard.donut(counts, center_value="67%", center_label="READY")</code> + <code>legend(counts, labels={pass:Compliant,warn:Needs attention,fail:Blocked})</code> into <code>dash_donut_host</code> — arcs from <code>icz.piechart</code>, theme-bound (repaints on ToggleTheme for free)</td></tr>
+    <tr><td>Dashboard bars</td><td>compliance-by-domain (clickable)</td><td><code>icz.dashboard.bars([(label,count,status_key), ...])</code> into <code>dash_bars_host</code>; each row's MouseUp → <code>_select_page(key)</code> (CD-style deep-link). "Not configured" domain passes count as 0 + a grey status</td></tr>
+    <tr><td>SCAN MODEL</td><td>⟲ SCAN MODEL button</td><td>NEW <code>btn_scan_all</code> · <code>Scan_Click → _scan_ev</code> (ExternalCall): one pass calling the existing read-only scans — <code>link_logic.count_links/detect_cad_imports/count_unpinned/audit_link_paths</code>, <code>proj_info_logic.compare_to_master</code>, <code>viewtpl_logic.scan</code>, <code>sparam_logic.missing_standard_params</code>, <code>standards_logic.audit_units/audit_object_styles</code> — caches to <code>self._scan</code>, then <code>_build_dashboard()</code></td></tr>
+    <tr><td>Readiness compute</td><td>67% · 4/6 · issue total</td><td>NEW pure-Python <code>_readiness(scan)</code>: per-domain status (pass=0 issues, warn=count, fail=broken paths, na=unconfigured); readiness = compliant / configured domains. No Revit types — unit-testable</td></tr>
+    <tr><td>Quick-launch tiles</td><td>8 engine tiles + badges</td><td>existing <code>Dash_Lnk/Pri/Lvl/Vtpl/Lpath/Sparam/Std/Bep → _select_page</code> (handlers kept); badge text set by <code>_build_dashboard</code></td></tr>
+    <tr><td>Console</td><td>collapsible Compliance Log</td><td><code>icz.shell.Console_Toggle</code> (centralized) mirroring <code>lbl_status</code> (PSU's documented footer_status variant — kept)</td></tr>
+    <tr><td>Footer (ui.xaml)</td><td>hallmark · status · Apply</td><td><code>lbl_status</code> · <code>btn_run/Run_Click</code> — unchanged; Run stays per-page apply</td></tr>
+    <tr><td>Tool pages ×9</td><td>lnk/pri/lvl/vtpl/lpath/sparam/std/bep</td><td><b>UNCHANGED</b> — logic modules + page XAML untouched; the restructure only replaces the <code>page_dashboard</code> block and adds the dashboard builders</td></tr>
+  </table>
+  <h4 style="margin-top:14px">MINING-BACKLOG FOLLOW-UPS (PSU, not in this mockup — flagged per "just add if necessary")</h4>
+  <table>
+    <tr><td style="width:150px"><b>Item</b></td><td><b>Disposition</b></td></tr>
+    <tr><td>B27 ViewTemplate transfer (cross-doc)</td><td>EF "Transfer ViewTemplates" — copy templates from a standards model, re-fetch by name, reassign <code>ViewTemplateId</code>. Real PSU value (standards propagation) but a NEW engine; propose as its own round after the dashboard lands.</td></tr>
+    <tr><td>B28 Template-controlled params</td><td>batch <code>Get/SetNonControlledTemplateParameterIds()</code> — enforce which properties a template governs. PSU-or-AA; secondary to readiness.</td></tr>
+    <tr><td>B33 Coordination-view preset</td><td>standardized Navis 3D view recipe (configstore JSON). PSU-or-FIT; niche, deferred.</td></tr>
+    <tr><td>B9 CheckoutElements seam</td><td><code>WorksharingUtils.CheckoutElements</code> before mutating workshared models — behaviour change, gated on the ≥2-model diff-harness; fold into the shared mutation seam, not here.</td></tr>
+  </table>
+</div>
+
+<script>
+  var names={dash:'Dashboard',lnk:'Link Worksets',pri:'Project Info',lvl:'Levels',vtpl:'View Templates',lpath:'Link Paths',sparam:'Shared Parameters',std:'Standards Sync',bep:'BEP Import'};
+  function go(el){
+    if(!el) return;
+    document.querySelectorAll('.nav').forEach(n=>n.classList.remove('sel'));
+    el.classList.add('sel');
+    var p = el.getAttribute('data-p');
+    document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('on'));
+    document.getElementById('pg-'+p).classList.add('on');
+    document.getElementById('fstat').textContent =
+      (p==='dash'?'Readiness 67% · 4 of 6 domains compliant · ':'')+names[p];
+  }
+  function qnav(p){ return document.querySelector('.nav[data-p="'+p+'"]'); }
+  function tog(){
+    var c=document.getElementById('cons'), v=document.getElementById('chev');
+    c.classList.toggle('collapsed');
+    v.textContent = c.classList.contains('collapsed') ? '⌃' : '⌄';
+  }
+  function rail(){ document.getElementById('rail').classList.toggle('collapsed'); }
+  function scanall(){
+    // demo: pulse the readiness figure to show the scan filling the dashboard
+    var r=document.getElementById('kpi-ready'), i=document.getElementById('kpi-issues');
+    r.textContent='…'; i.textContent='…';
+    setTimeout(function(){ r.textContent='67%'; i.textContent='15'; }, 500);
+  }
+</script>
+</body>
+</html>

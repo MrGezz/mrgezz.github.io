@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SR — Script Reader · Library, Editor &amp; Console</title>
+<style>
+:root, .dark {
+  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
+  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
+  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
+  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
+  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
+  --kw:#4DD0E1; --str:#A5D6A7; --com:#5F7885; --num:#FFCC80;
+}
+.light {
+  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
+  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
+  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
+  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
+  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
+  --kw:#00838F; --str:#2E7D32; --com:#90A4AE; --num:#EF6C00;
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
+.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
+.mono { font-family:"Cascadia Code",Consolas,monospace; }
+.app { width:1220px; max-width:100%; margin:0 auto; height:860px; background:var(--win);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.5); }
+.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
+.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
+.iconbtn:hover { background:var(--rowhover); }
+.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
+.docchip { position:absolute; left:50%; top:0; height:40px; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:0 12px; color:var(--text2); font-size:11px; }
+.docchip .box { display:flex; align-items:center; gap:6px; padding:3px 12px; border:1px solid var(--border); border-radius:6px; }
+.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
+.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
+.body { flex:1 1 auto; display:flex; min-height:0; }
+.rail { width:250px; background:var(--nav); border-right:1px solid var(--border); display:flex; flex-direction:column; flex:0 0 auto; }
+.searchwrap { padding:10px 10px 4px; }
+.search { display:flex; align-items:center; gap:8px; height:30px; border:1px solid var(--border); border-radius:6px; background:var(--input); padding:0 10px; }
+.search input { flex:1; border:0; background:transparent; color:var(--text); font-size:11.5px; outline:none; font-family:inherit; }
+.search .mdl2 { color:var(--text2); font-size:12px; }
+.rail .scroll { flex:1 1 auto; overflow:auto; padding:6px; }
+.grouphdr { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:.4px; margin:12px 0 4px 8px; }
+.srow { display:grid; grid-template-columns:22px 1fr; align-items:center; padding:6px 8px; border-radius:5px; margin:1px 0; cursor:pointer; }
+.srow:hover { background:var(--rowhover); } .srow.sel { background:var(--navsel); border-left:3px solid var(--accent); padding-left:5px; }
+.srow .ic { color:var(--accent); font-size:13px; text-align:center; }
+.srow .lb { font-size:11.5px; margin-left:8px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.srow .lb small { display:block; font-size:9px; color:var(--text2); }
+.railbtns { border-top:1px solid var(--border); padding:10px 8px; display:flex; gap:6px; }
+.rbtn { flex:1; height:30px; border-radius:6px; background:var(--input); color:var(--text); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:7px; font-size:11px; cursor:pointer; }
+.rbtn:hover { border-color:var(--accent); color:var(--accent); }
+.main { flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+.edhead { display:flex; align-items:center; gap:10px; padding:9px 14px; border-bottom:1px solid var(--border); }
+.edhead .fname { font-size:12px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.edhead .fname .mdl2 { color:var(--accent); }
+.edhead .dirty { color:var(--warn); font-size:9px; }
+.edbtns { margin-left:auto; display:flex; gap:6px; }
+.ebtn { height:28px; padding:0 12px; border-radius:6px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+.ebtn:hover { border-color:var(--accent); color:var(--accent); }
+.ebtn.run { background:var(--accent); border:0; color:var(--accentfg); font-weight:700; box-shadow:0 0 12px var(--glow); }
+.editor { flex:1.15 1 0; overflow:auto; background:var(--input); padding:12px 0; min-height:0; }
+.eline { display:flex; font-size:12px; line-height:1.75; }
+.eline .ln { width:44px; flex:0 0 auto; text-align:right; padding-right:14px; color:var(--com); user-select:none; }
+.eline .code { white-space:pre; }
+.kw{color:var(--kw);font-weight:600;} .str{color:var(--str);} .com{color:var(--com);font-style:italic;} .num{color:var(--num);}
+.consolewrap { flex:1 1 0; display:flex; flex-direction:column; border-top:1px solid var(--border); min-height:0; }
+.chead { display:flex; align-items:center; gap:10px; padding:7px 14px; background:var(--nav); border-bottom:1px solid var(--border); font-size:11px; color:var(--text2); }
+.chead .mdl2 { color:var(--accent); }
+.chead .scopechip { margin-left:auto; font-size:10px; border:1px solid var(--border); border-radius:20px; padding:2px 10px; }
+.console { flex:1 1 auto; overflow:auto; padding:10px 14px; font-family:"Cascadia Code",Consolas,monospace; font-size:11.5px; line-height:1.7; }
+.cline.in .pr { color:var(--accent); font-weight:700; }
+.cline.out { color:var(--text2); }
+.cline.ok { color:var(--pass); }
+.cline.err { color:var(--fail); }
+.replrow { display:flex; align-items:center; gap:8px; padding:8px 14px; border-top:1px solid var(--border); }
+.replrow .pr { color:var(--accent); font-weight:700; font-family:Consolas,monospace; }
+.replrow input { flex:1; border:0; background:transparent; color:var(--text); font-family:"Cascadia Code",Consolas,monospace; font-size:12px; outline:none; }
+.hint { font-size:9.5px; color:var(--text2); border:1px solid var(--border); border-radius:4px; padding:1px 6px; }
+.footer{flex:0 0 auto;height:44px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
+.fsep{width:1px;height:12px;background:var(--border);}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
+.fstatus{color:var(--text2);font-size:11px;opacity:.8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+</style>
+</head>
+<body class="dark">
+<div class="app">
+  <div class="titlebar">
+    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xE756;</div><div class="title">Script Reader</div>
+    <div class="docchip"><div class="box"><span class="mdl2">&#xE8A5;</span><span>Snowdon Towers Sample Plumbing</span></div></div>
+    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
+      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+  </div>
+  <div class="body">
+    <div class="rail">
+      <div class="searchwrap"><div class="search"><span class="mdl2">&#xE721;</span><input placeholder="Filter 23 scripts…"></div></div>
+      <div class="scroll">
+        <div class="grouphdr">LIBRARY · \\server\BIM\Scripts</div>
+        <div class="srow sel"><span class="ic mdl2">&#xE943;</span><span class="lb">tag_untagged_pipes.py<small>modified 2026-07-14</small></span></div>
+        <div class="srow"><span class="ic mdl2">&#xE943;</span><span class="lb">purge_import_lines.py<small>modified 2026-07-02</small></span></div>
+        <div class="srow"><span class="ic mdl2">&#xE943;</span><span class="lb">workset_report.py<small>modified 2026-06-19</small></span></div>
+        <div class="srow"><span class="ic mdl2">&#xE943;</span><span class="lb">rename_views_by_level.py<small>modified 2026-06-11</small></span></div>
+        <div class="grouphdr">LIBRARY · %APPDATA%\IcZScripts</div>
+        <div class="srow"><span class="ic mdl2">&#xE943;</span><span class="lb">scratch_selection_dump.py<small>modified today</small></span></div>
+        <div class="srow"><span class="ic mdl2">&#xE943;</span><span class="lb">_sandbox.py<small>fresh scope</small></span></div>
+        <div class="grouphdr">&nbsp;</div>
+        <div class="srow"><span class="ic mdl2">&#xE713;</span><span class="lb">Settings<small>folders · scope · init script</small></span></div>
+      </div>
+      <div class="railbtns">
+        <div class="rbtn"><span class="mdl2">&#xE710;</span> New</div>
+        <div class="rbtn"><span class="mdl2">&#xE838;</span> Folders</div>
+      </div>
+    </div>
+    <div class="main">
+      <div class="edhead">
+        <span class="fname"><span class="mdl2">&#xE70F;</span> tag_untagged_pipes.py <span class="dirty mdl2" title="unsaved">&#xEA3B;</span></span>
+        <div class="edbtns">
+          <div class="ebtn"><span class="mdl2">&#xE74E;</span> Save</div>
+          <div class="ebtn run" id="runbtn"><span class="mdl2">&#xE768;</span> Run (F5)</div>
+        </div>
+      </div>
+      <div class="editor">
+        <div class="eline"><span class="ln">1</span><span class="code"><span class="com"># -*- coding: utf-8 -*-</span></span></div>
+        <div class="eline"><span class="ln">2</span><span class="code"><span class="com"># doc / uidoc / __revit__ / selection() are pre-loaded.</span></span></div>
+        <div class="eline"><span class="ln">3</span><span class="code"><span class="kw">from</span> Autodesk.Revit.DB <span class="kw">import</span> FilteredElementCollector, BuiltInCategory</span></div>
+        <div class="eline"><span class="ln">4</span><span class="code"></span></div>
+        <div class="eline"><span class="ln">5</span><span class="code">pipes = FilteredElementCollector(doc, doc.ActiveView.Id) \</span></div>
+        <div class="eline"><span class="ln">6</span><span class="code">    .OfCategory(BuiltInCategory.OST_PipeCurves) \</span></div>
+        <div class="eline"><span class="ln">7</span><span class="code">    .WhereElementIsNotElementType().ToElements()</span></div>
+        <div class="eline"><span class="ln">8</span><span class="code"></span></div>
+        <div class="eline"><span class="ln">9</span><span class="code">untagged = [p <span class="kw">for</span> p <span class="kw">in</span> pipes <span class="kw">if</span> <span class="kw">not</span> has_tag(p)]</span></div>
+        <div class="eline"><span class="ln">10</span><span class="code"><span class="kw">print</span>(<span class="str">"untagged pipes in view: %d"</span> % <span class="kw">len</span>(untagged))</span></div>
+        <div class="eline"><span class="ln">11</span><span class="code"></span></div>
+        <div class="eline"><span class="ln">12</span><span class="code"><span class="com"># variables stay inspectable in the console after the run ↓</span></span></div>
+      </div>
+      <div class="consolewrap">
+        <div class="chead"><span class="mdl2">&#xE756;</span> Interactive console — IronPython 3 · ExternalEvent-dispatched
+          <span class="scopechip">shared session scope · doc/uidoc re-injected per run</span></div>
+        <div class="console" id="console">
+          <div class="cline in"><span class="pr">&gt;&gt;&gt; </span>run("tag_untagged_pipes.py")</div>
+          <div class="cline out">untagged pipes in view: 37</div>
+          <div class="cline ok">✓ finished in 0.41 s — scope preserved</div>
+          <div class="cline in"><span class="pr">&gt;&gt;&gt; </span>len(untagged)</div>
+          <div class="cline out">37</div>
+          <div class="cline in"><span class="pr">&gt;&gt;&gt; </span>untagged[0].Id</div>
+          <div class="cline out">1284507</div>
+        </div>
+        <div class="replrow">
+          <span class="pr">&gt;&gt;&gt;</span>
+          <input id="repl" placeholder="type Python — Tab completes, ↑/↓ history, runs in a valid API context" autocomplete="off">
+          <span class="hint">Tab</span><span class="hint">↑ history</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
+    <div class="fsep"></div>
+    <div class="fdot"></div>
+    <div class="fstatus">Engine ready — execution mined from RevitPythonShell (MIT) · all runs external-event dispatched, never off-thread</div>
+  </div>
+</div>
+<script>
+document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
+document.querySelectorAll('.srow').forEach(function(r){
+  r.onclick=function(){ document.querySelectorAll('.srow').forEach(function(x){x.classList.remove('sel');}); r.classList.add('sel'); };
+});
+var con=document.getElementById('console');
+function add(cls,html){ var d=document.createElement('div'); d.className='cline '+cls; d.innerHTML=html; con.appendChild(d); con.scrollTop=con.scrollHeight; }
+document.getElementById('runbtn').onclick=function(){
+  add('in','<span class="pr">&gt;&gt;&gt; </span>run("tag_untagged_pipes.py")');
+  setTimeout(function(){ add('out','untagged pipes in view: 37'); add('ok','✓ finished in 0.4 s — scope preserved'); },350);
+};
+var hist=['untagged[0].Id','len(untagged)','run("tag_untagged_pipes.py")'],hi=-1;
+var repl=document.getElementById('repl');
+repl.addEventListener('keydown',function(e){
+  if(e.key==='Enter'&&repl.value.trim()){
+    var v=repl.value.trim(); hist.unshift(v); hi=-1;
+    add('in','<span class="pr">&gt;&gt;&gt; </span>'+v.replace(/&/g,'&amp;').replace(/</g,'&lt;'));
+    setTimeout(function(){
+      if(/^\d+[+\-*\/]/.test(v)){ try{ add('out',String(eval(v))); }catch(x){ add('err','SyntaxError'); } }
+      else if(v==='doc'){ add('out','&lt;Autodesk.Revit.DB.Document — Snowdon Towers Sample Plumbing&gt;'); }
+      else { add('out','(mock console — expression dispatched to the Revit API thread)'); }
+    },200);
+    repl.value='';
+  }
+  if(e.key==='ArrowUp'){ hi=Math.min(hi+1,hist.length-1); repl.value=hist[hi]||''; e.preventDefault(); }
+  if(e.key==='ArrowDown'){ hi=Math.max(hi-1,-1); repl.value=hi<0?'':hist[hi]; e.preventDefault(); }
+});
+</script>
+</body>
+</html>

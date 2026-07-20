@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "SectionBox Quick Dialog R13",
+  "schemaVersion": 1,
+  "description": "Themed 'Quick Section Box' dialog - the IcZ-theme equivalent of the COINS 'Section Box Size' dialog (View / Size / Template). A compact modal shown by the SectionBoxDialog pushbutton: pick the target 3D view (reuse or type new), the size (pad-by-buffer or fixed cube), and an optional view template, then OK creates the section box on the current selection. CM2 dark tokens, chrome close dot, accent OK. This is the 'one with a small dialog' quick command (the other quick command, Quick Box, is silent with no dialog).",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quick Section Box — themed dialog</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --card:#141E24; --hover:#1C2B33; --panel2:#1C2B33;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --card:#FFFFFF; --hover:#E3EAEE; --panel2:#E7EDF0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px}
+  body.light{background:#cfd8dc}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .dlg{width:432px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:9px;overflow:hidden;box-shadow:0 22px 60px rgba(0,0,0,.6)}
+  .tb{height:38px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;padding:0 12px}
+  .tb .ic{color:var(--accent);font-size:14px}
+  .tb .nm{font-weight:700;font-size:12.5px}
+  .tb .sp{flex:1}
+  .theme{color:var(--text-2);font-size:13px;cursor:pointer;margin-right:4px}
+  .x{width:13px;height:13px;border-radius:50%;background:#FF5F57;color:#7A1410;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:7px}
+  .body{padding:16px 16px 6px}
+  .lbl{font-size:11px;color:var(--text-2);margin:0 0 4px;display:flex;align-items:center;gap:6px}
+  .lbl .g{font-family:"Segoe MDL2 Assets";color:var(--accent);font-size:12px}
+  .field{margin-bottom:13px}
+  .in,.sel{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:7px 9px;font-size:12px;font-family:inherit;height:32px}
+  .sel{appearance:none;background-image:none}
+  .selwrap{position:relative}
+  .selwrap::after{content:"\E70D";font-family:"Segoe MDL2 Assets";position:absolute;right:10px;top:9px;font-size:9px;color:var(--text-main);pointer-events:none}
+  .hint{font-size:10px;color:var(--text-2);margin-top:4px}
+  .sizerow{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .rad{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;cursor:pointer}
+  .rad .rb{width:14px;height:14px;border:1px solid var(--border);border-radius:50%;background:var(--input-bg);position:relative;flex:none}
+  .rad.on .rb{border-color:var(--accent)}
+  .rad.on .rb::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .val{width:70px;height:30px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:5px 7px;font-size:11.5px;text-align:center}
+  .unit{font-size:11px;color:var(--text-2)}
+  .foot{display:flex;justify-content:flex-end;gap:9px;padding:12px 16px;background:var(--titlebar);border-top:1px solid var(--border)}
+  .btn{border:1px solid var(--border);background:var(--panel2);color:var(--text-main);border-radius:6px;padding:8px 20px;font-size:12px;cursor:pointer}
+  .btn:hover{background:var(--hover)}
+  .btn.ok{background:var(--accent);color:var(--accent-fg);border-color:transparent;font-weight:700;display:inline-flex;align-items:center;gap:7px}
+  .btn.ok .g{font-family:"Segoe MDL2 Assets"}
+  .cap{width:432px;max-width:100%;font-size:11px;color:#7f97a3;line-height:1.55;text-align:center}
+  .cap b{color:#b9c9d1}.cap code{color:var(--accent);font-family:Consolas,monospace}
+</style>
+</head>
+<body>
+<div class="dlg">
+  <div class="tb">
+    <span class="mdl2 ic">&#xE809;</span><span class="nm">Quick Section Box</span>
+    <span class="sp"></span>
+    <span class="mdl2 theme" id="themeBtn" title="theme">&#xE706;</span>
+    <span class="x mdl2">&#xE8BB;</span>
+  </div>
+  <div class="body">
+    <div class="field">
+      <div class="lbl"><span class="g">&#xE809;</span>View <span class="xn" style="font:9px Consolas,monospace;color:var(--accent);opacity:.8">dlg_view</span></div>
+      <div class="selwrap"><input class="in" value="IcZ Section Box"></div>
+      <div class="hint">Reuse an existing 3D view, or type a new name — the existing view is used when the name matches (COINS "Existing View Will Be Used").</div>
+    </div>
+
+    <div class="field">
+      <div class="lbl"><span class="g">&#xE740;</span>Size</div>
+      <div class="sizerow">
+        <span class="rad on" data-r="sz" id="rb_pad"><span class="rb"></span>Element extents + buffer</span>
+        <input class="val" id="v_pad" value="500"><span class="unit">mm</span>
+      </div>
+      <div class="sizerow" style="margin-top:8px">
+        <span class="rad" data-r="sz" id="rb_cube"><span class="rb"></span>Fixed cube</span>
+        <input class="val" id="v_cube" value="5000" disabled style="opacity:.5"><span class="unit">mm</span>
+      </div>
+    </div>
+
+    <div class="field">
+      <div class="lbl"><span class="g">&#xE8A9;</span>View template <span class="xn" style="font:9px Consolas,monospace;color:var(--accent);opacity:.8">dlg_template</span></div>
+      <div class="selwrap"><select class="sel"><option>&lt;None&gt;</option><option>Coordination</option><option>Navisworks Export</option></select></div>
+    </div>
+  </div>
+  <div class="foot">
+    <button class="btn">Cancel</button>
+    <button class="btn ok"><span class="g mdl2">&#xE768;</span> Create</button>
+  </div>
+</div>
+
+<div class="cap">
+  <b>Quick Section Box</b> — the IcZ-theme version of the COINS "Section Box Size" dialog (<b>View · Size · Template</b>), shown by the
+  <code>SectionBoxDialog</code> pushbutton. Boxes the current selection on <b>Create</b>. The other quick command, <b>Quick Box</b>
+  (<code>SectionBoxQuick</code>), does the same with the saved defaults and <b>no dialog</b>. Both share <code>lib/icz/viewbox</code>.
+</div>
+
+<script>
+(function(){
+  var $=function(s){return document.querySelector(s);};
+  document.querySelectorAll(".rad").forEach(function(r){
+    r.addEventListener("click",function(){
+      document.querySelectorAll('.rad[data-r="sz"]').forEach(function(x){x.classList.remove("on");});
+      r.classList.add("on");
+      var pad=r.id==="rb_pad";
+      $("#v_pad").disabled=!pad; $("#v_pad").style.opacity=pad?"1":".5";
+      $("#v_cube").disabled=pad; $("#v_cube").style.opacity=pad?".5":"1";
+    });
+  });
+  $("#themeBtn").addEventListener("click",function(){
+    document.body.classList.toggle("light");
+    this.innerHTML=document.body.classList.contains("light")?"&#xE708;":"&#xE706;";
+  });
+})();
+</script>
+</body>
+</html>

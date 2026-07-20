@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Cd Model Cleanup Ui Redesign",
+  "schemaVersion": 1,
+  "description": "CD Model Cleanup UI redesign (round 8.5, shipped v2): width-filling dashboard — 5 star-column KPI tiles, a 3-panel hero (cleanliness donut / clickable findings-by-pass rows / Safety & scope), footer with green StatusPass dot + live model-state + page name and the Scan & Preview → Commit pair. Backed by the shared lib/icz/dashboard.py (CD = first consumer; shell.py untouched).",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>CD Model Cleanup — dashboard restructure proposal (v2, width-filling)</title>
+<style>
+:root, .dark {
+  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
+  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
+  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
+  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
+  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
+  --passbg:rgba(76,175,80,.14); --warnbg:rgba(255,179,0,.14); --failbg:rgba(255,82,82,.14);
+}
+.light {
+  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
+  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
+  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
+  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
+  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
+  --passbg:rgba(46,125,50,.10); --warnbg:rgba(245,127,23,.10); --failbg:rgba(211,47,47,.10);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
+.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
+.app { width:1660px; max-width:100%; margin:0 auto; height:940px; background:var(--win);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.5); }
+/* title bar */
+.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
+.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
+.iconbtn:hover { background:var(--rowhover); }
+.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
+.docchip { position:absolute; left:50%; top:0; height:40px; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:0 12px; color:var(--text2); font-size:11px; }
+.docchip .box { display:flex; align-items:center; gap:6px; padding:3px 12px; border:1px solid var(--border); border-radius:6px; }
+.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
+.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
+/* body */
+.body { flex:1 1 auto; display:flex; min-height:0; }
+.rail { width:232px; background:var(--nav); border-right:1px solid var(--border); display:flex; flex-direction:column; flex:0 0 auto; }
+.rail .scroll { flex:1 1 auto; overflow:auto; padding:8px 6px; }
+.grouphdr { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:.4px; margin:12px 0 4px 8px; }
+.navrow { display:grid; grid-template-columns:20px 22px 1fr; align-items:center; padding:6px; border-radius:5px; margin:1px 0; cursor:pointer; }
+.navrow:hover { background:var(--rowhover); } .navrow.sel { background:var(--navsel); border-left:3px solid var(--accent); padding-left:3px; }
+.navrow input { accent-color:var(--accent); margin:0; } .navrow .ic { color:var(--accent); font-size:14px; text-align:center; }
+.navrow .lb { font-size:12px; margin-left:8px; } .navrow .lb small { display:block; font-size:9px; color:var(--text2); }
+.railbtns { border-top:1px solid var(--border); padding:10px 8px; display:flex; flex-direction:column; gap:6px; }
+.rbtn { height:30px; border-radius:6px; background:var(--input); color:var(--text); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; gap:8px; font-size:11px; cursor:pointer; }
+.rbtn.preview{border-style:dashed;}
+/* content = width-filling grid */
+.content { flex:1 1 auto; overflow:auto; padding:20px 22px; min-width:0; }
+.pagehead { display:flex; align-items:center; margin-bottom:14px; }
+.pagehead h1 { font-size:20px; font-weight:700; margin:0; }
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;border:1px solid var(--border);color:var(--text2);margin-left:8px;vertical-align:middle;}
+.scanbtn { margin-left:auto; height:30px; padding:0 14px; border-radius:6px; cursor:pointer; background:var(--input); color:var(--text); border:1px solid var(--border); display:flex; align-items:center; gap:8px; font-size:11px; font-weight:600; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px; }
+.card h2 { font-size:13px; font-weight:600; margin:0 0 12px; letter-spacing:.2px; }
+.sub { font-size:11px; color:var(--text2); }
+/* KPI row — 5 EQUAL columns that FILL width (fixes WrapPanel left-pack) */
+.kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:12px; margin-bottom:14px; }
+.tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.tile .v { font-size:28px; font-weight:700; line-height:1; }
+.tile .l { font-size:11px; color:var(--text2); margin-top:7px; } .tile .s{font-size:10px;color:var(--text2);opacity:.85;margin-top:2px;}
+.v.accent{color:var(--accent);}.v.fail{color:var(--fail);}.v.warn{color:var(--warn);}.v.pass{color:var(--pass);}
+/* HERO band — 3 columns fill width: donut | findings rows (stretch) | safety */
+.hero { display:grid; grid-template-columns:340px 1fr 320px; gap:14px; margin-bottom:14px; }
+.donutwrap { display:flex; flex-direction:column; align-items:center; }
+.donut { position:relative; width:170px; height:170px; margin:4px 0 6px; }
+.donut .center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.donut .center b { font-size:26px; font-weight:700; } .donut .center span{font-size:10px;color:var(--text2);}
+.legend { width:100%; margin-top:4px; } .legrow{display:flex;align-items:center;gap:8px;margin:5px 2px;font-size:12px;}
+.sw{width:12px;height:12px;border-radius:3px;} .legrow .lc{margin-left:auto;color:var(--text2);font-weight:600;}
+/* findings-by-pass as ACTIONABLE rows — the wide bar fills the stretch column */
+.frow { display:grid; grid-template-columns:26px 132px 1fr 42px 96px; align-items:center; gap:10px; padding:9px 6px; border-radius:7px; cursor:pointer; }
+.frow:hover { background:var(--rowhover); }
+.frow .fi{color:var(--accent);font-size:15px;text-align:center;} .frow .fn{font-size:12px;font-weight:600;}
+.track{height:10px;border-radius:5px;background:var(--track);overflow:hidden;} .fill{height:10px;border-radius:5px;}
+.frow .fc{font-size:13px;font-weight:700;text-align:right;}
+.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-align:center;}
+.pill.fail{background:var(--failbg);color:var(--fail);} .pill.warn{background:var(--warnbg);color:var(--warn);} .pill.pass{background:var(--passbg);color:var(--pass);}
+/* safety & scope */
+.srow{display:flex;align-items:center;justify-content:space-between;padding:9px 2px;border-bottom:1px solid var(--border);font-size:12px;}
+.srow:last-child{border-bottom:0;} .srow .k{color:var(--text2);display:flex;align-items:center;gap:8px;} .srow .k .mdl2{color:var(--accent);font-size:13px;} .srow .v{font-weight:600;}
+.chk{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text2);margin-top:8px;}
+/* compliance log full width */
+.logchips{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;margin:4px 0 6px;}
+.chip{background:var(--win);border:1px solid var(--border);border-radius:8px;padding:10px 12px;} .chip .cv{font-size:17px;font-weight:700;} .chip .cl{font-size:10px;color:var(--text2);margin-top:2px;}
+.actbar{display:flex;gap:8px;margin-bottom:10px;} .abtn{height:26px;padding:0 12px;border-radius:6px;background:var(--input);border:1px solid var(--border);color:var(--text);font-size:11px;display:flex;align-items:center;}
+/* footer */
+.footer{flex:0 0 auto;height:56px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
+.fsep{width:1px;height:12px;background:var(--border);}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
+.fmodel{font-size:11px;color:var(--text2);white-space:nowrap;}
+.fstatus{color:var(--text2);font-size:11px;opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fpage{margin-left:auto;font-size:11px;color:var(--text2);white-space:nowrap;}
+.commit{width:210px;height:40px;border-radius:6px;border:0;cursor:pointer;background:var(--accent);color:var(--accentfg);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 16px var(--glow);}
+.fpreview{height:40px;padding:0 16px;border-radius:6px;background:var(--input);border:1px dashed var(--border);color:var(--text);font-weight:600;font-size:12px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;}
+.viewbtn{height:24px;padding:0 10px;border-radius:6px;background:var(--input);border:1px solid var(--border);color:var(--text);font-size:11px;display:inline-flex;align-items:center;gap:6px;cursor:pointer;}
+.note{width:1660px;max-width:100%;margin:14px auto 0;color:#8a97a3;font-size:12.5px;line-height:1.55;}
+.note b{color:var(--text);} .note code{background:rgba(127,127,127,.15);padding:1px 5px;border-radius:4px;}
+h2 .hint{font-weight:400;color:var(--text2);font-size:11px;margin-left:8px;}
+</style>
+</head>
+<body class="dark">
+<div class="app" id="app">
+  <div class="titlebar">
+    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xE8C8;</div><div class="title">Model Cleanup</div>
+    <div class="docchip"><div class="box"><span class="mdl2">&#xE8A5;</span><span>Snowdon Towers Sample Plumbing</span></div></div>
+    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
+      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+  </div>
+  <div class="body">
+    <div class="rail">
+      <div class="scroll">
+        <div class="navrow sel"><span></span><span class="ic mdl2">&#xE80F;</span><span class="lb">Dashboard</span></div>
+        <div class="grouphdr">GEOMETRY</div>
+        <div class="navrow"><input type="checkbox" checked><span class="ic mdl2">&#xE8C8;</span><span class="lb">Ghosts<small>Ghost Purge</small></span></div>
+        <div class="navrow"><input type="checkbox" checked><span class="ic mdl2">&#xE894;</span><span class="lb">Overkill<small>Overkill Lines</small></span></div>
+        <div class="grouphdr">CONNECTIONS</div>
+        <div class="navrow"><input type="checkbox" checked><span class="ic mdl2">&#xE71B;</span><span class="lb">Connect<small>Connection Fix</small></span></div>
+        <div class="grouphdr">NESTED</div>
+        <div class="navrow"><input type="checkbox"><span class="ic mdl2">&#xE890;</span><span class="lb">Fix<small>Nested Fix</small></span></div>
+        <div class="grouphdr">PURGE</div>
+        <div class="navrow"><input type="checkbox" checked><span class="ic mdl2">&#xE74D;</span><span class="lb">Orphans<small>Orphan Purge</small></span></div>
+        <div class="grouphdr">&nbsp;</div>
+        <div class="navrow"><span></span><span class="ic mdl2">&#xE713;</span><span class="lb">Configuration</span></div>
+      </div>
+      <div class="railbtns"><div class="rbtn">CHECK ALL</div></div>
+    </div>
+    <div class="content">
+      <div class="pagehead"><h1>Dashboard <span class="tag">proposal v2 · width-filling</span></h1>
+        <div class="scanbtn"><span class="mdl2">&#xE721;</span> SCAN HEALTH</div></div>
+
+      <!-- KPI: 5 equal columns filling the width -->
+      <div class="kpis" id="kpis"></div>
+
+      <!-- HERO: donut | findings rows (stretch) | safety — all fill width -->
+      <div class="hero">
+        <div class="card donutcard">
+          <h2>Cleanliness</h2>
+          <div class="donutwrap">
+            <div class="donut"><svg width="170" height="170" viewBox="0 0 170 170" id="donut"></svg>
+              <div class="center"><b id="dcenter">97</b><span>findings</span></div></div>
+            <div class="legend" id="legend"></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Findings by pass <span class="hint">click a row to open that pass →</span></h2>
+          <div id="frows"></div>
+        </div>
+        <div class="card">
+          <h2>Safety &amp; scope</h2>
+          <div class="srow"><span class="k"><span class="mdl2">&#xE71C;</span>Scope</span><span class="v">All categories</span></div>
+          <div class="srow"><span class="k"><span class="mdl2">&#xE7BA;</span>Dependents cascade</span><span class="v" style="color:var(--warn)">14</span></div>
+          <div class="srow"><span class="k"><span class="mdl2">&#xE72E;</span>Owned / skipped</span><span class="v">0</span></div>
+          <div class="srow"><span class="k"><span class="mdl2">&#xE81C;</span>Est. reduction</span><span class="v">0.5%</span></div>
+          <div class="srow"><span class="k"><span class="mdl2">&#xE823;</span>Last scan</span><span class="v">04:46</span></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+            <label class="chk" style="margin-top:0"><input type="checkbox"> Isolate on click</label>
+            <div class="viewbtn"><span class="mdl2">&#xE72C;</span> Reset view</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compliance Log full width -->
+      <div class="card">
+        <h2>Compliance Log</h2>
+        <div class="actbar"><div class="abtn">Export CSV</div><div class="abtn">Undo last cleanup</div></div>
+        <div class="logchips" id="logchips"></div>
+        <div class="sub">Lines merged (click = zoom to survivor) · Orphans purged (empty markers / orphaned tags) — detail tables render here after a commit.</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
+    <div class="fsep"></div>
+    <div class="fdot"></div>
+    <div class="fmodel">Model loaded &middot; workshared</div>
+    <div class="fsep"></div>
+    <div class="fstatus">Health scan: 97 finding(s) across 5 passes.</div>
+    <div class="fpage">Dashboard</div>
+    <button class="fpreview"><span class="mdl2">&#xE890;</span> SCAN &amp; PREVIEW</button>
+    <button class="commit"><span class="mdl2">&#xE768;</span> COMMIT RESOLUTIONS</button>
+  </div>
+</div>
+
+<div class="note">
+  <b>Proposal v2 — the fill fix.</b> Every band now uses proportional (<code>1fr</code> / star) columns instead of left-packed <code>WrapPanel</code>s, so the layout expands to fill a maximized window instead of hugging the left third:
+  <b>(1)</b> KPI strip = 5 equal columns (added <b>Repairable</b> so it pairs with the donut legend); <b>(2)</b> a three-panel hero — cleanliness donut, <b>findings-by-pass as clickable rows</b> whose wide bars stretch to fill, and a new <b>Safety &amp; scope</b> panel that occupies the formerly-empty right (dependents cascade, owned/skipped, est. reduction, last scan, isolate toggle); <b>(3)</b> the Quick-Launch tiles are folded into the findings rows (each row opens its pass — one place, not two). In WPF this is <code>kpi_band</code> → a star-column <code>Grid</code>/<code>UniformGrid</code> and a 3-star-column hero grid in <code>_health_card</code> — no engine changes. The alternative (a boxed ~1440px centered column) is one line if you'd rather cap width than fill it.
+</div>
+<script>
+var H={census:18330,counts:{dups:41,lines:23,mep:18,nvis:9,orphans:6},cascade:14};
+var S={pass:"var(--pass)",warn:"var(--warn)",fail:"var(--fail)"};
+function d(){var rm=H.counts.dups+H.counts.lines+H.counts.orphans,rp=H.counts.mep+H.counts.nvis;return{rm:rm,rp:rp,f:rm+rp,cl:Math.max(0,H.census-rm-rp)};}
+function tile(v,l,s,c){return '<div class="tile"><div class="v '+(c||'')+'">'+v+'</div><div class="l">'+l+'</div><div class="s">'+s+'</div></div>';}
+function render(){var x=d();
+ document.getElementById('kpis').innerHTML=
+   tile(H.census.toLocaleString(),'Model elements','in project','')+
+   tile(x.f,'Cleanup findings','across 5 passes','accent')+
+   tile(x.rm,'Removable','ghosts / lines / orphans','fail')+
+   tile(x.rp,'Repairable','connections / nested','warn')+
+   tile(H.cascade,'Dependents','cascade if purged','warn');
+ // donut
+ var R=70,C=2*Math.PI*R,off=0,seg=[['pass',x.cl],['warn',x.rp],['fail',x.rm]],T=x.cl+x.rp+x.rm,g='';
+ g+='<circle cx="85" cy="85" r="'+R+'" fill="none" stroke="var(--track)" stroke-width="18"/>';
+ seg.forEach(function(s){var fr=T?s[1]/T:0,ln=fr*C;g+='<circle cx="85" cy="85" r="'+R+'" fill="none" stroke="'+S[s[0]]+'" stroke-width="18" stroke-dasharray="'+ln+' '+(C-ln)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 85 85)"/>';off+=ln;});
+ document.getElementById('donut').innerHTML=g; document.getElementById('dcenter').textContent=x.f;
+ document.getElementById('legend').innerHTML=[['pass','Clean',x.cl],['warn','Repairable',x.rp],['fail','Removable',x.rm]].map(function(r){return '<div class="legrow"><span class="sw" style="background:'+S[r[0]]+'"></span>'+r[1]+'<span class="lc">'+r[2].toLocaleString()+'</span></div>';}).join('');
+ // findings rows (actionable)
+ var rows=[['&#xE8C8;','Ghost Purge',H.counts.dups,'fail','Duplicate'],['&#xE894;','Overkill Lines',H.counts.lines,'fail','Collinear'],['&#xE71B;','Connection Fix',H.counts.mep,'warn','Open conn.'],['&#xE890;','Nested Fix',H.counts.nvis,'warn','Nested'],['&#xE74D;','Orphan Purge',H.counts.orphans,'fail','Orphans']];
+ var mx=Math.max.apply(null,rows.map(function(r){return r[2];}))||1;
+ document.getElementById('frows').innerHTML=rows.map(function(r){var w=Math.round(r[2]/mx*100);
+   return '<div class="frow"><span class="fi mdl2">'+r[0]+'</span><span class="fn">'+r[1]+'</span>'+
+   '<span class="track"><span class="fill" style="width:'+w+'%;background:'+S[r[3]]+'"></span></span>'+
+   '<span class="fc">'+r[2]+'</span><span class="pill '+r[3]+'">'+r[4]+'</span></div>';}).join('');
+ // log chips
+ document.getElementById('logchips').innerHTML=[['0','Deleted'],['none','Duplicates'],['0','MEP connected'],['0','Nested fixed'],['1','Lines merged'],['1','Survivors ext.'],['2','Orphans purged']].map(function(c){return '<div class="chip"><div class="cv">'+c[0]+'</div><div class="cl">'+c[1]+'</div></div>';}).join('');
+}
+render();
+document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
+</script>
+</body>
+</html>

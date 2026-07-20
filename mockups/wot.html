@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "WOT Opening Workbench R12",
+  "schemaVersion": 1,
+  "description": "WOT (MEP vs Wall Opening Tool) round-12 UI restructure. Full CM2-language rework of the existing 4-page ShellWindow (Configure / Results / Place Openings / Settings), matching FIT r75 + AutoDoc r11 tokens. Tool-specific hero = a LIVE opening-size section preview driven by the real get_mep_details math (MEP size + insulation x2 + buffer x2) and compute_rotation_angle (opening rotated to the wall normal). KPI strips on Configure + Results; MEP tri-state tree; collapsible Activity Log console (centralized in icz.shell); hallmark footer. Every control annotated with its real x:Name from ui.xaml/script.py. Net-new: the preview SVG (canvas_preview), the KPI tiles (kpi_*), the category legend (canvas_legend). Interactive: rail nav, light/dark theme, buffer slider -> live preview, MEP tree toggles, console chevron.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOT — MEP vs Wall Opening · Round 12 Restructure</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+    --duct:#00BCD4; --pipe:#26A69A; --tray:#7E57C2; --cond:#FFB300;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE;
+    --duct:#0097A7; --pipe:#00796B; --tray:#5E35B1; --cond:#EF6C00;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  body.light{background:#cfd8dc}
+  .window{width:1180px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  /* titlebar */
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .burger{color:var(--text-2);font-size:15px;cursor:pointer}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.3px;color:var(--text-main);font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:10px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.c{background:#FF5F57;color:#7A1410}.dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}
+  /* body */
+  .main{display:flex;min-height:640px}
+  .rail{width:210px;background:var(--nav);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px;transition:width .12s}
+  .rail.collapsed{width:0;padding:12px 0;overflow:hidden}
+  .nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;font-size:12.5px;color:var(--text-2);cursor:pointer;white-space:nowrap}
+  .nav .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";width:22px;text-align:center;font-size:14px}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600}
+  .nav:hover{background:var(--hover)}
+  .rlab{font-size:9.5px;letter-spacing:.08em;color:var(--text-2);padding:12px 10px 4px}
+  .by{margin-top:auto;font-size:10px;color:var(--text-2);padding:8px 10px 4px;border-top:1px solid var(--border)}
+  .content{flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:13px;background:var(--window-bg);min-width:0}
+  h2.pg{font-size:15px;font-weight:600}
+  .sub{font-size:11px;color:var(--text-2);margin-top:2px}
+  .page{display:none;flex-direction:column;gap:13px}
+  .page.on{display:flex}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+  .tile .lab{font-size:10px;letter-spacing:.06em;color:var(--text-2)}
+  .tile .val{font-size:22px;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+  .tile .s{font-size:10px;color:var(--text-2)}
+  /* hero */
+  .hero{display:grid;grid-template-columns:1fr 384px;gap:12px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+  .card h3{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .lbl{font-size:10px;color:var(--text-2);margin:9px 0 3px;letter-spacing:.02em}
+  .in,.sel2{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:6px 8px;font-size:11.5px;font-family:inherit}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row-lab{display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;margin-bottom:7px}
+  .row-lab .fl{font-size:11.5px;color:var(--text-main)}
+  .chk{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;margin-top:8px;cursor:pointer;color:var(--text-main)}
+  .chk .box{width:15px;height:15px;border:1px solid var(--border);border-radius:4px;background:var(--input-bg);position:relative;flex:none}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:11px;text-align:center;line-height:15px}
+  .chk.acc{color:var(--accent)}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:7px 10px;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .btn.mini{padding:5px 9px;font-size:10.5px}
+  .run{width:100%;margin-top:6px;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:13px;border:none;border-radius:7px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px}
+  .run .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .hint{font-size:10.5px;color:var(--text-2);margin-top:9px;line-height:1.5}
+  .actionbar{display:flex;align-items:center;gap:12px;margin-top:6px;padding:12px 0 2px;border-top:1px solid var(--border)}
+  .actionbar .spacer{flex:1}
+  .actionbar .chk{margin-top:0;white-space:nowrap}
+  .listtools{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+  /* x:Name annotation chip (grounding) */
+  .xn{font:9px Consolas,monospace;color:var(--accent);background:rgba(0,188,212,.10);border:1px solid var(--border);border-radius:4px;padding:0 5px;margin-left:6px;white-space:nowrap}
+  .pill{font-size:9px;border-radius:99px;padding:2px 8px;font-weight:600}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.eng{background:rgba(126,87,194,.18);color:#B39DDB}
+  /* MEP tri-state tree */
+  .tree{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px}
+  .trow{display:flex;align-items:center;gap:8px;padding:4px 6px;font-size:12px;cursor:pointer;border-radius:4px}
+  .trow:hover{background:var(--hover)}
+  .trow.child{margin-left:22px}
+  .tbox{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative;flex:none}
+  .trow.on .tbox{background:var(--accent);border-color:var(--accent)}
+  .trow.on .tbox::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:10px;text-align:center;line-height:14px}
+  .trow.parent.partial .tbox{background:var(--accent);border-color:var(--accent)}
+  .trow.parent.partial .tbox::after{content:"\2013";position:absolute;inset:0;color:var(--accent-fg);font-size:11px;text-align:center;line-height:14px}
+  .dotc{width:9px;height:9px;border-radius:2px;flex:none}
+  /* preview */
+  .previewwrap{display:flex;flex-direction:column;gap:8px}
+  .secsvg{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px}
+  .dimread{display:flex;justify-content:space-between;font-size:11px;color:var(--text-2);font-family:Consolas,monospace}
+  .dimread b{color:var(--accent);font-weight:700}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:10.5px;color:var(--text-2)}
+  .legend .r{display:flex;align-items:center;gap:6px}
+  .legend .sw{width:11px;height:11px;border-radius:3px}
+  .slider{width:100%}
+  /* results list */
+  .revlist{display:flex;flex-direction:column;gap:6px;max-height:300px;overflow:auto}
+  .revrow{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;cursor:pointer;display:flex;align-items:center;gap:10px}
+  .revrow:hover{border-color:var(--accent)}
+  .revrow .rid{font-family:Consolas,monospace;font-size:11px;color:var(--accent);width:64px}
+  .revrow .rnm{font-size:11.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .revrow .rct{font-size:10.5px;color:var(--text-2);white-space:nowrap}
+  .bar{height:5px;border-radius:3px;background:var(--track);margin-top:5px;overflow:hidden}
+  .bar > i{display:block;height:100%;background:var(--accent)}
+  .catrow{display:flex;align-items:center;gap:9px;padding:7px 4px;border-bottom:1px solid var(--border);font-size:12px}
+  .catrow:last-child{border-bottom:none}
+  .catrow .cnm{flex:1}
+  .catrow .ccount{font-family:Consolas,monospace;font-weight:700}
+  /* console */
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .chead{display:flex;align-items:center;gap:10px;padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .chead .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .chead .cstat{color:var(--text-main)}
+  .chead .chev{margin-left:auto;cursor:pointer;background:none;border:none;color:var(--text-main);font-size:11px;padding:2px 8px;font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .cbody{padding:0 16px 12px}
+  .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.7 Consolas,monospace;padding:10px;height:92px;overflow:auto;margin:0}
+  .cbody pre a{color:var(--accent);text-decoration:none}
+  .console.collapsed .cbody{display:none}
+  /* footer */
+  .footer{display:flex;align-items:center;gap:10px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .footer .hallmark .mdl2{color:var(--accent);margin-right:5px}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .fdiv{width:1px;height:14px;background:var(--border)}
+  .fdot{width:8px;height:8px;border-radius:50%;background:var(--pass)}
+  .footer .fright{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .caption{font-size:11px;color:#7f97a3;max-width:1180px;line-height:1.5}
+  .caption b{color:#b9c9d1}
+</style>
+</head>
+<body>
+
+<div class="window">
+  <!-- ══ TITLEBAR (canonical shell chrome) ══ -->
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger" title="ToggleRail (btn_burger)">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE71B;</span>
+    <span class="tb-name">MEP Opening Tool</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path" id="lbl_file">Tower-A_MEP_Coordination.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="themeBtn" title="ToggleTheme (btn_theme)">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- ══ RAIL (existing 4-page ShellWindow rail) ══ -->
+    <div class="rail" id="rail">
+      <div class="rlab">ANALYSE</div>
+      <div class="nav sel" data-pg="config"><span class="g mdl2">&#xE713;</span>Configure<span class="xn">nav_config</span></div>
+      <div class="nav" data-pg="results"><span class="g mdl2">&#xE9F9;</span>Results<span class="xn">nav_results</span></div>
+      <div class="rlab">PLACE</div>
+      <div class="nav" data-pg="placement"><span class="g mdl2">&#xE945;</span>Place Openings<span class="xn">nav_placement</span></div>
+      <div class="rlab">CONFIG</div>
+      <div class="nav" data-pg="settings"><span class="g mdl2">&#xE713;</span>Settings<span class="xn">nav_settings</span></div>
+    </div>
+
+    <!-- ══ CONTENT ══ -->
+    <div class="content">
+
+      <!-- ─────────── PAGE: CONFIGURE ─────────── -->
+      <div class="page on" id="pg_config">
+        <div><h2 class="pg">Configure &amp; Analyse</h2>
+          <div class="sub">Pick the wall scope + MEP element types, set the buffer, then run the intersection scan.</div></div>
+
+        <div class="kpis">
+          <div class="tile"><div class="lab">SCOPE <span class="pill new">NEW</span></div><div class="val" id="kpi_scope">Active View</div><div class="s">cbo_scope</div></div>
+          <div class="tile"><div class="lab">WALL CATEGORIES</div><div class="val" id="kpi_walls">Basic</div><div class="s">cb_basic / cb_curtain</div></div>
+          <div class="tile"><div class="lab">MEP TYPES</div><div class="val" id="kpi_mep">2 / 4</div><div class="s">tv_mep_scope</div></div>
+          <div class="tile"><div class="lab">BUFFER / SIDE</div><div class="val" id="kpi_buffer">50<span style="font-size:12px"> mm</span></div><div class="s">= 100 mm total</div></div>
+        </div>
+
+        <div class="hero">
+          <!-- LEFT: config cards -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="card">
+              <h3>&#x1F9F1; Wall Scope</h3>
+              <div class="chk on" data-t><span class="box"></span>Basic / Stacked<span class="xn">cb_basic</span></div>
+              <div class="chk" data-t style="margin-left:18px"><span class="box"></span>Curtain Walls<span class="xn">cb_curtain</span></div>
+              <div class="chk acc" data-t style="display:flex;margin-top:10px"><span class="box"></span>Include walls from linked files<span class="xn">cb_linked_walls</span></div>
+              <div class="hint">Workset / Phase filters apply to host walls only.</div>
+            </div>
+
+            <div class="card">
+              <h3>&#x2699; Filters &amp; Scope</h3>
+              <div class="row-lab"><span class="fl">Wall Type</span><select class="sel2"><option>[ANY WALL TYPE]</option><option>Basic Wall - 200mm</option></select></div>
+              <div class="row-lab"><span class="fl">Workset</span><select class="sel2"><option>[ANY WORKSET]</option></select></div>
+              <div class="row-lab"><span class="fl">Phase</span><select class="sel2"><option>[ANY PHASE]</option></select></div>
+              <div class="row-lab"><span class="fl">Scope</span><select class="sel2" id="sel_scope"><option>Whole Model</option><option selected>Active View</option><option>Current Selection</option></select></div>
+              <div class="row-lab"><span class="fl">Buffer / side (mm)</span>
+                <div style="display:flex;align-items:center;gap:8px"><input class="in" id="in_offset" style="width:64px" value="50"><input type="range" class="slider" id="sl_offset" min="0" max="150" value="50"></div></div>
+              <div class="xnrow" style="text-align:right"><span class="xn">cbo_wall_type</span><span class="xn">cbo_workset</span><span class="xn">cbo_phase</span><span class="xn">cbo_scope</span><span class="xn">txt_offset</span></div>
+              <div class="hint">Opening = MEP + insulation&#xD7;2 + buffer&#xD7;2</div>
+            </div>
+
+            <div class="card">
+              <h3>&#x1F50C; MEP Elements <span class="xn">tv_mep_scope</span></h3>
+              <div class="tree" id="mepTree">
+                <div class="trow parent partial" data-parent><span class="tbox"></span><b>MEP Elements</b></div>
+                <div class="trow child on" data-leaf="duct"><span class="tbox"></span><span class="dotc" style="background:var(--duct)"></span>Ducts</div>
+                <div class="trow child on" data-leaf="pipe"><span class="tbox"></span><span class="dotc" style="background:var(--pipe)"></span>Pipes</div>
+                <div class="trow child" data-leaf="cond"><span class="tbox"></span><span class="dotc" style="background:var(--cond)"></span>Conduit</div>
+                <div class="trow child" data-leaf="tray"><span class="tbox"></span><span class="dotc" style="background:var(--tray)"></span>Trunking / Ladder</div>
+              </div>
+              <div style="display:flex;gap:16px;flex-wrap:wrap">
+                <div class="chk" data-t><span class="box"></span>Fittings<span class="xn">cb_fit</span></div>
+                <div class="chk" data-t><span class="box"></span>Accessories<span class="xn">cb_acc</span></div>
+                <div class="chk on" data-t id="chk_ins"><span class="box"></span>Insulation<span class="xn">cb_ins</span></div>
+              </div>
+              <div class="chk acc" data-t style="display:flex"><span class="box"></span>Also scan host model MEP<span class="xn">cb_host_mep</span></div>
+            </div>
+
+            <div class="card">
+              <h3>&#x1F4E4; Export Settings</h3>
+              <div style="display:flex;gap:16px;flex-wrap:wrap">
+                <div class="chk on" data-t><span class="box"></span>Formatted .xlsx<span class="xn">cb_xlsx</span></div>
+                <div class="chk on" data-t><span class="box"></span>Open after export<span class="xn">cb_open</span></div>
+              </div>
+              <div class="lbl">Folder</div>
+              <div style="display:flex;gap:6px"><input class="in" value="C:\Users\IcZ\Desktop"><button class="btn">Browse<span class="xn">BrowseFolder</span></button></div>
+              <div class="lbl">File name <span class="xn">txt_folder / txt_filename</span></div>
+              <input class="in" value="Wall_Opening_Report_20260720.xlsx">
+            </div>
+          </div>
+
+          <!-- RIGHT: WOT-specific hero = LIVE opening-size section preview -->
+          <div class="card previewwrap">
+            <h3>&#x1F441; Opening Preview <span class="pill new">NEW</span> <span class="pill eng">AnchorMath</span></h3>
+            <svg class="secsvg" id="canvas_preview" viewBox="0 0 360 250" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="dimread"><span>MEP size&nbsp; <b id="dim_mep">300 &#xD7; 200</b></span><span>Opening&nbsp; <b id="dim_open">404 &#xD7; 304</b> mm</span></div>
+            <div class="legend" id="canvas_legend">
+              <div class="r"><span class="sw" style="background:var(--duct)"></span>MEP element</div>
+              <div class="r"><span class="sw" style="background:rgba(255,179,0,.5)"></span>Insulation &#xD7;2</div>
+              <div class="r"><span class="sw" style="background:var(--accent)"></span>Opening (rotated to wall)</div>
+            </div>
+            <div class="hint" id="prev_note">Preview seats a single opening against the wall normal using the same
+              buffer + insulation math and <b>compute_rotation_angle</b> the scan uses. Drag the buffer to see the opening grow.</div>
+          </div>
+        </div>
+
+        <div class="actionbar">
+          <div class="chk on" data-t><span class="box"></span>Debug log<span class="xn">cb_log</span></div>
+          <div class="spacer"></div>
+          <button class="run" style="width:auto;padding:11px 22px" id="btn_run"><span class="g mdl2">&#xE768;</span> Run Analysis <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">btn_run_analysis</span></button>
+        </div>
+      </div>
+
+      <!-- ─────────── PAGE: RESULTS ─────────── -->
+      <div class="page" id="pg_results">
+        <div><h2 class="pg">Results</h2>
+          <div class="sub">Every wall that intersects the selected MEP, with its opening count. Click a row — or an ID in the log — to select + zoom.</div></div>
+
+        <div class="kpis">
+          <div class="tile"><div class="lab">WALLS HIT <span class="pill new">NEW</span></div><div class="val" id="kpi_hit">14</div><div class="s">with intersections</div></div>
+          <div class="tile"><div class="lab">OPENINGS</div><div class="val">37</div><div class="s">total detected</div></div>
+          <div class="tile"><div class="lab">MEP CATEGORIES</div><div class="val">3</div><div class="s">duct · pipe · tray</div></div>
+          <div class="tile"><div class="lab">SOURCE</div><div class="val">Host + 1</div><div class="s">linked file(s)</div></div>
+        </div>
+
+        <div class="hero">
+          <div class="card">
+            <h3>&#x1F9F1; Intersection Results <span class="xn">results_rows_panel</span> <span style="margin-left:auto;font-size:10px;color:var(--text-2)" id="results_count">14 walls · 37 openings</span></h3>
+            <div class="listtools">
+              <button class="btn mini">All<span class="xn">Results_All</span></button>
+              <button class="btn mini">None<span class="xn">Results_None</span></button>
+              <button class="btn mini">Remove &#x2713;<span class="xn">Results_RemoveChecked</span></button>
+              <button class="btn mini">Show<span class="xn">Results_NavChecked</span></button>
+            </div>
+            <div class="revlist" id="revlist"></div>
+          </div>
+          <div class="card">
+            <h3>&#x1F4CA; By Category <span class="xn">canvas_legend</span></h3>
+            <div class="catrow"><span class="dotc" style="background:var(--duct)"></span><span class="cnm">Ducts</span><span class="ccount">18</span></div>
+            <div class="catrow"><span class="dotc" style="background:var(--pipe)"></span><span class="cnm">Pipes</span><span class="ccount">11</span></div>
+            <div class="catrow"><span class="dotc" style="background:var(--tray)"></span><span class="cnm">Trunking / Ladder</span><span class="ccount">8</span></div>
+            <div class="catrow"><span class="dotc" style="background:var(--cond)"></span><span class="cnm">Conduit</span><span class="ccount">0</span></div>
+            <div class="hint">Linked-wall hits are listed in the Activity Log (can't select elements inside a link from the host grid).</div>
+          </div>
+        </div>
+
+        <div class="actionbar">
+          <div class="chk" data-t><span class="box"></span>Isolate on click<span class="xn">cb_isolate</span></div>
+          <div class="spacer"></div>
+          <button class="run" style="width:auto;padding:11px 24px"><span class="g mdl2">&#xE74E;</span> Export Report <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">ExportReport</span></button>
+        </div>
+      </div>
+
+      <!-- ─────────── PAGE: PLACE OPENINGS ─────────── -->
+      <div class="page" id="pg_placement">
+        <div><h2 class="pg">Place Openings</h2>
+          <div class="sub">Place the chosen opening family at every detected intersection in the host document — auto-rotated to face the wall.</div></div>
+
+        <div class="hero">
+          <div class="card">
+            <h3>&#x1F9F0; Opening Family</h3>
+            <div class="row-lab"><span class="fl">Family</span><select class="sel2"><option>M_Wall Opening - Rectangular</option><option>M_Sleeve - Round</option></select></div>
+            <div class="row-lab"><span class="fl">Type</span><select class="sel2"><option>Standard</option></select></div>
+            <div class="xnrow" style="text-align:right"><span class="xn">cbo_family</span><span class="xn">cbo_family_type</span><span class="xn">FamilySelected</span></div>
+            <div class="hint">Instances are auto-rotated to face the wall (<b>compute_rotation_angle</b>) and Width / Height / Diameter
+              parameters are set from the first writable configured name. Run analysis first.</div>
+            <div style="margin-top:10px;padding:10px;border:1px dashed var(--border);border-radius:6px;font-size:11px;color:var(--text-2)">
+              <b style="color:var(--pass)">&#x25CF;</b> 37 intersection points staged · <b style="color:var(--text-main)">M_Wall Opening - Rectangular : Standard</b>
+            </div>
+          </div>
+          <div class="card previewwrap">
+            <h3>&#x1F441; Placement Preview <span class="pill new">NEW</span></h3>
+            <svg class="secsvg" id="canvas_preview2" viewBox="0 0 360 230" preserveAspectRatio="xMidYMid meet"></svg>
+            <div class="hint">Shows one opening family seated + rotated at a hit. Mirrors the Configure preview using the placement rotation.</div>
+          </div>
+        </div>
+
+        <div class="actionbar">
+          <div class="spacer"></div>
+          <button class="run" style="width:auto;padding:11px 22px" id="btn_place"><span class="g mdl2">&#xE768;</span> <span id="lbl_place">Place Openings</span> <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">btn_place / lbl_place</span></button>
+        </div>
+      </div>
+
+      <!-- ─────────── PAGE: SETTINGS ─────────── -->
+      <div class="page" id="pg_settings">
+        <div><h2 class="pg">Settings</h2>
+          <div class="sub">Opening-family parameter names, tried in order — first writable match wins.</div></div>
+        <div class="hero" style="grid-template-columns:1fr">
+          <div class="card">
+            <h3>&#x1F511; Opening Family Parameter Names</h3>
+            <div class="hint" style="margin-top:0;margin-bottom:8px">Comma-separated fallbacks, tried in order. First writable match wins. 'Radius' is halved automatically.</div>
+            <div class="lbl">Width params <span class="xn">txt_pn_width</span></div>
+            <input class="in" value="Width, Opening Width, W, Horizontal Span">
+            <div class="lbl">Height params <span class="xn">txt_pn_height</span></div>
+            <input class="in" value="Height, Opening Height, H, Vertical Span">
+            <div class="lbl">Diameter params <span class="xn">txt_pn_diam</span></div>
+            <input class="in" value="Diameter, Opening Diameter, D, Radius">
+          </div>
+        </div>
+        <div class="actionbar">
+          <div class="spacer"></div>
+          <button class="run" style="width:auto;padding:11px 22px"><span class="g mdl2">&#xE74E;</span> Save Settings <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">SaveSettings</span></button>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- ══ CONSOLE (collapsible Activity Log — centralized in icz.shell) ══ -->
+  <div class="console" id="console">
+    <div class="chead">
+      <span class="g">&#xE9F9;</span> Activity Log
+      <span class="cstat" id="cstat">&nbsp;·&nbsp; Analysis done: 14 wall(s), 37 opening(s)</span>
+      <button class="chev" id="chev" title="Console_Toggle (btn_console_chev)">&#xE70D;</button>
+    </div>
+    <div class="cbody">
+      <pre id="txt_results">[10:42:07] === ANALYSIS START  buf=50mm ===
+[10:42:07] Host walls: 212   Total MEP: 1,884
+[10:42:08] HIT wall=<a href="#">884213</a>  duct 300x200 -> opening 404x304mm
+[10:42:08] HIT wall=<a href="#">884219</a>  pipe &#xD8;150 -> opening &#xD8;254mm
+[10:42:09] Linked-wall intersections (navigate manually): [Struct.rvt] 6 opening(s)
+[10:42:09] Walls with intersections : 14      Total openings : 37</pre>
+    </div>
+  </div>
+
+  <!-- ══ FOOTER (hallmark — sole branding) ══ -->
+  <div class="footer">
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span id="footer_status">Analysis done: 14 wall(s), 37 opening(s)</span>
+    <div class="fright"><span class="fdot"></span><span>Model loaded</span><button class="btn mini" style="margin-left:8px">Reset View<span class="xn">OnResetView</span></button></div>
+  </div>
+</div>
+
+<div class="caption">
+  <b>WOT round-12 restructure</b> — full CM2 rework of the existing 4-page ShellWindow. Rail: <b>Configure · Results · Place Openings · Settings</b>
+  (real <code>nav_*</code> / <code>page_*</code>). Tool-specific hero = the <b>live opening-size section preview</b> (net-new
+  <code>canvas_preview</code>), driven by the real <code>get_mep_details</code> buffer/insulation math + <code>compute_rotation_angle</code>.
+  KPI strips (net-new <code>kpi_*</code>), MEP tri-state tree (<code>tv_mep_scope</code>), collapsible Activity Log (<code>txt_results</code>,
+  centralized <code>Console_Toggle</code>), hallmark footer. Every control tagged with its real <code>x:Name</code>. Toggle theme, switch pages,
+  drag the buffer slider, toggle the MEP tree, collapse the console.
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+
+  // ---- rail nav ----
+  $$(".nav").forEach(function(n){
+    n.addEventListener("click", function(){
+      $$(".nav").forEach(function(x){x.classList.remove("sel");});
+      n.classList.add("sel");
+      var pg = n.getAttribute("data-pg");
+      $$(".page").forEach(function(p){p.classList.remove("on");});
+      var el = document.getElementById("pg_"+pg);
+      if(el){ el.classList.add("on"); }
+    });
+  });
+
+  // ---- burger collapses rail ----
+  $("#burger").addEventListener("click", function(){ $("#rail").classList.toggle("collapsed"); });
+
+  // ---- theme toggle ----
+  $("#themeBtn").addEventListener("click", function(){
+    document.body.classList.toggle("light");
+    this.innerHTML = document.body.classList.contains("light") ? "&#xE708;" : "&#xE706;";
+    drawPreview(); drawPlacement();
+  });
+
+  // ---- generic checkbox toggles ----
+  $$("[data-t]").forEach(function(c){
+    c.addEventListener("click", function(){ c.classList.toggle("on"); syncKpis(); });
+  });
+
+  // ---- MEP tri-state tree ----
+  function leaves(){ return $$('#mepTree .trow[data-leaf]'); }
+  function refreshParent(){
+    var ls = leaves(), on = ls.filter(function(l){return l.classList.contains("on");}).length;
+    var p = $('#mepTree .trow[data-parent]');
+    p.classList.remove("on","partial");
+    if(on === ls.length){ p.classList.add("on"); }
+    else if(on > 0){ p.classList.add("partial"); }
+    $("#kpi_mep").textContent = on + " / " + ls.length;
+  }
+  leaves().forEach(function(l){
+    l.addEventListener("click", function(){ l.classList.toggle("on"); refreshParent(); });
+  });
+  $('#mepTree .trow[data-parent]').addEventListener("click", function(){
+    var ls = leaves(), on = ls.filter(function(l){return l.classList.contains("on");}).length;
+    var target = (on === ls.length) ? false : true;   // any-unchecked -> check all
+    ls.forEach(function(l){ l.classList.toggle("on", target); });
+    refreshParent();
+  });
+
+  // ---- KPI sync from config ----
+  function syncKpis(){
+    var basic = $$('.chk')[0].classList.contains("on");
+    var curt  = $$('.chk')[1].classList.contains("on");
+    var w = []; if(basic) w.push("Basic"); if(curt) w.push("Curtain");
+    $("#kpi_walls").textContent = w.length ? w.join(" + ") : "None";
+    $("#kpi_scope").textContent = $("#sel_scope").value;
+  }
+  $("#sel_scope").addEventListener("change", syncKpis);
+
+  // ---- buffer slider <-> textbox <-> preview ----
+  var buf = 50, INS = 25; // insulation shown when cb_ins on (demo 25mm/side)
+  function insOn(){ return $("#chk_ins").classList.contains("on"); }
+  function setBuf(v){
+    v = Math.max(0, Math.min(150, Math.round(v||0)));
+    buf = v;
+    $("#in_offset").value = v; $("#sl_offset").value = v;
+    $("#kpi_buffer").innerHTML = v + '<span style="font-size:12px"> mm</span>';
+    $(".tile:last-child .s") && ($$(".kpis .tile")[3].querySelector(".s").textContent = "= " + (v*2) + " mm total");
+    drawPreview(); drawPlacement();
+  }
+  $("#sl_offset").addEventListener("input", function(){ setBuf(+this.value); });
+  $("#in_offset").addEventListener("input", function(){ setBuf(+this.value); });
+  $("#chk_ins").addEventListener("click", function(){ setTimeout(function(){drawPreview();drawPlacement();},0); });
+
+  // ---- section preview (real math: opening = mep + ins*2 + buf*2) ----
+  function cssv(n){ return getComputedStyle(document.body).getPropertyValue(n).trim() || "#00BCD4"; }
+  function buildSection(svg, mepW, mepH, rot){
+    if(!svg) return;
+    var add = (insOn()? INS*2 : 0) + buf*2;
+    var openW = mepW + add, openH = mepH + add;
+    // dimension readouts (Configure only)
+    if(svg.id === "canvas_preview"){
+      $("#dim_mep").innerHTML = mepW + " &#xD7; " + mepH;
+      $("#dim_open").innerHTML = Math.round(openW) + " &#xD7; " + Math.round(openH);
+    }
+    var W = 360, H = (svg.id==="canvas_preview")?250:230, cx = W/2, cy = H/2 - 6;
+    // scale mm -> px so the opening fits
+    var s = Math.min((W*0.5)/openW, (H*0.55)/openH);
+    var accent = cssv("--accent"), warn = "rgba(255,179,0,.45)", duct = cssv("--duct"), tx2 = cssv("--text-2"), brd = cssv("--border");
+    function rect(w,h,fill,stroke,sw,op){
+      return '<rect x="'+(cx-w*s/2)+'" y="'+(cy-h*s/2)+'" width="'+(w*s)+'" height="'+(h*s)+'" rx="3" '+
+        'fill="'+(fill||"none")+'" stroke="'+(stroke||"none")+'" stroke-width="'+(sw||0)+'" '+(op!=null?'opacity="'+op+'"':'')+'/>';
+    }
+    var g = '<g transform="rotate('+(rot||0)+','+cx+','+cy+')">';
+    // wall band (vertical, behind)
+    var wallW = openW*1.7*s, wallH = H*0.8;
+    g += '<rect x="'+(cx-wallW/2)+'" y="'+(cy-wallH/2)+'" width="'+wallW+'" height="'+wallH+'" fill="'+brd+'" opacity="0.25"/>';
+    // opening (outer, accent)
+    g += rect(openW, openH, "none", accent, 2.2, 1);
+    g += rect(openW, openH, accent, "none", 0, 0.10);
+    // insulation ring
+    if(insOn()){ g += rect(mepW+INS*2, mepH+INS*2, warn, "none", 0, 1); }
+    // mep element (inner)
+    g += rect(mepW, mepH, duct, "none", 0, 0.9);
+    g += '</g>';
+    // labels
+    g += '<text x="'+cx+'" y="18" fill="'+tx2+'" font-size="10" text-anchor="middle" font-family="Consolas">wall section — opening rotated '+Math.round(rot||0)+'&#xB0; to normal</text>';
+    g += '<text x="'+cx+'" y="'+(H-8)+'" fill="'+tx2+'" font-size="10" text-anchor="middle" font-family="Consolas">'+
+         (mepW)+'&#xD7;'+(mepH)+' + ins'+(insOn()?"":"(off)")+' + buf'+buf+' &#x2192; '+Math.round(openW)+'&#xD7;'+Math.round(openH)+' mm</text>';
+    svg.innerHTML = g;
+  }
+  function drawPreview(){ buildSection($("#canvas_preview"), 300, 200, 18); }
+  function drawPlacement(){ buildSection($("#canvas_preview2"), 300, 200, 32); }
+
+  // ---- review list (mock host hits + impact bars) ----
+  var HITS = [
+    {id:884213, nm:"Basic Wall - 200mm Blockwork", n:6},
+    {id:884219, nm:"Basic Wall - 140mm Partition", n:4},
+    {id:884255, nm:"Basic Wall - 200mm Blockwork", n:5},
+    {id:884301, nm:"Basic Wall - 300mm Core", n:3},
+    {id:884377, nm:"Basic Wall - 140mm Partition", n:2},
+    {id:884402, nm:"Basic Wall - 200mm Blockwork", n:1}
+  ];
+  (function(){
+    var mx = Math.max.apply(null, HITS.map(function(h){return h.n;}));
+    $("#revlist").innerHTML = HITS.map(function(h){
+      return '<div class="revrow"><span class="rid">'+h.id+'</span>'+
+        '<div style="flex:1;min-width:0"><div class="rnm">'+h.nm+'</div>'+
+        '<div class="bar"><i style="width:'+Math.round(h.n/mx*100)+'%"></i></div></div>'+
+        '<span class="rct">'+h.n+' opening(s)</span></div>';
+    }).join("");
+  })();
+
+  // ---- console chevron ----
+  $("#chev").addEventListener("click", function(){
+    var c = $("#console"); c.classList.toggle("collapsed");
+    this.innerHTML = c.classList.contains("collapsed") ? "&#xE70E;" : "&#xE70D;";
+  });
+
+  // init
+  refreshParent(); syncKpis(); setBuf(50);
+})();
+</script>
+</body>
+</html>

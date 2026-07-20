@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AutoDoc — Universal Layout Engine · Round 11 Restructure</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+    --tile-plan:#00BCD4; --tile-3d:#7E57C2; --tile-sec:#26A69A; --tile-cross:#5C6BC0; --tile-sched:#FFB300;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:18px}
+  body.light{background:#cfd8dc}
+  .window{width:1180px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  /* window chrome — canonical suite style (matches AA r10 + the real ui.xaml:
+     left app-icon + name, centre doc chip, right theme glyph + MDL2 window dots) */
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.3px;color:var(--text-main);font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:360px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:10px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.c{background:#FF5F57;color:#7A1410}.dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}
+  .main{display:flex;min-height:660px}
+  .rail{width:206px;background:var(--nav);border-right:1px solid var(--border);padding:12px 8px;display:flex;flex-direction:column;gap:2px}
+  .nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:7px;font-size:12.5px;color:var(--text-2);cursor:pointer}
+  .nav .g{font-family:"Segoe UI Symbol";width:20px;text-align:center;font-size:13px}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600}
+  .nav:hover{background:var(--hover)}
+  .rail .rlab{font-size:9.5px;letter-spacing:.08em;color:var(--text-2);padding:12px 10px 4px}
+  .rail .by{margin-top:auto;font-size:10px;color:var(--text-2);padding:0 10px 4px}
+  .content{flex:1;padding:16px 18px;display:flex;flex-direction:column;gap:14px;background:var(--window-bg);min-width:0}
+  h2.pg{font-size:15px;font-weight:600}
+  .sub{font-size:11px;color:var(--text-2);margin-top:2px}
+  .page{display:none;flex-direction:column;gap:14px}
+  .page.on{display:flex}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+  .tile .lab{font-size:10px;letter-spacing:.06em;color:var(--text-2)}
+  .tile .val{font-size:23px;font-weight:700;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+  .tile .s{font-size:10px;color:var(--text-2)}
+  .hero{display:grid;grid-template-columns:1fr 372px;gap:12px;align-items:start}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+  .card h3{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .lbl{font-size:10px;color:var(--text-2);margin:8px 0 3px;letter-spacing:.02em}
+  .in,.sel2{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:6px 8px;font-size:11.5px;font-family:inherit}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .chk{display:flex;align-items:center;gap:7px;font-size:11.5px;margin-top:8px;cursor:pointer;color:var(--text-main)}
+  .chk .box{width:15px;height:15px;border:1px solid var(--border);border-radius:4px;background:var(--input-bg);position:relative}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"✓";position:absolute;inset:0;color:var(--accent-fg);font-size:11px;text-align:center;line-height:15px}
+  .modes{display:flex;gap:8px;margin-top:6px}
+  .mode{flex:1;display:flex;flex-direction:column;gap:2px;background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px 10px;cursor:pointer;font-size:11.5px}
+  .mode.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .mode .mt{font-weight:600}
+  .mode .md{font-size:9.5px;color:var(--text-2)}
+  .stagerow{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:center;margin-top:10px}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:8px 10px;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;justify-content:center}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-family:"Segoe UI Symbol"}
+  .staged{font-size:11px;color:var(--text-2);white-space:nowrap}
+  .staged b{color:var(--accent);font-weight:700;font-size:14px}
+  .run{width:100%;margin-top:14px;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:13px;border:none;border-radius:7px;padding:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px}
+  .hint{font-size:10.5px;color:var(--text-2);margin-top:9px;line-height:1.5}
+  /* preview */
+  .previewwrap{display:flex;flex-direction:column;gap:8px}
+  .sheetsvg{width:100%;background:var(--input-bg);border:1px solid var(--border);border-radius:6px}
+  .legend{display:flex;flex-wrap:wrap;gap:8px 14px;font-size:10.5px;color:var(--text-2)}
+  .legend .r{display:flex;align-items:center;gap:6px}
+  .legend .sw{width:11px;height:11px;border-radius:3px}
+  .pill{font-size:9px;border-radius:99px;padding:2px 8px;font-weight:600}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.eng{background:rgba(126,87,194,.18);color:#B39DDB}
+  /* profiles page */
+  .cols{display:grid;grid-template-columns:1fr 372px;gap:12px;align-items:start}
+  .speclist{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;max-height:150px;overflow:auto;font-size:11px}
+  .specrow{padding:6px 9px;border-bottom:1px solid var(--border);cursor:pointer;font-family:Consolas,monospace;display:flex;gap:8px;align-items:center}
+  .specrow:last-child{border-bottom:none}
+  .specrow:hover{background:var(--hover)}
+  .specrow.sel{background:var(--nav-sel)}
+  .specrow .dotc{width:9px;height:9px;border-radius:2px;flex:none}
+  .flags{font-size:9px;color:var(--text-2);margin-left:auto}
+  .miniact{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+  .miniact .btn{padding:6px 9px;font-size:10.5px}
+  /* sheet tools */
+  .stcard{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:0}
+  .stgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .stfull{grid-column:1 / -1}
+  .sheetlist{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;height:132px;overflow:auto;font-size:11px}
+  .sheetrow{padding:6px 9px;border-bottom:1px solid var(--border);cursor:pointer;font-family:Consolas,monospace}
+  .sheetrow.sel{background:var(--nav-sel);color:var(--text-main)}
+  .sheetrow:hover{background:var(--hover)}
+  .wrapchk{display:flex;flex-wrap:wrap;gap:6px 14px}
+  /* console */
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .chead{display:flex;align-items:center;gap:12px;padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .chead .chev{margin-left:auto;cursor:pointer;background:none;border:none;color:var(--text-main);font-size:11px;padding:2px 8px}
+  .cbody{padding:0 16px 12px}
+  .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.7 Consolas,monospace;padding:10px;height:96px;overflow:auto}
+  .console.collapsed .cbody{display:none}
+  .footer{display:flex;align-items:center;gap:10px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .sep{width:1px;height:14px;background:var(--border)}
+  .gdot{width:8px;height:8px;border-radius:50%;background:var(--pass)}
+  .fright{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .note{width:1180px;max-width:100%;font-size:11px;color:#8FA6B2;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="window">
+  <div class="titlebar">
+    <span class="mdl2 tb-ico">&#xE7C3;</span>
+    <span class="tb-name">AutoDoc</span>
+    <div class="docchip"><span class="mdl2">&#xE8A5;</span><span class="path">DX_IMPP11-04_BIM_MO_Part_001.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" onclick="document.body.classList.toggle('light')" title="Toggle light / dark theme">&#xE706;</span>
+      <div class="dots"><span class="dot c mdl2">&#xE8BB;</span><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span></div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="rail">
+      <div class="rlab">DOCUMENT</div>
+      <div class="nav sel" data-page="generate"><span class="g">▤</span> Generate</div>
+      <div class="rlab">CONFIGURE</div>
+      <div class="nav" data-page="profiles"><span class="g">⚙</span> Profiles</div>
+      <div class="rlab">SHEETS</div>
+      <div class="nav" data-page="sheettools"><span class="g">⧉</span> Sheet Tools</div>
+      <div class="by">IcZ Workspace</div>
+    </div>
+    <div class="content">
+
+      <!-- ============ GENERATE ============ -->
+      <div class="page on" id="pg-generate">
+        <div>
+          <h2 class="pg">Generate</h2>
+          <div class="sub">Data-driven sheet creation — pick a layout profile, stage elements, generate. One Transaction per element; a bad element rolls back alone.</div>
+        </div>
+        <div class="kpis">
+          <div class="tile"><div class="lab">STAGED</div><div class="val" id="k-staged">12</div><div class="s" id="k-staged-s">from current selection</div></div>
+          <div class="tile"><div class="lab">PROFILE VIEWS</div><div class="val" id="k-views">5</div><div class="s" id="k-views-s">plan · 3d · sec · cross · sched</div></div>
+          <div class="tile"><div class="lab">OUTPUT</div><div class="val" id="k-out">Sheets</div><div class="s" id="k-out-s">titleblock docked</div></div>
+          <div class="tile"><div class="lab" id="k-mode-l">SHEETS TO CREATE</div><div class="val" id="k-mode" style="color:var(--accent)">12</div><div class="s" id="k-mode-s">one per element</div></div>
+        </div>
+        <div class="hero">
+          <!-- live preview -->
+          <div class="card">
+            <h3>SHEET PREVIEW <span class="pill eng">IcZ.Core.Layout.LayoutMath</span></h3>
+            <div class="previewwrap">
+              <svg class="sheetsvg" id="preview" viewBox="0 0 640 380" preserveAspectRatio="xMidYMid meet"></svg>
+              <div class="legend" id="legend"></div>
+              <div class="hint" id="prev-hint">Place-and-shift docking: each viewport seats against its <b>anchor</b> + <b>margin</b> inside the title block's usable area — the exact <b>AnchorPoint</b> math now compiled in <b>IcZ.Core.Layout</b>. Group mode tiles the plan across N&#215;N sheets via <b>TilePlan</b> when it won't fit at the contractual scale.</div>
+            </div>
+          </div>
+          <!-- output controls -->
+          <div class="card">
+            <h3>OUTPUT</h3>
+            <div class="lbl">Layout profile &nbsp;<span style="color:var(--text-2)">(cb_profile)</span></div>
+            <select class="sel2" id="cb_profile" onchange="onProfile()"></select>
+            <div class="row2">
+              <div><div class="lbl">Prefix (txt_prefix)</div><input class="in" value="DET-"></div>
+              <div><div class="lbl">Scale (cb_scale)</div>
+                <select class="sel2"><option>1:10</option><option>1:20</option><option>1:25</option><option selected>1:50</option><option>1:100</option></select></div>
+            </div>
+            <div class="lbl">Title block (cb_tblock)</div>
+            <select class="sel2"><option>IcZ_TBlock: A1 landscape</option><option>IcZ_TBlock: A3 landscape</option></select>
+            <div class="row3" style="margin-top:4px">
+              <div><div class="lbl">Plan tmpl</div><select class="sel2"><option>&lt;profile&gt;</option></select></div>
+              <div><div class="lbl">Section tmpl</div><select class="sel2"><option>&lt;profile&gt;</option></select></div>
+              <div><div class="lbl">3D tmpl</div><select class="sel2"><option>&lt;profile&gt;</option></select></div>
+            </div>
+            <div class="chk on" id="chk_tag" onclick="tog(this)"><span class="box"></span> Auto tagging (where the profile allows)</div>
+            <div class="chk" id="chk_no_sheet" onclick="tog(this)"><span class="box"></span> Create views only — no sheets</div>
+
+            <div class="lbl" style="margin-top:12px">BATCH MODE</div>
+            <div class="modes">
+              <div class="mode" id="m-per" onclick="setMode('per')"><span class="mt">One per element</span><span class="md">doors · equipment</span></div>
+              <div class="mode sel" id="m-grp" onclick="setMode('group')"><span class="mt">All on ONE sheet</span><span class="md">a system → shop drawing</span></div>
+            </div>
+
+            <div class="stagerow">
+              <button class="btn"><span class="g">▦</span> Use Selection</button>
+              <button class="btn"><span class="g">✛</span> Pick</button>
+              <div class="staged">Staged <b id="staged-n">12</b></div>
+            </div>
+            <button class="run"><span class="g" style="font-family:'Segoe UI Symbol'">▶</span> Generate Sheets</button>
+            <div class="hint">Overrides feed <b>doclayout.LayoutEngine.generate / generate_group</b>. Wired to the existing <b>on_run</b> ExternalEvent — no behaviour change, only the shell around it.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PROFILES ============ -->
+      <div class="page" id="pg-profiles">
+        <div>
+          <h2 class="pg">Profiles</h2>
+          <div class="sub">Interactive config (§4) — no raw JSON editing. Every field writes back to sheet_profiles.json (atomic via doclayout.save_profiles). The preview mirrors the profile live.</div>
+        </div>
+        <div class="cols">
+          <div class="card">
+            <h3>PROFILE</h3>
+            <div class="row3">
+              <div style="grid-column:1 / 3"><div class="lbl">Edit profile (cb_edit_profile)</div><select class="sel2" id="cb_edit_profile" onchange="onEditProfile()"></select></div>
+              <div style="display:flex;gap:6px;align-items:flex-end">
+                <button class="btn" style="flex:1">Duplicate</button><button class="btn" style="flex:1">Delete</button>
+              </div>
+            </div>
+            <div class="row3" style="margin-top:6px">
+              <div><div class="lbl">Rename (tb_prof_rename)</div><input class="in" id="p_rename"></div>
+              <div><div class="lbl">Number (tb_prof_number)</div><input class="in" id="p_num"></div>
+              <div><div class="lbl">Name (tb_prof_name)</div><input class="in" id="p_name"></div>
+            </div>
+            <div class="hint" style="margin-top:6px">Tokens: {seq} {id} {cat} {level} — group mode also {system} {count}.</div>
+
+            <div class="lbl" style="margin-top:12px">VIEWS ON THE SHEET (lst_specs) — click a row to highlight its tile</div>
+            <div class="speclist" id="speclist"></div>
+            <div class="row3" style="margin-top:8px">
+              <div><div class="lbl">Type (cb_spec_type)</div><select class="sel2" id="s_type"><option>plan</option><option>section</option><option>cross</option><option>3d</option><option>schedule</option></select></div>
+              <div><div class="lbl">Anchor (cb_spec_anchor)</div><select class="sel2" id="s_anchor"><option>TopLeft</option><option>TopCenter</option><option>TopRight</option><option>CenterLeft</option><option>Center</option><option>CenterRight</option><option>BottomLeft</option><option>BottomCenter</option><option>BottomRight</option></select></div>
+              <div><div class="lbl">Margin X / Y mm</div><div class="row2"><input class="in" value="15"><input class="in" value="15"></div></div>
+            </div>
+            <div class="wrapchk" style="margin-top:8px">
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Auto tag</div>
+              <div class="chk" onclick="tog(this)"><span class="box"></span> Own sheet</div>
+              <div class="chk" onclick="tog(this)"><span class="box"></span> Scale-tile (plan)</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Isolate staged</div>
+            </div>
+            <div class="miniact">
+              <button class="btn">＋ Add View</button><button class="btn">Update</button><button class="btn">Remove</button>
+              <button class="btn" style="background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700">✔ Save Profiles</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>SHEET PREVIEW <span class="pill eng">LayoutMath</span></h3>
+            <div class="previewwrap">
+              <svg class="sheetsvg" id="preview2" viewBox="0 0 640 380" preserveAspectRatio="xMidYMid meet"></svg>
+              <div class="legend" id="legend2"></div>
+              <div class="hint">Each anchor/margin edit re-docks its tile instantly — the same place-and-shift the engine performs on the real sheet after <b>doc.Regenerate()</b>.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SHEET TOOLS ============ -->
+      <div class="page" id="pg-sheettools">
+        <div>
+          <h2 class="pg">Sheet Tools</h2>
+          <div class="sub">Align · Duplicate · Crop — post-processing on existing sheets (B22/B23/B24). Every run re-fetches through the ExternalEvent (stale-data rule).</div>
+        </div>
+        <div class="stgrid">
+          <div class="stcard stfull">
+            <h3>PROJECT SHEETS (lst_sheets) &nbsp;<span class="sub">multi-select with Ctrl / Shift — Align &amp; Duplicate act on the selection</span>
+              <button class="btn" style="margin-left:auto;padding:5px 10px"><span class="g">⟳</span> Refresh</button></h3>
+            <div class="sheetlist" id="sheetlist"></div>
+          </div>
+          <div class="stcard">
+            <h3>ALIGN VIEWPORTS</h3>
+            <div class="lbl">Main sheet — the reference layout (cb_main_sheet)</div>
+            <select class="sel2"><option>DT-001 — DETAIL - Pipe</option><option>DT-002 — DETAIL - Duct</option></select>
+            <div class="wrapchk" style="margin-top:8px">
+              <div class="chk" onclick="tog(this)"><span class="box"></span> Apply same crop / scope box</div>
+              <div class="chk" onclick="tog(this)"><span class="box"></span> Match title block type</div>
+              <div class="chk" onclick="tog(this)"><span class="box"></span> Align same-name legends</div>
+            </div>
+            <button class="btn" style="width:100%;margin-top:10px"><span class="g">▤</span> Align Selected Sheets to Main</button>
+            <div class="hint">Outlines collapse to pure crop during the move; title blocks normalise to 0,0. via <b>doclayout.align_viewports</b>.</div>
+          </div>
+          <div class="stcard">
+            <h3>DUPLICATE SHEETS</h3>
+            <div class="row3">
+              <div><div class="lbl">Number suffix</div><input class="in" value="-A"></div>
+              <div><div class="lbl">Name suffix</div><input class="in" value=" copy"></div>
+              <div><div class="lbl">Views</div><select class="sel2"><option>Duplicate</option><option>With detailing</option><option>As dependent</option><option>Do not copy</option></select></div>
+            </div>
+            <div class="wrapchk" style="margin-top:8px">
+              <div class="chk" onclick="tog(this)"><span class="box"></span> Dup legends</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Schedules</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Text / lines / images</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Clouds</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Dimensions</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> DWGs</div>
+              <div class="chk on" onclick="tog(this)"><span class="box"></span> Revisions</div>
+            </div>
+            <button class="btn" style="width:100%;margin-top:10px"><span class="g">⧉</span> Duplicate Selected Sheets</button>
+          </div>
+          <div class="stcard stfull">
+            <h3>CROP FROM SHEET SHAPE</h3>
+            <div class="hint" style="margin-top:0">Draw a closed polygon of detail lines ON the sheet, select it together with ONE viewport, then run — the view's crop follows the shape (curves straightened). via <b>doclayout.set_crop_from_sheet_curves</b>.</div>
+            <button class="btn" style="margin-top:10px"><span class="g">✂</span> Set Crop From Selection</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- activity log -->
+  <div class="console" id="cons">
+    <div class="chead">
+      <span style="color:var(--text-main)" id="cstatus">Group mode · MEP Spool (quad) — 12 staged → 1 tiled shop drawing.</span>
+      <span class="sep"></span><span>Clear</span>
+      <button class="chev" id="chev" onclick="ctog()" title="Collapse / expand the activity log">⌄</button>
+    </div>
+    <div class="cbody">
+      <pre id="clog">IcZ AutoDoc — Universal Layout Engine
+-------------------------------------
+Profile: MEP Spool (quad)   mode: group (one shop drawing)
+Staged : 12 element(s) from current selection
+Preview: plan(TopLeft) 3d(TopRight) section(BottomLeft) cross(BottomCenter) schedule(BottomRight)
+Tiling : plan fits 1 sheet at 1:50  (TilePlan → 1×1)  — no split needed
+Ready.  Generate → doclayout.generate_group()  ·  one Transaction, warning-capture armed.</pre>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hallmark"><b>IcZ</b> <span>Workspace</span></div>
+    <span class="sep"></span><div class="gdot"></div><span>Model loaded · workshared</span>
+    <div class="fright"><span id="fpage">Generate</span></div>
+  </div>
+</div>
+
+<div class="note">
+  AutoDoc round-11 restructure — flat rail (<b>Generate · Profiles · Sheet Tools</b>) replaces the title-bar toggle icons; live <b>sheet preview</b> renders each profile's docked viewports (and group-mode tile grid) from the same <b>AnchorPoint / TilePlan</b> math now compiled into <b>IcZ.Core.Layout</b> (C# Phase 5, this round). Every control is annotated with its real <b>x:Name</b> — the only net-new element is the preview canvas (implementable as a WPF <b>Canvas</b> driven by the ported anchor math). Click the rail to switch pages · pick a profile · toggle batch mode · click a view row on Profiles · ☀ theme · ⌄ log.
+</div>
+
+<script>
+  var PROFILES = {
+    "MEP Spool (quad)": {mode:"group", num:"DT-{seq}", name:"DETAIL - {system}", views:[
+      {t:"plan",     a:"TopLeft",      fit:false},
+      {t:"3d",       a:"TopRight",     fit:false},
+      {t:"section",  a:"BottomLeft",   fit:false},
+      {t:"cross",    a:"BottomCenter", fit:false},
+      {t:"schedule", a:"BottomRight",  fit:false}
+    ]},
+    "System Shop Drawing (tiled)": {mode:"group", num:"SD-{seq}", name:"SYSTEM - {system}", views:[
+      {t:"plan",     a:"Center",       fit:true},
+      {t:"section",  a:"BottomLeft",   fit:false},
+      {t:"3d",       a:"TopRight",     own:true},
+      {t:"schedule", a:"BottomRight",  fit:false}
+    ]},
+    "Door Detail (per element)": {mode:"per", num:"DR-{seq}", name:"DOOR - {id}", views:[
+      {t:"plan",     a:"TopLeft",   fit:false},
+      {t:"cross",    a:"TopRight",  fit:false},
+      {t:"schedule", a:"BottomRight", fit:false}
+    ]}
+  };
+  var COLORS = {plan:"var(--tile-plan)", "3d":"var(--tile-3d)", section:"var(--tile-sec)", cross:"var(--tile-cross)", schedule:"var(--tile-sched)"};
+  var LABELS = {plan:"PLAN", "3d":"3D", section:"SECTION", cross:"CROSS", schedule:"SCHEDULE"};
+  var curKey = "MEP Spool (quad)";
+  var curMode = "group";
+  var selSpec = -1;
+
+  // anchor → (x,y) of a tile's top-left inside a usable rect — mirrors
+  // doclayout.LayoutEngine.anchor_point (Top maps to visual top here).
+  function dock(a, ux, uy, uw, uh, tw, th, m){
+    var x, y;
+    if(a.indexOf("Left")>=0) x = ux + m;
+    else if(a.indexOf("Right")>=0) x = ux + uw - m - tw;
+    else x = ux + (uw - tw)/2;
+    if(a.indexOf("Top")===0) y = uy + m;
+    else if(a.indexOf("Bottom")===0) y = uy + uh - m - th;
+    else y = uy + (uh - th)/2;
+    return [x,y];
+  }
+
+  function tileSize(v){
+    // representative paper sizes per view kind (preview only)
+    if(v.t==="plan")     return [250,150];
+    if(v.t==="3d")       return [150,120];
+    if(v.t==="section")  return [230,90];
+    if(v.t==="cross")    return [150,90];
+    return [150,120]; // schedule
+  }
+
+  function render(svgId, legId){
+    var p = PROFILES[curKey];
+    var mode = (svgId==="preview") ? curMode : p.mode;
+    var svg = document.getElementById(svgId);
+    var W=640,H=380, pad=18;
+    var tb = {x:pad,y:pad,w:W-2*pad,h:H-2*pad};
+    var use = {x:tb.x+16,y:tb.y+16,w:tb.w-70,h:tb.h-32}; // usable area (title strip on right)
+    var s = '';
+    // sheet + titleblock frame
+    s += rect(tb.x,tb.y,tb.w,tb.h,"none","var(--border)",1.5,4);
+    s += rect(tb.x+tb.w-52,tb.y,52,tb.h,"var(--panel2)","var(--border)",1,0);
+    s += txt(tb.x+tb.w-26,tb.y+tb.h/2,"TITLE",9,"var(--text-2)",true,90);
+
+    var tiled = null;
+    var others = [];
+    p.views.forEach(function(v){ if(mode==="group" && v.fit && v.t==="plan") tiled=v; else others.push(v); });
+
+    // group-mode tiling of the fit=scale plan
+    var tileNote = "1×1";
+    if(tiled){
+      // demo tile grid: shop system is large → TilePlan → 2×2
+      var nx=2, ny=2; tileNote = nx+"×"+ny;
+      var gx=use.x, gy=use.y, gw=use.w*0.62, gh=use.h;
+      var tw=(gw-8*(nx-1))/nx, th=(gh-8*(ny-1))/ny;
+      for(var iy=0;iy<ny;iy++)for(var ix=0;ix<nx;ix++){
+        var tx=gx+ix*(tw+8), ty=gy+iy*(th+8);
+        s += rect(tx,ty,tw,th,"rgba(0,188,212,.10)",COLORS.plan,1.3,3);
+        s += txt(tx+tw/2,ty+th/2-4,"PLAN",9,COLORS.plan,false,0);
+        s += txt(tx+tw/2,ty+th/2+9,"tile "+(iy*nx+ix+1)+"/"+(nx*ny),7.5,"var(--text-2)",false,0);
+      }
+    }
+
+    // dock the other views into the usable area (or the right strip when tiled)
+    others.forEach(function(v,i){
+      var region = tiled ? {x:use.x+use.w*0.66,y:use.y,w:use.w*0.34,h:use.h} : use;
+      var sz = tileSize(v);
+      var tw=Math.min(sz[0], region.w-8), th=Math.min(sz[1], region.h-8);
+      var m = 8;
+      var pos = tiled ? [region.x, region.y + i*(th+6)] : dock(v.a, region.x,region.y,region.w,region.h, tw,th, m);
+      var isSel = (svgId==="preview2" && others.indexOf(v)===selSpec);
+      var col = COLORS[v.t]||"var(--accent)";
+      s += rect(pos[0],pos[1],tw,th, tint(v.t), col, isSel?2.6:1.4, 3);
+      s += txt(pos[0]+tw/2,pos[1]+th/2+1, LABELS[v.t]||v.t.toUpperCase(), 9.5, col, false,0);
+      s += txt(pos[0]+tw/2,pos[1]+th-7, v.a+(v.own?" ·own":""), 7.5, "var(--text-2)", false,0);
+    });
+
+    svg.innerHTML = s;
+
+    // legend
+    var kinds = {};
+    p.views.forEach(function(v){kinds[v.t]=1;});
+    var leg = '';
+    Object.keys(kinds).forEach(function(k){
+      leg += '<div class="r"><div class="sw" style="background:'+(COLORS[k]||'var(--accent)')+'"></div>'+(LABELS[k]||k)+'</div>';
+    });
+    if(tiled) leg += '<div class="r"><b style="color:var(--accent)">TilePlan → '+tileNote+'</b></div>';
+    document.getElementById(legId).innerHTML = leg;
+    return tileNote;
+  }
+
+  function tint(t){
+    var map={plan:"rgba(0,188,212,.12)","3d":"rgba(126,87,194,.14)",section:"rgba(38,166,154,.13)",cross:"rgba(92,107,192,.14)",schedule:"rgba(255,179,0,.12)"};
+    return map[t]||"rgba(255,255,255,.05)";
+  }
+  function rect(x,y,w,h,fill,stroke,sw,r){
+    return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+r+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+  }
+  function txt(x,y,t,sz,fill,vert,rot){
+    var tr = rot? ' transform="rotate(-90 '+x+' '+y+')"':'';
+    return '<text x="'+x+'" y="'+y+'" font-family="Segoe UI,sans-serif" font-size="'+sz+'" font-weight="600" fill="'+fill+'" text-anchor="middle"'+tr+'>'+t+'</text>';
+  }
+
+  // ── KPIs + log ──
+  function refreshKPIs(){
+    var p = PROFILES[curKey];
+    var n = 12;
+    document.getElementById("k-views").textContent = p.views.length;
+    document.getElementById("k-views-s").textContent = p.views.map(function(v){return v.t;}).join(" · ");
+    var noSheet = document.getElementById("chk_no_sheet").classList.contains("on");
+    document.getElementById("k-out").textContent = noSheet ? "Views" : "Sheets";
+    document.getElementById("k-out-s").textContent = noSheet ? "no title block" : "title block docked";
+    if(curMode==="group"){
+      document.getElementById("k-mode-l").textContent = "GROUP OUTPUT";
+      document.getElementById("k-mode").textContent = "1+";
+      document.getElementById("k-mode-s").textContent = n+" elements → tiled shop drawing";
+    } else {
+      document.getElementById("k-mode-l").textContent = "SHEETS TO CREATE";
+      document.getElementById("k-mode").textContent = noSheet ? "0" : n;
+      document.getElementById("k-mode-s").textContent = noSheet ? "views only" : "one per element";
+    }
+  }
+  function log(tileNote){
+    var p = PROFILES[curKey];
+    var specs = p.views.map(function(v){return v.t+"("+v.a+")";}).join(" ");
+    document.getElementById("clog").textContent =
+      "IcZ AutoDoc — Universal Layout Engine\n-------------------------------------\n"+
+      "Profile: "+curKey+"   mode: "+(curMode==="group"?"group (one shop drawing)":"one sheet per element")+"\n"+
+      "Staged : 12 element(s) from current selection\n"+
+      "Preview: "+specs+"\n"+
+      "Tiling : "+(curMode==="group" && hasFit(p) ? ("plan split — TilePlan → "+tileNote) : "plan fits 1 sheet — TilePlan → 1×1")+"\n"+
+      "Ready.  Generate → doclayout."+(curMode==="group"?"generate_group()":"generate()")+"  ·  one Transaction, warning-capture armed.";
+    document.getElementById("cstatus").textContent =
+      (curMode==="group"?"Group mode · ":"Per-element · ")+curKey+" — 12 staged"+(curMode==="group"?" → 1 tiled shop drawing.":" → 12 sheets.");
+  }
+  function hasFit(p){return p.views.some(function(v){return v.fit;});}
+
+  // ── events ──
+  function onProfile(){
+    curKey = document.getElementById("cb_profile").value;
+    curMode = PROFILES[curKey].mode;
+    syncModeButtons();
+    var tn = render("preview","legend"); refreshKPIs(); log(tn);
+  }
+  function setMode(m){ curMode=m; syncModeButtons(); var tn=render("preview","legend"); refreshKPIs(); log(tn); }
+  function syncModeButtons(){
+    document.getElementById("m-per").classList.toggle("sel", curMode==="per");
+    document.getElementById("m-grp").classList.toggle("sel", curMode==="group");
+  }
+  function tog(el){ el.classList.toggle("on"); refreshKPIs(); }
+  function ctog(){ var c=document.getElementById('cons'); c.classList.toggle('collapsed');
+    document.getElementById('chev').textContent = c.classList.contains('collapsed')?'⌃':'⌄'; }
+
+  // profiles page
+  function onEditProfile(){ curKey=document.getElementById("cb_edit_profile").value; selSpec=-1; buildSpecList(); render("preview2","legend2");
+    var p=PROFILES[curKey]; document.getElementById("p_rename").value=curKey; document.getElementById("p_num").value=p.num; document.getElementById("p_name").value=p.name; }
+  function buildSpecList(){
+    var p=PROFILES[curKey], h='';
+    p.views.forEach(function(v,i){
+      var fl=[v.fit?"F":"",v.own?"O":""].join("");
+      h+='<div class="specrow'+(i===selSpec?' sel':'')+'" onclick="pickSpec('+i+')"><span class="dotc" style="background:'+(COLORS[v.t]||'var(--accent)')+'"></span>'+
+         pad2(v.t,9)+' @ '+pad2(v.a,12)+'<span class="flags">'+fl+'</span></div>';
+    });
+    document.getElementById("speclist").innerHTML=h;
+  }
+  function pad2(s,n){ s=String(s); while(s.length<n)s+=" "; return s.replace(/ /g,"&nbsp;"); }
+  function pickSpec(i){ selSpec=i; buildSpecList(); render("preview2","legend2"); }
+
+  // sheet list
+  function buildSheets(){
+    var rows=["DT-001 — DETAIL - Pipe","DT-002 — DETAIL - Duct","SD-010 — SYSTEM - CHW","SD-011 — SYSTEM - HHW","DR-100 — DOOR - 4471","DR-101 — DOOR - 4472"];
+    var h=''; rows.forEach(function(r,i){ h+='<div class="sheetrow'+(i<2?' sel':'')+'" onclick="this.classList.toggle(\'sel\')">'+r+'</div>'; });
+    document.getElementById("sheetlist").innerHTML=h;
+  }
+
+  // rail nav
+  document.querySelectorAll('.nav').forEach(function(nav){
+    nav.addEventListener('click',function(){
+      document.querySelectorAll('.nav').forEach(function(n){n.classList.remove('sel');});
+      nav.classList.add('sel');
+      var pg=nav.getAttribute('data-page');
+      document.querySelectorAll('.page').forEach(function(p){p.classList.remove('on');});
+      document.getElementById('pg-'+pg).classList.add('on');
+      document.getElementById('fpage').textContent = nav.textContent.trim();
+      if(pg==='profiles') render("preview2","legend2");
+    });
+  });
+
+  // init
+  (function(){
+    var sel=document.getElementById("cb_profile"), sel2=document.getElementById("cb_edit_profile");
+    Object.keys(PROFILES).forEach(function(k){ sel.innerHTML+='<option>'+k+'</option>'; sel2.innerHTML+='<option>'+k+'</option>'; });
+    onEditProfile(); curKey="MEP Spool (quad)"; curMode="group"; syncModeButtons();
+    var tn=render("preview","legend"); refreshKPIs(); log(tn); buildSheets();
+    document.getElementById("cb_edit_profile").value="MEP Spool (quad)"; onEditProfile();
+  })();
+</script>
+</body>
+</html>

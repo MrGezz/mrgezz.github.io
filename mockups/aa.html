@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QAQC Suite — Full Restructure v2 (Round 10 mockup)</title>
+<!--
+  AA (IcZ QAQC Suite) — FROM-SCRATCH restructure v2, mining backlog round 10.
+  Modeled on the reference implementations FIT (flat rail of operation pages) and
+  CD (dense width-filling dashboard whose findings rows ARE the launchers —
+  "Quick Launch folded into findings rows"). CM2 palette per theme patching guidline.md.
+
+  Answers the v1 feedback:
+   • DON'T DUPLICATE  → dashboard findings-by-group rows deep-link to the group
+     pages; phase controls live in exactly ONE place (the group page). No second
+     "queue" list.
+   • AVOID EMPTY SPACE → KPI band = star columns filling the width; hero = 3
+     dense panels; group pages use the full width.
+   • LINK WHAT CAN BE LINKED → every dashboard group row + KPI is clickable and
+     navigates (click Cleanup → Cleanup page; click CMMN → CMMN page).
+   • FIT/CD reference → flat NavButtons rail; scan-health top-right; sub-selector
+     inside Audits (like FIT's Convert/Audit/Simplify op-selector).
+-->
+<style>
+  :root{
+    --bg:#0B1013; --bg2:#0F161A; --card:#141E24; --panel:#152026; --panel2:#1C2B33;
+    --line:#283B45; --text:#ECF4F7; --text2:#8FA6B2;
+    --accent:#00BCD4; --accent2:#4DD0E1; --accent-soft:rgba(0,188,212,.12); --accent-fg:#06222B;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+    --pass-bg:rgba(76,175,80,.14); --warn-bg:rgba(255,179,0,.14); --fail-bg:rgba(255,82,82,.14);
+    --r-hero:12px; --r-card:8px; --r-btn:6px;
+  }
+  [data-theme="light"]{
+    --bg:#ECEFF1; --bg2:#E7EDF0; --card:#FFFFFF; --panel:#FFFFFF; --panel2:#E7EDF0;
+    --line:#CFD8DC; --text:#263238; --text2:#546E7A;
+    --accent:#0097A7; --accent2:#00838F; --accent-soft:rgba(0,151,167,.12); --accent-fg:#FFFFFF;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E7EDF0;
+    --pass-bg:rgba(46,125,50,.12); --warn-bg:rgba(245,127,23,.12); --fail-bg:rgba(211,47,47,.12);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{height:100%}
+  body{background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif;
+    font-size:12px; display:flex; align-items:center; justify-content:center; padding:20px}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; font-style:normal}
+
+  .win{width:1200px; height:800px; background:var(--bg); border-radius:var(--r-hero);
+    overflow:hidden; display:flex; flex-direction:column; border:1px solid var(--line);
+    box-shadow:0 24px 70px rgba(0,0,0,.6)}
+  .titlebar{height:40px; background:var(--bg2); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:12px; padding:0 12px; flex:0 0 auto}
+  .tb-ico{color:var(--text2); font-size:15px; cursor:pointer}
+  .tb-name{font-weight:700; letter-spacing:.3px}
+  .docchip{margin:0 auto; display:flex; align-items:center; gap:7px; background:var(--panel2);
+    border:1px solid var(--line); border-radius:var(--r-btn); padding:4px 12px; color:var(--text2)}
+  .docchip .mdl2{color:var(--accent); font-size:12px}
+  .docchip .path{font-family:Consolas,monospace; font-size:11px; max-width:360px; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap}
+  .tb-right{display:flex; align-items:center; gap:10px}
+  .theme-btn{color:var(--text2); font-size:14px; cursor:pointer; padding:4px}
+  .dots{display:flex; gap:8px}
+  .dot{width:13px; height:13px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-family:"Segoe MDL2 Assets"; font-size:8px}
+  .dot.c{background:#FF5F57; color:#7A1410}.dot.m{background:#FEBC2E; color:#7A5A0F}.dot.x{background:#28C840; color:#0E5A1E}
+
+  .body{flex:1 1 auto; display:flex; min-height:0}
+
+  /* rail = flat pages (FIT pattern) */
+  .rail{width:198px; background:var(--bg2); border-right:1px solid var(--line); flex:0 0 auto;
+    padding:12px 9px; display:flex; flex-direction:column; gap:2px; overflow:auto}
+  .rail-sec{font-size:9px; font-weight:700; color:var(--text2); letter-spacing:.6px; margin:12px 6px 4px}
+  .rail-sec:first-child{margin-top:2px}
+  .nav{display:flex; align-items:center; gap:11px; padding:8px 10px; border-radius:var(--r-card);
+    cursor:pointer; border-left:3px solid transparent; color:var(--text)}
+  .nav:hover{background:var(--panel)}
+  .nav.on{background:var(--accent-soft); border-left-color:var(--accent)}
+  .nav .mdl2{font-size:16px; color:var(--accent); width:19px; text-align:center}
+  .nav .lbl{font-size:12.5px; font-weight:600}
+  .nav .badge{margin-left:auto; font-size:9px; font-weight:700; padding:1px 7px; border-radius:9px}
+  .nav .badge.warn{background:var(--warn-bg); color:var(--warn)}
+  .nav .badge.acc{background:var(--accent-soft); color:var(--accent)}
+
+  .content{flex:1 1 auto; min-width:0; overflow:auto; padding:16px 20px}
+  .panel{display:none}.panel.on{display:block}
+  .phead{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px}
+  .ptitle{font-size:19px; font-weight:800}
+  .psub{color:var(--text2); font-size:11px; margin-top:2px}
+
+  .btn{border:none; border-radius:var(--r-btn); font-family:inherit; font-size:12px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:8px; padding:8px 15px; font-weight:600}
+  .btn .mdl2{font-size:13px}
+  .btn-accent{background:var(--accent); color:var(--accent-fg); box-shadow:0 0 16px -3px var(--accent-soft)}
+  .btn-ghost{background:transparent; color:var(--accent); border:1px solid var(--accent)}
+  .btn-soft{background:var(--panel2); color:var(--text)}
+  .btn-mini{padding:6px 11px; font-size:11px}
+
+  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); padding:15px}
+  .card-h{font-size:13px; font-weight:700; margin-bottom:11px; display:flex; align-items:center; justify-content:space-between}
+  .hint{font-size:10.5px; color:var(--text2)}
+
+  /* KPI band — star columns fill width */
+  .kpis{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:12px}
+  .kpi{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); padding:12px 14px; cursor:pointer}
+  .kpi:hover{border-color:var(--accent)}
+  .kpi .l{font-size:9.5px; color:var(--text2); letter-spacing:.4px; text-transform:uppercase}
+  .kpi .v{font-size:25px; font-weight:800; margin:5px 0 1px}
+  .kpi .s{font-size:9.5px; color:var(--text2)}
+  .kpi .v.pass{color:var(--pass)}.kpi .v.warn{color:var(--warn)}.kpi .v.acc{color:var(--accent)}
+
+  /* hero: 3 dense panels fill width */
+  .hero{display:grid; grid-template-columns:326px 1fr 250px; gap:12px; margin-bottom:12px}
+  .donut{width:120px; height:120px; border-radius:50%;
+    background:conic-gradient(var(--pass) 0 78%, var(--warn) 78% 90%, var(--fail) 90% 100%);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto}
+  .donut .hole{width:82px; height:82px; border-radius:50%; background:var(--card);
+    display:flex; flex-direction:column; align-items:center; justify-content:center}
+  .donut .hv{font-size:24px; font-weight:800; color:var(--pass)}
+  .donut .hl{font-size:8.5px; color:var(--text2); text-transform:uppercase; letter-spacing:.5px}
+  .lg{display:flex; align-items:center; gap:8px; font-size:11.5px; margin:5px 0}
+  .sw{width:10px; height:10px; border-radius:3px}
+  .sw.pass{background:var(--pass)}.sw.warn{background:var(--warn)}.sw.fail{background:var(--fail)}
+  .lg .n{margin-left:auto; color:var(--text2)}
+
+  /* findings-by-group rows = the launchers (deep-link; NO separate quick-launch) */
+  .frow{display:flex; align-items:center; gap:11px; padding:9px 11px; border-radius:var(--r-btn);
+    cursor:pointer; border:1px solid transparent}
+  .frow:hover{background:var(--panel); border-color:var(--line)}
+  .frow .mdl2{color:var(--accent); font-size:15px; width:20px; text-align:center}
+  .frow .fn{font-weight:600}
+  .frow .fm{font-size:9.5px; color:var(--text2)}
+  .frow .bar{flex:1; height:7px; border-radius:4px; background:var(--track); overflow:hidden; max-width:180px}
+  .frow .bar>i{display:block; height:100%}
+  .frow .go{color:var(--text2); font-size:12px}
+  .chip{font-size:9px; font-weight:700; letter-spacing:.3px; padding:2px 8px; border-radius:9px; text-transform:uppercase; white-space:nowrap}
+  .chip.pass{background:var(--pass-bg); color:var(--pass)}
+  .chip.warn{background:var(--warn-bg); color:var(--warn)}
+  .chip.fail{background:var(--fail-bg); color:var(--fail)}
+  .chip.acc{background:var(--accent-soft); color:var(--accent)}
+  .chip.idle{background:var(--panel2); color:var(--text2)}
+  .scope-row{display:flex; align-items:center; gap:8px; padding:6px 0; font-size:11.5px; border-top:1px solid var(--line)}
+  .scope-row:first-of-type{border-top:none}
+  .scope-row .mdl2{color:var(--accent); font-size:13px; width:18px}
+  .scope-row .v{margin-left:auto; font-weight:600}
+
+  /* pill toggle */
+  .pill{width:36px; height:19px; border-radius:10px; background:var(--panel2); border:1px solid var(--line);
+    position:relative; cursor:pointer; flex:0 0 auto; transition:.15s}
+  .pill::after{content:""; position:absolute; width:13px; height:13px; border-radius:50%; background:var(--text2);
+    top:2px; left:2px; transition:.15s}
+  .pill.on{background:var(--accent); border-color:var(--accent)}
+  .pill.on::after{left:19px; background:var(--accent-fg)}
+  .pill.part{background:var(--accent-soft); border-color:var(--accent)}          /* stage = some phases queued */
+  .pill.part::after{left:10px; background:var(--accent)}
+  .togrow{display:flex; align-items:center; gap:12px; padding:8px 0}
+  .togrow .col{flex:1}.togrow .t{font-weight:600}.togrow .d{font-size:10.5px; color:var(--text2); margin-top:1px}
+
+  /* group page: phase cards + review */
+  .phase{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); margin-bottom:10px; overflow:hidden}
+  .phase-h{display:flex; align-items:center; gap:12px; padding:11px 14px; cursor:pointer}
+  .phase-h:hover{background:var(--panel)}
+  .phase-h .pn{font-weight:700}
+  .phase-h .pd{font-size:10.5px; color:var(--text2); margin-top:1px}
+  .phase-h .cnt{font-size:10px; color:var(--text2)}
+  .phase-b{border-top:1px solid var(--line); padding:0; display:none}
+  .phase.open .phase-b{display:block}
+  .rev-bar{display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:11px; color:var(--text2); background:var(--panel)}
+  .rev-grp{padding:7px 14px; background:var(--panel2); font-size:10px; font-weight:700; color:var(--text2); display:flex; gap:8px; align-items:center}
+  .rev-row{display:flex; align-items:center; gap:12px; padding:9px 14px; border-top:1px solid var(--line)}
+  .rev-row .eid{font-family:Consolas,monospace; color:var(--accent); font-size:11px; cursor:pointer; width:74px}
+  .rev-row .why{flex:1; font-size:11px; color:var(--text2)}
+
+  /* audits sub-selector (FIT op-selector) */
+  .subsel{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap}
+  .subtab{padding:7px 13px; border-radius:var(--r-btn); background:var(--panel); border:1px solid var(--line);
+    cursor:pointer; font-weight:600; font-size:11.5px; display:flex; align-items:center; gap:7px}
+  .subtab .mdl2{color:var(--accent); font-size:13px}
+  .subtab.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
+  .subpanel{display:none}.subpanel.on{display:block}
+  .cover{height:8px; border-radius:4px; background:var(--track); overflow:hidden; flex:1; max-width:280px}
+  .cover>i{display:block; height:100%; background:var(--pass)}
+  .lrow{display:flex; align-items:center; gap:12px; padding:9px 0; border-top:1px solid var(--line)}
+  .lrow:first-of-type{border-top:none}
+  .lrow .nm{width:180px; font-weight:600}.lrow .sc{width:48px; text-align:right; font-weight:700}
+
+  .tblrow{display:grid; grid-template-columns:1fr 1fr 26px; gap:8px; padding:4px 0}
+  .tin{background:var(--bg); border:1px solid var(--line); border-radius:4px; color:var(--text); padding:5px 7px;
+    font-family:inherit; font-size:11px}
+  .note{font-size:10px; color:var(--text2); background:var(--accent-soft); border:1px solid var(--line);
+    border-radius:var(--r-btn); padding:8px 11px; margin-top:10px}
+
+  .foot{height:52px; background:var(--bg2); border-top:1px solid var(--line); flex:0 0 auto;
+    display:flex; align-items:center; gap:12px; padding:0 16px}
+  .hall{display:flex; align-items:center; gap:6px}
+  .hall .mdl2{color:var(--accent); font-size:11px}
+  .hall .b{font-weight:800; opacity:.85}.hall .w{font-weight:300; color:var(--text2)}
+  .fdiv{width:1px; height:14px; background:var(--line)}
+  .fstat{color:var(--text2); display:flex; align-items:center; gap:8px}
+  .fstat .mdl2{color:var(--accent)}
+  .foot-right{margin-left:auto; display:flex; gap:10px}
+</style>
+</head>
+<body>
+<div class="win">
+  <!-- TITLE BAR -->
+  <div class="titlebar">
+    <span class="mdl2 tb-ico">&#xE700;</span>
+    <span class="tb-name">QAQC Suite</span>
+    <div class="docchip"><span class="mdl2">&#xE8A5;</span><span class="path">DX-PRJ-4471_MEP_Level3.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" onclick="tgl()">&#xE706;</span>
+      <div class="dots"><span class="dot c mdl2">&#xE8BB;</span><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span></div>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- RAIL -->
+    <div class="rail">
+      <div class="rail-sec">WORKSPACE</div>
+      <div class="nav on" data-p="dash" onclick="nav('dash')"><span class="mdl2">&#xE80F;</span><span class="lbl">Dashboard</span></div>
+      <div class="rail-sec">REMEDIATION · PREVIEW → APPLY</div>
+      <div class="nav" data-p="cleanup" onclick="nav('cleanup')"><span class="mdl2">&#xE894;</span><span class="lbl">Cleanup</span><span class="badge warn">3</span></div>
+      <div class="nav" data-p="cmmn" onclick="nav('cmmn')"><span class="mdl2">&#xE9D5;</span><span class="lbl">CMMN</span></div>
+      <div class="nav" data-p="spec" onclick="nav('spec')"><span class="mdl2">&#xE71C;</span><span class="lbl">SPEC</span><span class="badge warn">112</span></div>
+      <div class="nav" data-p="flags" onclick="nav('flags')"><span class="mdl2">&#xE7BA;</span><span class="lbl">Flags</span></div>
+      <div class="nav" data-p="classification" onclick="nav('classification')"><span class="mdl2">&#xE8EC;</span><span class="lbl">Classification</span></div>
+      <div class="nav" data-p="worksets" onclick="nav('worksets')"><span class="mdl2">&#xE902;</span><span class="lbl">Worksets</span></div>
+      <div class="rail-sec">AUDIT · READ-ONLY</div>
+      <div class="nav" data-p="aud" onclick="nav('aud')"><span class="mdl2">&#xE9D9;</span><span class="lbl">Audits</span><span class="badge acc">5</span></div>
+      <div class="rail-sec">CONFIGURE</div>
+      <div class="nav" data-p="set" onclick="nav('set')"><span class="mdl2">&#xE713;</span><span class="lbl">Settings</span></div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="panel on" id="p-dash">
+        <div class="phead">
+          <div><div class="ptitle">Dashboard</div><div class="psub">Model QA/QC readiness — read the health, then pick a stage</div></div>
+          <button class="btn btn-accent" onclick="pulse(this,'Scanning model health…')"><span class="mdl2">&#xEA18;</span> SCAN HEALTH</button>
+        </div>
+
+        <!-- KPI band — star columns fill width; every tile deep-links; health is
+             NOT repeated here (the donut owns it) -->
+        <div class="kpis">
+          <div class="kpi" onclick="nav('aud')"><div class="l">Model elements</div><div class="v">18 402</div><div class="s">non-type · Model Health ›</div></div>
+          <div class="kpi" onclick="nav('spec')"><div class="l">Open findings</div><div class="v warn">146</div><div class="s">6 stages · worst SPEC ›</div></div>
+          <div class="kpi" onclick="nav('cleanup')"><div class="l">Critical</div><div class="v" style="color:var(--fail)">7</div><div class="s">removable · Cleanup ›</div></div>
+          <div class="kpi" onclick="nav('aud')"><div class="l">LOI score</div><div class="v acc">92%</div><div class="s">702 / 709 checks ›</div></div>
+          <div class="kpi" onclick="nav('spec')"><div class="l">Queued</div><div class="v">5</div><div class="s">Preview → Apply ›</div></div>
+        </div>
+
+        <!-- ROW 1: model health (donut + hygiene, no empty space) | findings launchers -->
+        <div style="display:grid; grid-template-columns:352px 1fr; gap:12px; margin-bottom:12px">
+          <div class="card" style="cursor:pointer" onclick="nav('aud')">
+            <div class="card-h">Model health <span class="hint">open Model Health ›</span></div>
+            <div style="display:flex; gap:16px; align-items:center; margin-bottom:8px">
+              <div class="donut"><div class="hole"><div class="hv">78</div><div class="hl">score</div></div></div>
+              <div style="flex:1">
+                <div class="lg"><span class="sw pass"></span>Clean<span class="n">61</span></div>
+                <div class="lg"><span class="sw warn"></span>Advisory<span class="n">18</span></div>
+                <div class="lg"><span class="sw fail"></span>Critical<span class="n">7</span></div>
+              </div>
+            </div>
+            <div class="scope-row"><span class="mdl2">&#xE7BA;</span>Open warnings<span class="v" style="color:var(--warn)">41</span></div>
+            <div class="scope-row"><span class="mdl2">&#xE71B;</span>Unpinned links<span class="v" style="color:var(--fail)">2</span></div>
+            <div class="scope-row"><span class="mdl2">&#xE8B7;</span>In-place families<span class="v" style="color:var(--warn)">13</span></div>
+          </div>
+
+          <!-- findings by stage = launchers (row = open) + a stage pill that queues
+               the whole stage, two-way SYNCED with the group-page phase pills -->
+          <div class="card">
+            <div class="card-h">Findings by stage <span class="hint">pill = queue stage · row = open</span></div>
+            <div class="frow" onclick="nav('cleanup')"><span class="pill" data-g="cleanup" title="Queue whole stage" onclick="event.stopPropagation();togStage('cleanup',this)"></span><span class="mdl2">&#xE894;</span><div style="flex:1"><div class="fn">Cleanup</div><div class="fm">connectors · duplicates · slope</div></div><div class="bar"><i style="width:22%; background:var(--warn)"></i></div><span class="chip warn">3</span><span class="mdl2 go">&#xE76C;</span></div>
+            <div class="frow" onclick="nav('cmmn')"><span class="pill" data-g="cmmn" title="Queue whole stage" onclick="event.stopPropagation();togStage('cmmn',this)"></span><span class="mdl2">&#xE9D5;</span><div style="flex:1"><div class="fn">CMMN</div><div class="fm">case-model identity</div></div><div class="bar"></div><span class="chip idle">settings</span><span class="mdl2 go">&#xE76C;</span></div>
+            <div class="frow" onclick="nav('spec')"><span class="pill" data-g="spec" title="Queue whole stage" onclick="event.stopPropagation();togStage('spec',this)"></span><span class="mdl2">&#xE71C;</span><div style="flex:1"><div class="fn">SPEC</div><div class="fm">system · size · article</div></div><div class="bar"><i style="width:74%; background:var(--warn)"></i></div><span class="chip warn">112</span><span class="mdl2 go">&#xE76C;</span></div>
+            <div class="frow" onclick="nav('flags')"><span class="pill" data-g="flags" title="Queue whole stage" onclick="event.stopPropagation();togStage('flags',this)"></span><span class="mdl2">&#xE7BA;</span><div style="flex:1"><div class="fn">Flags</div><div class="fm">insulation · POC</div></div><div class="bar"></div><span class="chip idle">not scanned</span><span class="mdl2 go">&#xE76C;</span></div>
+            <div class="frow" onclick="nav('classification')"><span class="pill" data-g="classification" title="Queue whole stage" onclick="event.stopPropagation();togStage('classification',this)"></span><span class="mdl2">&#xE8EC;</span><div style="flex:1"><div class="fn">Classification</div><div class="fm">IFC typing</div></div><div class="bar"></div><span class="chip idle">not scanned</span><span class="mdl2 go">&#xE76C;</span></div>
+            <div class="frow" onclick="nav('worksets')"><span class="pill" data-g="worksets" title="Queue whole stage" onclick="event.stopPropagation();togStage('worksets',this)"></span><span class="mdl2">&#xE902;</span><div style="flex:1"><div class="fn">Worksets</div><div class="fm">depends on SPEC 4a</div></div><div class="bar"></div><span class="chip idle">blocked</span><span class="mdl2 go">&#xE76C;</span></div>
+          </div>
+        </div>
+
+        <!-- ROW 2: LOI Scorecard (AA signature, elevated to the dashboard) | scope & apply + recent -->
+        <div style="display:grid; grid-template-columns:1fr 340px; gap:12px">
+          <div class="card" style="cursor:pointer" onclick="nav('aud')">
+            <div class="card-h">LOI Scorecard <span class="hint">92% · 58 elements fail ≥1 rule · open Audits ›</span></div>
+            <div class="lrow"><span class="nm">SPEC_SYSTEM</span><div class="cover" style="max-width:none"><i style="width:96%"></i></div><span class="sc" style="color:var(--pass)">96%</span></div>
+            <div class="lrow"><span class="nm">SPEC_SIZE</span><div class="cover" style="max-width:none"><i style="width:88%; background:var(--warn)"></i></div><span class="sc" style="color:var(--warn)">88%</span></div>
+            <div class="lrow"><span class="nm">IFX_INSULATION</span><div class="cover" style="max-width:none"><i style="width:71%; background:var(--fail)"></i></div><span class="sc" style="color:var(--fail)">71%</span></div>
+            <div class="lrow"><span class="nm">SPEC_ARTICLE_DE</span><div class="cover" style="max-width:none"><i style="width:83%; background:var(--warn)"></i></div><span class="sc" style="color:var(--warn)">83%</span></div>
+          </div>
+          <div class="card">
+            <div class="card-h">Scope &amp; recent</div>
+            <div class="scope-row"><span class="mdl2">&#xE7C3;</span>Checker XML<span class="v">709 checks</span></div>
+            <div class="scope-row" onclick="event.stopPropagation();nav('set')" style="cursor:pointer"><span class="mdl2">&#xE73E;</span>Apply gate<span class="v" style="color:var(--text2)">off · confirm ›</span></div>
+            <div class="frow" style="padding:7px 0; cursor:default"><span class="chip pass">applied</span><span class="why" style="flex:1; color:var(--text); font-size:11px">4a SPEC_SYSTEM · 84</span><span class="hint">2m</span></div>
+            <div class="frow" onclick="nav('spec')" style="padding:7px 0"><span class="chip warn">preview</span><span class="why" style="flex:1; color:var(--text); font-size:11px">4d SPEC_SIZE · 28</span><span class="hint">6m</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GROUP PAGE (rendered from data) -->
+      <div class="panel" id="p-group">
+        <div class="phead">
+          <div><div class="ptitle" id="g-title">Cleanup</div><div class="psub" id="g-sub"></div></div>
+          <div style="display:flex; gap:8px">
+            <button class="btn btn-soft btn-mini" onclick="groupAll(true)">Check all</button>
+            <button class="btn btn-soft btn-mini" onclick="groupAll(false)">None</button>
+            <button class="btn btn-ghost btn-mini" onclick="pulse(this,'Scanning stage…')"><span class="mdl2">&#xE890;</span> SCAN STAGE</button>
+          </div>
+        </div>
+        <div id="g-body"></div>
+      </div>
+
+      <!-- AUDITS -->
+      <div class="panel" id="p-aud">
+        <div class="phead"><div><div class="ptitle">Audits</div><div class="psub">Read-only — nothing is written to the model</div></div></div>
+        <div class="subsel">
+          <div class="subtab on" data-s="loi" onclick="subtab(this)"><span class="mdl2">&#xE9D9;</span>LOI Scorecard</div>
+          <div class="subtab" data-s="tag" onclick="subtab(this)"><span class="mdl2">&#xE8EC;</span>Tag Audit</div>
+          <div class="subtab" data-s="mh" onclick="subtab(this)"><span class="mdl2">&#xEB51;</span>Model Health</div>
+          <div class="subtab" data-s="vf" onclick="subtab(this)"><span class="mdl2">&#xE71C;</span>View Filters</div>
+          <div class="subtab" data-s="cz" onclick="subtab(this)"><span class="mdl2">&#xE790;</span>Colorize</div>
+        </div>
+        <div class="subpanel on" id="s-loi">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
+            <div class="card">
+              <div class="card-h">Ruleset scope <span class="hint">702 / 709 · 68 / 69 sections</span></div>
+              <div class="hint" style="margin-bottom:6px">Pick a subset — the source .xml is never edited.</div>
+              <div class="togrow" style="border-top:1px solid var(--line)"><span class="pill on" onclick="pillTog(this)"></span><div class="col"><div class="t">As-Built (410)</div><div class="d">geometry · host · room-bounding</div></div></div>
+              <div class="togrow"><span class="pill on" onclick="pillTog(this)"></span><div class="col"><div class="t">LOI parameters (231)</div><div class="d">SPEC_* · CMMN_* · IFX_*</div></div></div>
+              <div class="togrow"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Count &amp; List (61)</div><div class="d">excluded from this run</div></div></div>
+            </div>
+            <div class="card">
+              <div class="card-h">Scorecard <button class="btn btn-accent btn-mini" onclick="pulse(this,'Running selected…')"><span class="mdl2">&#xE768;</span> RUN SELECTED</button></div>
+              <div class="lrow"><span class="nm">SPEC_SYSTEM</span><div class="cover"><i style="width:96%"></i></div><span class="sc" style="color:var(--pass)">96%</span></div>
+              <div class="lrow"><span class="nm">SPEC_SIZE</span><div class="cover"><i style="width:88%; background:var(--warn)"></i></div><span class="sc" style="color:var(--warn)">88%</span></div>
+              <div class="lrow"><span class="nm">CMMN_STATUS_CODE</span><div class="cover"><i style="width:100%"></i></div><span class="sc" style="color:var(--pass)">100%</span></div>
+              <div class="lrow"><span class="nm">IFX_INSULATION</span><div class="cover"><i style="width:71%; background:var(--fail)"></i></div><span class="sc" style="color:var(--fail)">71%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="subpanel" id="s-tag"><div class="card"><div class="card-h">Tag Audit — active view <button class="btn btn-ghost btn-mini"><span class="mdl2">&#xE890;</span> SCAN</button></div>
+          <div class="hint" style="margin-bottom:8px">Missing (no tag) or duplicate (&gt;1) per category. View-owned — run per sheet.</div>
+          <div class="lrow"><span class="nm">Pipes ↔ Pipe Tags</span><span class="why" style="flex:1"></span><span class="chip warn">12 missing</span></div>
+          <div class="lrow"><span class="nm">Ducts ↔ Duct Tags</span><span class="why" style="flex:1"></span><span class="chip pass">complete</span></div>
+          <div class="lrow"><span class="nm">Mechanical Equipment</span><span class="why" style="flex:1"></span><span class="chip fail">3 duplicate</span></div></div></div>
+        <div class="subpanel" id="s-mh"><div class="card"><div class="card-h">Model Health — hygiene <button class="btn btn-ghost btn-mini"><span class="mdl2">&#xE890;</span> SCAN</button></div>
+          <div class="hint" style="margin-bottom:8px">18 indicators folded into a weighted 0–100 score.</div>
+          <div class="lrow"><span class="nm">Open warnings</span><span class="why" style="flex:1"></span><span class="chip warn">41</span></div>
+          <div class="lrow"><span class="nm">Unpinned links</span><span class="why" style="flex:1"></span><span class="chip fail">2</span></div>
+          <div class="lrow"><span class="nm">In-place families</span><span class="why" style="flex:1"></span><span class="chip warn">13</span></div></div></div>
+        <div class="subpanel" id="s-vf"><div class="card"><div class="card-h">View Filter Audit</div>
+          <div class="hint" style="margin-bottom:8px">Rules decoded + used/unused across all views &amp; templates.</div>
+          <div class="lrow"><span class="nm">M_Supply Air</span><span class="why" style="flex:1">System = Supply Air</span><span class="chip pass">used ×14</span></div>
+          <div class="lrow"><span class="nm">Z_TEMP_hide</span><span class="why" style="flex:1">Comments contains "temp"</span><span class="chip fail">unused</span></div></div></div>
+        <div class="subpanel" id="s-cz"><div class="card"><div class="card-h">Colorize by Value — active view</div>
+          <div class="hint" style="margin-bottom:8px">Buckets active-view elements by a parameter. Reversible overrides only.</div>
+          <div style="display:flex; gap:10px; align-items:center"><span class="chip acc">SPEC_SYSTEM</span><span class="chip pass">12 buckets</span><button class="btn btn-ghost btn-mini" style="margin-left:auto"><span class="mdl2">&#xE72C;</span> Reset</button></div></div></div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="panel" id="p-set">
+        <div class="phead"><div><div class="ptitle">Settings</div><div class="psub">Apply behaviour + firm-standard mapping tables</div></div>
+          <button class="btn btn-accent"><span class="mdl2">&#xE74E;</span> SAVE</button></div>
+        <div style="display:grid; grid-template-columns:300px 1fr; gap:12px">
+          <div class="card" style="align-self:start">
+            <div class="card-h">Apply behaviour</div>
+            <div class="togrow" style="border-top:1px solid var(--line)"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Require preview before Apply</div><div class="d">greys Apply until previewed</div></div></div>
+            <div class="togrow"><span class="pill on" onclick="pillTog(this)"></span><div class="col"><div class="t">Confirm before Apply</div><div class="d">"commit N fixes?" guard</div></div></div>
+            <div class="togrow"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Isolate on row click</div><div class="d">was a dashboard checkbox</div></div></div>
+            <div class="togrow"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Overwrite SPEC / CMMN</div><div class="d">off = fill blanks only</div></div></div>
+          </div>
+          <div class="card">
+            <div class="card-h">Mapping tables</div>
+            <div class="subsel" style="margin-bottom:10px">
+              <div class="subtab on" data-s="m1" onclick="mtab(this)">SPEC rules</div>
+              <div class="subtab" data-s="m2" onclick="mtab(this)">IFC</div>
+              <div class="subtab" data-s="m3" onclick="mtab(this)">Families</div>
+              <div class="subtab" data-s="m4" onclick="mtab(this)">CMMN</div>
+              <div class="subtab" data-s="m5" onclick="mtab(this)">LOI ruleset</div>
+            </div>
+            <div class="subpanel on" id="m-m1">
+              <div class="tblrow" style="color:var(--text2); font-weight:700; font-size:10px"><span>PREFIX</span><span>SYSTEM → DX WORKSET</span><span></span></div>
+              <div class="tblrow"><input class="tin" value="SUP"><input class="tin" value="DX_SUPPLY"><span class="mdl2" style="color:var(--fail); cursor:pointer; text-align:center">&#xE711;</span></div>
+              <div class="tblrow"><input class="tin" value="EXH"><input class="tin" value="DX_EXHAUST"><span class="mdl2" style="color:var(--fail); cursor:pointer; text-align:center">&#xE711;</span></div>
+              <div class="tblrow"><input class="tin" value="CHW"><input class="tin" value="DX_CHILLED"><span class="mdl2" style="color:var(--fail); cursor:pointer; text-align:center">&#xE711;</span></div>
+              <button class="btn btn-soft btn-mini" style="margin-top:8px; color:var(--accent)">+ Add row</button>
+            </div>
+            <div class="subpanel" id="m-m2"><div class="hint">IFC classification mapping + category overrides (SPEC label → IFC class).</div></div>
+            <div class="subpanel" id="m-m3"><div class="hint">ChemicalBox / DX_RR family names + surface-mounted accessory keywords.</div></div>
+            <div class="subpanel" id="m-m4"><div class="hint">Phase 3 params, default status/building, TOOL_ID filename rule.</div></div>
+            <div class="subpanel" id="m-m5"><div class="hint">Model Checker .xml ruleset picker (Browse / Clear) — feeds LOI Scorecard.</div></div>
+          </div>
+        </div>
+        <div class="note"><b>Removed from Settings:</b> the 3-line intro paragraph, the "Source: …\spec_mappings.json" line, and every per-card blurb — folded into these tabs.</div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /body -->
+
+  <!-- FOOTER: global Preview → Apply for the queued set -->
+  <div class="foot">
+    <div class="hall"><span class="mdl2">&#xE8FD;</span><span class="b">IcZ</span><span class="w">&nbsp;Workspace</span></div>
+    <div class="fdiv"></div>
+    <div class="fstat"><span class="mdl2">&#xE9F5;</span><span id="foot">Ready · workshared · 5 phases queued</span></div>
+    <div class="foot-right">
+      <button class="btn btn-ghost btn-mini"><span class="mdl2">&#xE890;</span> PREVIEW</button>
+      <button class="btn btn-accent btn-mini"><span class="mdl2">&#xE768;</span> APPLY QUEUED</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // real AA phases, per group (no duplication — the single source for group pages)
+  var GROUPS = {
+    cleanup:{title:"Cleanup", sub:"connectors · duplicates · slope", phases:[
+      {n:"Phase 0", t:"MEP Connector Reconciliation", d:"Rejoins adjacent open MEP connectors within a 20 mm tolerance.", on:true, chip:["pass","clean"], rows:[]},
+      {n:"Phase 1", t:"Duplicate Element Removal", d:"Detects coincident structural elements and removes redundant copies.", on:true, chip:["warn","3 found"], open:true, grp:"coincident duplicate — pooled by geometry (3)", rows:[
+        ["#4 812 331","Pipe Fitting — exact copy of #4 812 330 (Δ 0.0 mm)",false],
+        ["#4 812 356","Pipe Fitting — exact copy of #4 812 355 (Δ 0.0 mm)",false],
+        ["#4 813 004","Duct Fitting — near-exact (Δ 0.4 mm) — review before delete",true]]},
+      {n:"Phase 1b", t:"Zero-Length Duct Cleanup", d:"Removes degenerate straight ducts ≤ 20 mm and heals connections.", on:false, chip:["idle","off"], rows:[]},
+      {n:"Phase 2", t:"Vertical Alignment Correction", d:"Realigns runs whose slope exceeds 400% back to true vertical.", on:true, chip:["idle","ready"], rows:[]}]},
+    cmmn:{title:"CMMN", sub:"case-model identity", phases:[
+      {n:"Phase 3", t:"CMMN Parameter Population", d:"Writes status code + building; derives TOOL_ID from the file name (rules in Settings).", on:false, chip:["idle","settings"], rows:[]}]},
+    spec:{title:"SPEC", sub:"system · size · article", phases:[
+      {n:"Phase 4a", t:"SPEC_SYSTEM Assignment", d:"Sets/corrects SPEC_SYSTEM from each element's resolved system source.", on:true, chip:["warn","42"], open:true, grp:"no system — trace failed (12) · set/corrected (30)", rows:[
+        ["#5 001 233","Pipe — no system (unrouted); apply Phase 0 then rescan",false],
+        ["#5 001 240","Pipe Accessory — inherit from nearest run (clamp)",false]]},
+      {n:"Phase 4b", t:"SPEC_SYSTEM — Chemical Boxes", d:"Inherits SPEC_SYSTEM for chemical-box families from the nearest pipe.", on:true, chip:["idle","ready"], rows:[]},
+      {n:"Phase 4c", t:"SPEC_SYSTEM — Clamps & Accessories", d:"Inherits SPEC_SYSTEM for surface-mounted accessories from the nearest run.", on:true, chip:["warn","8"], rows:[]},
+      {n:"Phase 4d", t:"SPEC_SIZE Population", d:"Writes standardized SPEC_SIZE (DN / imperial / W×H) per element type.", on:false, chip:["warn","28"], rows:[]},
+      {n:"Phase 4e", t:"SPEC_QUANTITY Population", d:"Writes length/area into SPEC_QUANTITY where a length source exists.", on:false, chip:["idle","off"], rows:[]},
+      {n:"Phase 4f", t:"SPEC_ARTICLE Classification", d:"Assigns SPEC_ARTICLE_EN / _DE article classes.", on:false, chip:["idle","off"], rows:[]}]},
+    flags:{title:"Flags", sub:"insulation · POC", phases:[
+      {n:"Phase 5", t:"Insulation Flagging", d:"Sets IFX_INSULATION on pipes and ducts that carry insulation.", on:false, chip:["idle","not scanned"], rows:[]},
+      {n:"Phase 6", t:"POC Element Flagging", d:"Marks IFX_POC_Element once IFX_POC_Tag is finalized.", on:false, chip:["idle","not scanned"], rows:[]}]},
+    classification:{title:"Classification", sub:"IFC typing", phases:[
+      {n:"Phase 7", t:"IFC Type Classification", d:"Assigns IFC export categories from the classification mapping (Settings).", on:false, chip:["idle","not scanned"], rows:[]}]},
+    worksets:{title:"Worksets", sub:"workset orchestration", phases:[
+      {n:"Phase 8", t:"Workset Orchestration", d:"Distributes elements to worksets derived from SPEC_SYSTEM. Requires 4a first.", on:false, chip:["idle","blocked — run 4a"], rows:[]}]}
+  };
+
+  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
+  function renderGroup(key){
+    var g = GROUPS[key]; if(!g) return; CUR=key;
+    document.getElementById('g-title').textContent = g.title;
+    document.getElementById('g-sub').textContent = g.sub;
+    var html = '';
+    g.phases.forEach(function(p,i){
+      html += '<div class="phase'+(p.open?' open':'')+'">'
+        + '<div class="phase-h" onclick="this.parentNode.classList.toggle(\'open\')">'
+        + '<span class="pill'+(p.on?' on':'')+'" onclick="event.stopPropagation();togPhase(\''+key+'\','+i+',this)"></span>'
+        + '<div style="flex:1"><div class="pn">'+p.n+' · '+esc(p.t)+'</div><div class="pd">'+esc(p.d)+'</div></div>'
+        + '<span class="chip '+p.chip[0]+'">'+p.chip[1]+'</span>'
+        + '<span class="mdl2 go" style="color:var(--text2); font-size:12px">&#xE70D;</span></div>';
+      if(p.rows && p.rows.length){
+        html += '<div class="phase-b"><div class="rev-bar"><span class="pill" style="transform:scale(.8)"></span> Exclude <span style="margin-left:auto">'+p.rows.length+' candidates · 0 excluded</span></div>';
+        if(p.grp) html += '<div class="rev-grp"><span class="mdl2" style="color:var(--warn)">&#xE7BA;</span> '+esc(p.grp)+'</div>';
+        p.rows.forEach(function(r){
+          html += '<div class="rev-row"><span class="eid">'+r[0]+'</span><span class="why">'+esc(r[1])+'</span><span class="pill'+(r[2]?' on':'')+'" onclick="this.classList.toggle(\'on\')"></span></div>';
+        });
+        html += '</div>';
+      } else {
+        html += '<div class="phase-b"><div class="rev-bar" style="justify-content:center; color:var(--text2)">Not scanned — Scan Stage to list findings for review.</div></div>';
+      }
+      html += '</div>';
+    });
+    document.getElementById('g-body').innerHTML = html;
+  }
+
+  function nav(p){
+    document.querySelectorAll('.rail .nav').forEach(n=>n.classList.toggle('on', n.dataset.p===p || (GROUPS[p] && n.dataset.p===p)));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+    if(GROUPS[p]){ renderGroup(p); document.getElementById('p-group').classList.add('on');
+      document.querySelectorAll('.rail .nav').forEach(n=>n.classList.toggle('on', n.dataset.p===p)); }
+    else { document.getElementById('p-'+p).classList.add('on');
+      document.querySelectorAll('.rail .nav').forEach(n=>n.classList.toggle('on', n.dataset.p===p)); }
+    if(p==='dash') refreshDashPills();   // reflect any phase-pill changes made on a group page
+  }
+  function subtab(el){ el.parentNode.querySelectorAll('.subtab').forEach(t=>t.classList.remove('on')); el.classList.add('on');
+    document.querySelectorAll('#p-aud .subpanel').forEach(s=>s.classList.remove('on')); document.getElementById('s-'+el.dataset.s).classList.add('on'); }
+  function mtab(el){ el.parentNode.querySelectorAll('.subtab').forEach(t=>t.classList.remove('on')); el.classList.add('on');
+    document.querySelectorAll('#p-set .subpanel').forEach(s=>s.classList.remove('on')); document.getElementById('m-'+el.dataset.s).classList.add('on'); }
+  var CUR=null;   // group key currently shown (for Check all / None)
+  function pillTog(el){ el.classList.toggle('on'); }
+  // ---- dashboard stage pill <-> group-page phase pills, one shared model (GROUPS) ----
+  function stageState(key){ var ps=GROUPS[key].phases, on=ps.filter(function(p){return p.on;}).length;
+    return on===0?'none':(on===ps.length?'all':'some'); }
+  function applyStagePill(pill,state){ pill.className='pill'+(state==='all'?' on':state==='some'?' part':''); }
+  function refreshDashPills(){ document.querySelectorAll('#p-dash .frow .pill[data-g]').forEach(function(p){ applyStagePill(p, stageState(p.dataset.g)); }); }
+  function togStage(key,pill){ var on = stageState(key)!=='all';           // any-off -> all on; all-on -> all off
+    GROUPS[key].phases.forEach(function(p){ p.on=on; }); applyStagePill(pill, on?'all':'none'); syncQ(); }
+  function togPhase(key,i,pill){ GROUPS[key].phases[i].on = pill.classList.toggle('on'); syncQ(); }   // writes back to model; dashboard re-reads on return
+  function groupAll(on){ if(CUR){ GROUPS[CUR].phases.forEach(function(p){ p.on=on; }); renderGroup(CUR); } syncQ(); }
+  function syncQ(){ var n=0; for(var k in GROUPS){ GROUPS[k].phases.forEach(function(p){ if(p.on) n++; }); }
+    document.getElementById('foot').textContent='Ready · workshared · '+n+' phases queued'; }
+  function pulse(btn,msg){ var f=document.getElementById('foot'); var old=f.textContent; f.textContent=msg; btn.style.opacity=.6;
+    setTimeout(function(){btn.style.opacity=1; f.textContent=old;},1100); }
+  function tgl(){ document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='light'?'dark':'light'); }
+  refreshDashPills(); syncQ();   // init: dashboard stage pills reflect the model's queued state on load
+</script>
+</body>
+</html>

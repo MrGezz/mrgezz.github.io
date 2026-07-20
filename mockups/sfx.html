@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>SFX — Structural Framing Fix · Scan &amp; Apply</title>
+<style>
+:root, .dark {
+  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
+  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
+  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
+  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
+  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
+  --passbg:rgba(76,175,80,.14); --warnbg:rgba(255,179,0,.14); --failbg:rgba(255,82,82,.14);
+}
+.light {
+  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
+  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
+  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
+  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
+  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
+  --passbg:rgba(46,125,50,.10); --warnbg:rgba(245,127,23,.10); --failbg:rgba(211,47,47,.10);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
+.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
+.mono { font-family:Consolas,monospace; }
+.app { width:1220px; max-width:100%; margin:0 auto; height:860px; background:var(--win);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.5); }
+.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
+.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
+.iconbtn:hover { background:var(--rowhover); }
+.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
+.docchip { position:absolute; left:50%; top:0; height:40px; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:0 12px; color:var(--text2); font-size:11px; }
+.docchip .box { display:flex; align-items:center; gap:6px; padding:3px 12px; border:1px solid var(--border); border-radius:6px; }
+.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
+.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
+.content { flex:1 1 auto; overflow:auto; padding:16px 20px; min-width:0; display:flex; flex-direction:column; gap:12px; }
+.pagehead { display:flex; align-items:center; gap:12px; }
+.pagehead h1 { font-size:19px; font-weight:700; margin:0; }
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;border:1px solid var(--border);color:var(--text2);}
+.scopegrp { margin-left:auto; display:flex; align-items:center; gap:0; border:1px solid var(--border); border-radius:7px; overflow:hidden; }
+.scope { height:30px; padding:0 14px; display:flex; align-items:center; gap:7px; font-size:11px; cursor:pointer; color:var(--text2); background:var(--input); border-right:1px solid var(--border); }
+.scope:last-child { border-right:0; }
+.scope.sel { background:var(--navsel); color:var(--accent); font-weight:700; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.card h2 { font-size:13px; font-weight:600; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+.card h2 .mdl2 { color:var(--accent); }
+.sub { font-size:11px; color:var(--text2); }
+.toprow { display:grid; grid-template-columns:1fr 340px; gap:12px; }
+.kpis { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; }
+.tile { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px 14px; }
+.tile .v { font-size:24px; font-weight:700; line-height:1; }
+.tile .l { font-size:10.5px; color:var(--text2); margin-top:6px; }
+.v.accent{color:var(--accent);}.v.fail{color:var(--fail);}.v.warn{color:var(--warn);}.v.pass{color:var(--pass);}
+.optrow { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:11.5px; }
+.optrow:last-child { border-bottom:0; }
+.optrow .mdl2 { color:var(--accent); width:18px; text-align:center; }
+.optrow input[type=checkbox] { accent-color:var(--accent); }
+.optrow .num { margin-left:auto; width:64px; height:24px; border:1px solid var(--border); border-radius:5px; background:var(--input); color:var(--text); text-align:right; padding:0 8px; font-size:11px; font-family:Consolas,monospace; }
+.gridcard { flex:1 1 auto; display:flex; flex-direction:column; min-height:0; }
+.ghead { display:grid; grid-template-columns:30px 90px 1fr 110px 110px 90px 1.2fr; gap:8px; padding:7px 10px; font-size:10px; font-weight:700; letter-spacing:.4px; color:var(--text2); border-bottom:1px solid var(--border); }
+.grows { flex:1 1 auto; overflow:auto; }
+.grow { display:grid; grid-template-columns:30px 90px 1fr 110px 110px 90px 1.2fr; gap:8px; align-items:center; padding:7px 10px; border-bottom:1px solid var(--border); font-size:11.5px; cursor:pointer; }
+.grow:hover { background:var(--rowhover); }
+.grow .chk { width:14px; height:14px; border-radius:3px; border:1px solid var(--border); display:inline-block; position:relative; }
+.grow .chk.on { background:var(--accent); border-color:var(--accent); }
+.grow .chk.on:after { content:"✓"; position:absolute; inset:0; color:var(--accentfg); font-size:10px; text-align:center; line-height:14px; }
+.pill{font-size:9.5px;font-weight:700;padding:2px 8px;border-radius:20px;text-align:center;display:inline-block;}
+.pill.pass{background:var(--passbg);color:var(--pass);} .pill.warn{background:var(--warnbg);color:var(--warn);} .pill.fail{background:var(--failbg);color:var(--fail);}
+.idlink { color:var(--accent); font-family:Consolas,monospace; font-size:11px; cursor:pointer; }
+.idlink:hover { text-decoration:underline; }
+.dim { color:var(--text2); }
+.footer{flex:0 0 auto;height:56px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
+.fsep{width:1px;height:12px;background:var(--border);}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
+.fstatus{color:var(--text2);font-size:11px;opacity:.8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fbtn{height:36px;padding:0 14px;border-radius:6px;background:var(--input);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:11.5px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.fbtn:hover{border-color:var(--accent);color:var(--accent);}
+.fbtn.dashed{border-style:dashed;}
+.commit{width:190px;height:40px;border-radius:6px;border:0;cursor:pointer;background:var(--accent);color:var(--accentfg);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 16px var(--glow);}
+.commit:hover{background:var(--accenthover);}
+</style>
+</head>
+<body class="dark">
+<div class="app">
+  <div class="titlebar">
+    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xE825;</div><div class="title">SFX — Structural Framing Fix</div>
+    <div class="docchip"><div class="box"><span class="mdl2">&#xE8A5;</span><span>Snowdon Towers Sample Structural</span></div></div>
+    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
+      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+  </div>
+  <div class="content">
+    <div class="pagehead">
+      <h1>Disallow Join — length preserved</h1><span class="tag">extensions compensated · faces stay put</span>
+      <div class="scopegrp">
+        <div class="scope"><span class="mdl2">&#xE8B0;</span> Selection</div>
+        <div class="scope sel"><span class="mdl2">&#xE890;</span> Active view</div>
+        <div class="scope"><span class="mdl2">&#xE774;</span> Whole model</div>
+      </div>
+    </div>
+
+    <div class="toprow">
+      <div class="kpis" style="grid-column:1">
+        <div class="tile"><div class="v" id="k-scan">412</div><div class="l">Framing members in scope</div></div>
+        <div class="tile"><div class="v accent" id="k-join">186</div><div class="l">Joined ends to disallow</div></div>
+        <div class="tile"><div class="v warn" id="k-res">14</div><div class="l">Residual nodes (ex-miter)</div></div>
+        <div class="tile"><div class="v fail" id="k-drift">2</div><div class="l">Drift &gt; tolerance</div></div>
+        <div class="tile"><div class="v pass" id="k-cope">57</div><div class="l">Copes to strip (opt-in)</div></div>
+      </div>
+      <div class="card">
+        <h2><span class="mdl2">&#xE713;</span> Options</h2>
+        <div class="optrow"><span class="mdl2">&#xE73E;</span><input type="checkbox" checked> Compensate regrowth into Start/End Extension</div>
+        <div class="optrow"><span class="mdl2">&#xE738;</span><input type="checkbox" checked> Strip copes</div>
+        <div class="optrow"><span class="mdl2">&#xE71B;</span><input type="checkbox" checked> Re-resolve primary/butt at residual nodes</div>
+        <div class="optrow"><span class="mdl2">&#xE8AB;</span><input type="checkbox"> One-way location realign (extensions zeroed)</div>
+        <div class="optrow"><span class="mdl2">&#xECC6;</span> Residual tolerance <input class="num" value="3.0"> <span class="dim">mm</span></div>
+      </div>
+    </div>
+
+    <div class="card gridcard">
+      <h2><span class="mdl2">&#xE9D2;</span> Review grid <span class="sub" style="font-weight:400">· one row per element, worst status wins · click ID to zoom</span></h2>
+      <div class="ghead"><span></span><span>STATUS</span><span>FAMILY &amp; TYPE</span><span>ELEMENT ID</span><span>Δ LENGTH</span><span>EXT S/E</span><span>REASON</span></div>
+      <div class="grows" id="grows">
+        <div class="grow"><span class="chk on"></span><span><span class="pill pass">BUTT-OK</span></span><span>W Shapes : W310×39</span><span class="idlink">1291404</span><span class="mono">0.0 mm</span><span class="mono">+12 / +9</span><span class="dim">disallowed · length compensated into extensions</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill pass">PRIMARY</span></span><span>W Shapes : W310×39</span><span class="idlink">1291405</span><span class="mono">0.0 mm</span><span class="mono">+12 / 0</span><span class="dim">kept primary at ex-miter node · butt scheme resolved</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill warn">RESIDUAL</span></span><span>HSS : HSS152×152×9.5</span><span class="idlink">1291812</span><span class="mono">1.8 mm</span><span class="mono">+8 / +8</span><span class="dim">residual gap at node within 3.0 mm tolerance</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill pass">DECOPED</span></span><span>W Shapes : W250×28</span><span class="idlink">1292040</span><span class="mono">0.0 mm</span><span class="mono">+15 / +15</span><span class="dim">cope stripped · faces unchanged</span></div>
+        <div class="grow"><span class="chk"></span><span><span class="pill warn">SKIP-JOINED</span></span><span>C Shapes : C200×17</span><span class="idlink">1292377</span><span class="mono">—</span><span class="mono">—</span><span class="dim">still joined to a wall — out of contract, left alone</span></div>
+        <div class="grow"><span class="chk"></span><span><span class="pill warn">SKIP-JUSTIFY</span></span><span>W Shapes : W310×39</span><span class="idlink">1292581</span><span class="mono">—</span><span class="mono">—</span><span class="dim">non-centerline justification — realign would move faces</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill fail">DRIFT</span></span><span>HSS : HSS102×102×6.4</span><span class="idlink">1293118</span><span class="mono">4.6 mm</span><span class="mono">+2 / 0</span><span class="dim">physical length drifted past tolerance — needs review</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill warn">RESIDUAL-SKEW</span></span><span>W Shapes : W250×28</span><span class="idlink">1293301</span><span class="mono">2.2 mm</span><span class="mono">+6 / +11</span><span class="dim">skewed residual node · deterministic butt applied</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill pass">BUTT-OK</span></span><span>W Shapes : W460×52</span><span class="idlink">1293554</span><span class="mono">0.0 mm</span><span class="mono">0 / +14</span><span class="dim">disallowed · length compensated into extensions</span></div>
+        <div class="grow"><span class="chk on"></span><span><span class="pill fail">FAIL</span></span><span>C Shapes : C150×12</span><span class="idlink">1293972</span><span class="mono">—</span><span class="mono">—</span><span class="dim">rollback: extension parameter read-only in this family</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
+    <div class="fsep"></div>
+    <div class="fdot"></div>
+    <div class="fstatus" id="fstatus">Scan: 412 members · 186 joined ends · 2 drift · location line never touched</div>
+    <button class="fbtn"><span class="mdl2">&#xE9F9;</span> XLSX report</button>
+    <button class="fbtn"><span class="mdl2">&#xE7A7;</span> Re-Allow (reverse)</button>
+    <button class="fbtn dashed" id="scanbtn"><span class="mdl2">&#xE721;</span> SCAN (dry count)</button>
+    <button class="commit"><span class="mdl2">&#xE768;</span> APPLY FIX</button>
+  </div>
+</div>
+<script>
+document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
+document.querySelectorAll('.scope').forEach(function(s){
+  s.onclick=function(){ document.querySelectorAll('.scope').forEach(function(x){x.classList.remove('sel');}); s.classList.add('sel');
+    var n={Selection:36,'Active view':412,'Whole model':1847}[s.textContent.trim()]||412;
+    animate('k-scan',n); animate('k-join',Math.round(n*.45)); animate('k-cope',Math.round(n*.14));
+    document.getElementById('fstatus').textContent='Scan: '+n+' members in scope — press SCAN for a fresh dry count';
+  };
+});
+document.querySelectorAll('.grow .chk').forEach(function(c){ c.parentElement.onclick=function(e){ if(e.target===c||e.target.classList.contains('chk')) c.classList.toggle('on'); }; });
+function animate(id,target){ var el=document.getElementById(id),v=0,st=Math.max(1,Math.round(target/24));
+  var iv=setInterval(function(){ v+=st; if(v>=target){v=target;clearInterval(iv);} el.textContent=v; },18); }
+document.getElementById('scanbtn').onclick=function(){ ['k-scan','k-join','k-res','k-drift','k-cope'].forEach(function(id){
+  var el=document.getElementById(id); animate(id,parseInt(el.textContent,10)); }); };
+</script>
+</body>
+</html>

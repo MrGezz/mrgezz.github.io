@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>GUIDE — IcZ Guideline · Standards Library Viewer</title>
+<style>
+:root, .dark {
+  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
+  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
+  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
+  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
+  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
+  --page:#1A252C; --pagetext:#C9D6DD;
+}
+.light {
+  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
+  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
+  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
+  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
+  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
+  --page:#FFFFFF; --pagetext:#37474F;
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
+.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
+.app { width:1220px; max-width:100%; margin:0 auto; height:860px; background:var(--win);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.5); }
+.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
+.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
+.iconbtn:hover { background:var(--rowhover); }
+.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
+.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
+.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
+.body { flex:1 1 auto; display:flex; min-height:0; }
+.rail { width:290px; background:var(--nav); border-right:1px solid var(--border); display:flex; flex-direction:column; flex:0 0 auto; }
+.searchwrap { padding:10px 10px 4px; }
+.search { display:flex; align-items:center; gap:8px; height:30px; border:1px solid var(--border); border-radius:6px; background:var(--input); padding:0 10px; }
+.search input { flex:1; border:0; background:transparent; color:var(--text); font-size:11.5px; outline:none; font-family:inherit; }
+.search .mdl2 { color:var(--text2); font-size:12px; }
+.rail .scroll { flex:1 1 auto; overflow:auto; padding:6px; }
+.grouphdr { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:.4px; margin:12px 0 4px 8px; display:flex; align-items:center; gap:6px; }
+.grouphdr .mdl2 { color:var(--accent); font-size:11px; }
+.frow { display:grid; grid-template-columns:24px 1fr auto; align-items:center; padding:6px 8px; border-radius:5px; margin:1px 0; cursor:pointer; }
+.frow:hover { background:var(--rowhover); } .frow.sel { background:var(--navsel); border-left:3px solid var(--accent); padding-left:5px; }
+.frow .ic { font-size:14px; text-align:center; }
+.ic.pdf{color:var(--fail);} .ic.xls{color:var(--pass);} .ic.doc{color:#4FC3F7;} .ic.md{color:var(--warn);} .ic.img{color:#BA68C8;}
+.frow .lb { font-size:11.5px; margin-left:8px; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.frow .lb small { display:block; font-size:9px; color:var(--text2); }
+.frow .note-ind { font-size:10px; color:var(--warn); }
+.railfoot { border-top:1px solid var(--border); padding:9px 10px; font-size:10px; color:var(--text2); display:flex; gap:8px; align-items:center; }
+.railfoot .mdl2 { color:var(--accent); }
+.main { flex:1 1 auto; display:flex; flex-direction:column; min-width:0; }
+.tabs { display:flex; align-items:center; gap:2px; padding:8px 14px 0; border-bottom:1px solid var(--border); background:var(--nav); }
+.tab { padding:7px 16px 9px; font-size:11.5px; color:var(--text2); border-radius:7px 7px 0 0; cursor:pointer; display:flex; gap:7px; align-items:center; }
+.tab .mdl2 { font-size:12px; }
+.tab.sel { background:var(--win); color:var(--text); border:1px solid var(--border); border-bottom-color:var(--win); margin-bottom:-1px; }
+.tab.sel .mdl2 { color:var(--accent); }
+.toolbar { display:flex; align-items:center; gap:4px; padding:8px 14px; border-bottom:1px solid var(--border); }
+.tbtn { height:28px; min-width:30px; padding:0 9px; border-radius:6px; display:flex; align-items:center; justify-content:center; gap:6px; color:var(--text2); cursor:pointer; font-size:11px; }
+.tbtn:hover { background:var(--rowhover); color:var(--text); }
+.tbtn.on { background:var(--navsel); color:var(--accent); }
+.tsep { width:1px; height:16px; background:var(--border); margin:0 6px; }
+.zoom { margin-left:auto; display:flex; align-items:center; gap:8px; color:var(--text2); font-size:11px; }
+.viewer { flex:1 1 auto; overflow:auto; background:var(--input); padding:22px; display:flex; justify-content:center; }
+.page { width:640px; min-height:850px; background:var(--page); color:var(--pagetext); border:1px solid var(--border);
+  border-radius:4px; box-shadow:0 14px 40px rgba(0,0,0,.45); padding:48px 54px; font-size:12.5px; line-height:1.75; position:relative; }
+.page h3 { margin:0 0 4px; font-size:19px; color:var(--text); letter-spacing:.2px; }
+.page .meta { font-size:10px; color:var(--text2); margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:12px; }
+.page h4 { font-size:13px; margin:20px 0 6px; color:var(--text); }
+.page ul { margin:6px 0; padding-left:20px; }
+.hl { background:rgba(255,179,0,.35); border-radius:2px; padding:0 2px; }
+.mark { position:absolute; border:2px solid var(--fail); border-radius:4px; pointer-events:none; }
+.marknote { position:absolute; background:var(--warnbg, rgba(255,179,0,.14)); border:1px solid var(--warn); color:var(--warn);
+  font-size:10px; padding:3px 8px; border-radius:5px; }
+.pagenum { position:absolute; bottom:16px; right:24px; font-size:10px; color:var(--text2); }
+.footer{flex:0 0 auto;height:52px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
+.fsep{width:1px;height:12px;background:var(--border);}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
+.fstatus{color:var(--text2);font-size:11px;opacity:.8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fbtn{height:34px;padding:0 14px;border-radius:6px;background:var(--input);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:11.5px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.fbtn.primary{background:var(--accent);border:0;color:var(--accentfg);font-weight:700;box-shadow:0 0 14px var(--glow);}
+</style>
+</head>
+<body class="dark">
+<div class="app">
+  <div class="titlebar">
+    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xE82D;</div><div class="title">IcZ Guideline</div>
+    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
+      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+  </div>
+  <div class="body">
+    <div class="rail">
+      <div class="searchwrap"><div class="search"><span class="mdl2">&#xE721;</span><input placeholder="Search 34 documents…"></div></div>
+      <div class="scroll">
+        <div class="grouphdr"><span class="mdl2">&#xE718;</span> PINNED</div>
+        <div class="frow sel" data-doc="0"><span class="ic pdf mdl2">&#xE8A5;</span><span class="lb">BIM Execution Plan v4.2.pdf<small>PDF · 2.4 MB · rev 2026-06-30</small></span><span class="note-ind mdl2" title="has notes">&#xE70B;</span></div>
+        <div class="frow" data-doc="1"><span class="ic md mdl2">&#xE943;</span><span class="lb">Naming_Convention.md<small>Markdown · editable in place</small></span><span></span></div>
+        <div class="grouphdr"><span class="mdl2">&#xE8B7;</span> LIBRARY · \\server\BIM\Standards</div>
+        <div class="frow" data-doc="2"><span class="ic pdf mdl2">&#xE8A5;</span><span class="lb">MEP Modeling Guideline.pdf<small>PDF · 8.1 MB</small></span><span></span></div>
+        <div class="frow" data-doc="3"><span class="ic xls mdl2">&#xE9F9;</span><span class="lb">Parameter_Matrix.xlsx<small>Excel · inline preview</small></span><span></span></div>
+        <div class="frow" data-doc="4"><span class="ic doc mdl2">&#xE8A5;</span><span class="lb">QA Checklist Template.docx<small>Word · extracted text</small></span><span class="note-ind mdl2" title="has notes">&#xE70B;</span></div>
+        <div class="frow" data-doc="5"><span class="ic pdf mdl2">&#xE8A5;</span><span class="lb">Workset Standard.pdf<small>PDF · 1.2 MB</small></span><span></span></div>
+        <div class="frow" data-doc="6"><span class="ic img mdl2">&#xEB9F;</span><span class="lb">Titleblock_Layout.png<small>Image</small></span><span></span></div>
+        <div class="frow" data-doc="7"><span class="ic md mdl2">&#xE943;</span><span class="lb">Clash_Matrix_Notes.md<small>Markdown</small></span><span></span></div>
+      </div>
+      <div class="railfoot"><span class="mdl2">&#xE895;</span> Library rescanned 08:12 · 2 folders · 34 files indexed</div>
+    </div>
+    <div class="main">
+      <div class="tabs">
+        <div class="tab sel"><span class="mdl2">&#xE890;</span> Preview</div>
+        <div class="tab"><span class="mdl2">&#xE70F;</span> Edit</div>
+        <div class="tab"><span class="mdl2">&#xE70B;</span> Notes <span style="color:var(--warn)">·</span></div>
+      </div>
+      <div class="toolbar">
+        <div class="tbtn" title="select"><span class="mdl2">&#xE8B0;</span></div>
+        <div class="tbtn on" title="highlight"><span class="mdl2">&#xE7E6;</span></div>
+        <div class="tbtn" title="text box"><span class="mdl2">&#xE97C;</span></div>
+        <div class="tbtn" title="freehand"><span class="mdl2">&#xE76D;</span></div>
+        <div class="tsep"></div>
+        <div class="tbtn" title="rotate"><span class="mdl2">&#xE7AD;</span></div>
+        <div class="tbtn" title="reorder pages"><span class="mdl2">&#xE8CB;</span></div>
+        <div class="tbtn" title="insert / delete / extract / merge"><span class="mdl2">&#xE710;</span></div>
+        <div class="tsep"></div>
+        <div class="tbtn"><span class="mdl2">&#xE721;</span> Find in document</div>
+        <div class="tbtn" title="print"><span class="mdl2">&#xE749;</span></div>
+        <div class="zoom"><span class="mdl2 tbtn">&#xE71F;</span> 100% <span class="mdl2 tbtn">&#xE8A3;</span> · page 3 / 41</div>
+      </div>
+      <div class="viewer">
+        <div class="page" id="page">
+          <h3 id="p-title">BIM Execution Plan — v4.2</h3>
+          <div class="meta" id="p-meta">Section 3 · Model Structure &amp; Worksets — IcZ.PdfView (PDFium render) · annotations shown</div>
+          <div id="p-body">
+            <h4>3.1 Workset partitioning</h4>
+            <p>Model elements shall be assigned to worksets by <span class="hl">discipline and system function</span>, following the schedule in Appendix B. Link instances occupy dedicated <b>ZZ_LNK_*</b> worksets and are never left on a working set.</p>
+            <h4>3.2 Level of Information (LOI)</h4>
+            <p>Every deliverable model is scored against the firm's Model Checker LOI ruleset before issue. Elements failing mandatory parameters are corrected — <span class="hl">no waiver is granted for SPEC_* fields</span>.</p>
+            <ul>
+              <li>SPEC_SYSTEM, SPEC_SIZE and SPEC_QUANTITY written by the QAQC pipeline</li>
+              <li>Openings coordinated through the MEP Opening workflow, one marker per crossing</li>
+              <li>Exported IFC typing driven by the classification table, not by hand</li>
+            </ul>
+            <h4>3.3 Issue procedure</h4>
+            <p>Weekly issues run through the transmittal tool with the project profile; the sheet index accompanies every package.</p>
+          </div>
+          <div class="mark" style="top:284px; left:44px; width:520px; height:44px;"></div>
+          <div class="marknote" style="top:262px; right:40px;">redline · check against rev C02</div>
+          <div class="pagenum">3 / 41</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
+    <div class="fsep"></div>
+    <div class="fdot"></div>
+    <div class="fstatus" id="fstatus">BIM Execution Plan v4.2.pdf — opened read-safe · notes sidecar attached · original untouched</div>
+    <button class="fbtn"><span class="mdl2">&#xE70B;</span> Open Notes sidecar</button>
+    <button class="fbtn primary"><span class="mdl2">&#xE74E;</span> Save with annotations</button>
+  </div>
+</div>
+<script>
+document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
+var docs={
+ 0:{t:'BIM Execution Plan — v4.2',m:'Section 3 · Model Structure & Worksets — IcZ.PdfView (PDFium render) · annotations shown',s:'BIM Execution Plan v4.2.pdf — opened read-safe · notes sidecar attached · original untouched'},
+ 1:{t:'Naming Convention',m:'Markdown — rendered preview · switch to Edit tab to change and save (crash-safe .bak kept)',s:'Naming_Convention.md — editable in place'},
+ 2:{t:'MEP Modeling Guideline',m:'PDF · 8.1 MB — continuous scroll, full-document search',s:'MEP Modeling Guideline.pdf — opened read-safe'},
+ 3:{t:'Parameter Matrix',m:'Excel — inline sheet preview (read-only)',s:'Parameter_Matrix.xlsx — inline preview'},
+ 4:{t:'QA Checklist Template',m:'Word — extracted text preview · notes sidecar attached',s:'QA Checklist Template.docx — extracted text'},
+ 5:{t:'Workset Standard',m:'PDF · 1.2 MB',s:'Workset Standard.pdf — opened read-safe'},
+ 6:{t:'Titleblock Layout',m:'Image preview',s:'Titleblock_Layout.png'},
+ 7:{t:'Clash Matrix Notes',m:'Markdown — rendered preview',s:'Clash_Matrix_Notes.md — editable in place'}};
+document.querySelectorAll('.frow').forEach(function(r){
+  r.onclick=function(){
+    document.querySelectorAll('.frow').forEach(function(x){x.classList.remove('sel');});
+    r.classList.add('sel');
+    var d=docs[r.dataset.doc];
+    document.getElementById('p-title').textContent=d.t;
+    document.getElementById('p-meta').textContent=d.m;
+    document.getElementById('fstatus').textContent=d.s;
+  };
+});
+document.querySelectorAll('.tab').forEach(function(t){
+  t.onclick=function(){ document.querySelectorAll('.tab').forEach(function(x){x.classList.remove('sel');}); t.classList.add('sel'); };
+});
+document.querySelectorAll('.toolbar .tbtn').forEach(function(b){
+  b.onclick=function(){ if(b.title&&'select highlight text box freehand'.indexOf(b.title)>=0){ document.querySelectorAll('.toolbar .tbtn').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); } };
+});
+</script>
+</body>
+</html>

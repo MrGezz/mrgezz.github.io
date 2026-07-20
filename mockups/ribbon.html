@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "SectionBox Ribbon Showcase",
+  "schemaVersion": 1,
+  "description": "Website-ready, high-fidelity render of the Revit 2026 dark ribbon (SuiteTools tab → Tools panel) featuring the IcZ Section Box .pulldown expanded: Section Box (window), Box: Active View + Box: New View (the two create clones), Grow / Shrink / Toggle - each an individually shortcut-bindable pushbutton with its own icon. Includes a Revit-style 'Auto Section Box' hover tooltip. Standalone, dark, embeddable as a showcase image. Hover the big button to open/close the flyout; hover an item for its blue Revit highlight.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IcZ Section Box — Revit Ribbon Showcase</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{font-family:"Segoe UI",system-ui,sans-serif}
+  .stage{
+    min-height:100vh;padding:54px 24px;display:flex;flex-direction:column;
+    align-items:center;gap:30px;
+    background:
+      radial-gradient(1200px 520px at 50% -8%, #223541 0%, rgba(34,53,65,0) 60%),
+      linear-gradient(180deg,#0e1418 0%,#0a0e12 100%);
+  }
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .cube{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif}
+
+  /* ── the ribbon ── */
+  .ribbon{
+    width:940px;max-width:100%;border-radius:7px;overflow:visible;
+    background:linear-gradient(180deg,#3a3a3a 0%,#333 100%);
+    border:1px solid #202020;
+    box-shadow:0 26px 70px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.03) inset;
+    position:relative;
+  }
+  /* tab strip */
+  .tabs{display:flex;align-items:flex-end;gap:2px;height:32px;padding:0 8px;
+    background:linear-gradient(180deg,#262626 0%,#2c2c2c 100%);
+    border-bottom:1px solid #1c1c1c;border-radius:7px 7px 0 0;font-size:12px}
+  .tab{padding:6px 12px;color:#b7b7b7;cursor:default;border-radius:4px 4px 0 0;white-space:nowrap}
+  .tab.dim{color:#8f8f8f}
+  .tab.active{background:linear-gradient(180deg,#3a3a3a,#333);color:#fff;font-weight:600;
+    box-shadow:inset 0 2px 0 #00BCD4}
+  /* panels row */
+  .panels{display:flex;align-items:stretch;padding:7px 6px 0;gap:0;min-height:104px}
+  .panel{display:flex;flex-direction:column;position:relative;padding:0 4px}
+  .panel + .panel{border-left:1px solid #262626;box-shadow:-1px 0 0 #444}
+  .panel .buttons{flex:1;display:flex;align-items:flex-start;gap:2px;padding:4px 6px}
+  .panel .ptitle{height:18px;display:flex;align-items:center;justify-content:center;gap:5px;
+    font-size:10.5px;color:#9a9a9a;border-top:1px solid #2a2a2a}
+  .panel .ptitle .car{font-size:8px;color:#7a7a7a}
+
+  /* small stacked buttons (context) */
+  .sbtn{display:flex;flex-direction:column;align-items:center;gap:3px;width:62px;
+    padding:6px 2px 4px;border-radius:4px;cursor:default;color:#d8d8d8}
+  .sbtn:hover{background:#454545;box-shadow:inset 0 0 0 1px #5a5a5a}
+  .sbtn .ic{font-size:26px;line-height:26px}
+  .sbtn .tx{font-size:10.5px;text-align:center;line-height:1.15}
+  .amber{color:#E7B24A}
+  .blue{color:#5AA9E6}
+  .green{color:#7Fc57F}
+  .violet{color:#B49BE0}
+
+  /* the featured pulldown large button */
+  .pull{position:relative}
+  .pullbtn{display:flex;flex-direction:column;align-items:center;gap:2px;width:78px;
+    padding:6px 2px 4px;border-radius:4px;cursor:pointer;color:#eee}
+  .pullbtn:hover,.pullbtn.open{background:#4a4a4a;box-shadow:inset 0 0 0 1px #6a6a6a}
+  .pullbtn .ic{font-size:30px;line-height:30px}
+  .pullbtn .lab{font-size:10.5px;text-align:center;line-height:1.15}
+  .pullbtn .car{font-size:8px;color:#cfcfcf;margin-top:1px}
+
+  /* the flyout */
+  .flyout{position:absolute;top:calc(100% + 3px);left:0;z-index:30;min-width:266px;
+    background:#2f2f2f;border:1px solid #1b1b1b;border-radius:5px;
+    box-shadow:0 16px 40px rgba(0,0,0,.6);padding:4px;display:none}
+  .flyout.show{display:block}
+  .fi{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:4px;cursor:pointer;color:#e6e6e6}
+  .fi:hover{background:#0e639c}
+  .fi .ic{width:22px;text-align:center;font-size:19px}
+  .fi .t{flex:1}
+  .fi .t b{font-size:12.5px;font-weight:600;display:block;line-height:1.2}
+  .fi .t small{font-size:10px;color:#a9a9a9}
+  .fi:hover .t small{color:#dcecf7}
+  .fi .kb{font:9.5px Consolas,monospace;color:#cbd5db;background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.10);border-radius:3px;padding:1px 6px}
+  .fi:hover .kb{color:#fff;background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.25)}
+  .fsep{height:1px;background:#3f3f3f;margin:3px 6px}
+
+  /* Revit-style tooltip on the featured item */
+  .tip{position:absolute;top:calc(100% + 3px);left:290px;z-index:31;width:280px;
+    background:#f4f4f4;border:1px solid #b9b9b9;border-radius:2px;
+    box-shadow:0 12px 30px rgba(0,0,0,.45);padding:11px 13px;display:none}
+  .tip.show{display:block}
+  .tip h4{font-size:12.5px;color:#1c1c1c;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+  .tip h4 .ic{font-size:16px;color:#C08A2E}
+  .tip p{font-size:11.5px;color:#3a3a3a;line-height:1.5}
+  .tip .f1{margin-top:8px;padding-top:7px;border-top:1px solid #dcdcdc;font-size:11px;color:#6a6a6a}
+
+  .cap{width:940px;max-width:100%;color:#8ea1ac;font-size:12px;line-height:1.6;text-align:center}
+  .cap b{color:#cfe0e8}.cap code{color:#00BCD4;font-family:Consolas,monospace}
+  .hintbar{font-size:11px;color:#5f7480}
+</style>
+</head>
+<body>
+<div class="stage">
+
+  <div class="ribbon">
+    <!-- tabs -->
+    <div class="tabs">
+      <span class="tab dim">Collaborate</span>
+      <span class="tab dim">View</span>
+      <span class="tab dim">Manage</span>
+      <span class="tab dim">Add-Ins</span>
+      <span class="tab active">SuiteTools</span>
+      <span class="tab dim">Modify</span>
+    </div>
+
+    <!-- panels -->
+    <div class="panels">
+      <!-- context panel: Tools (a few neighbours) -->
+      <div class="panel">
+        <div class="buttons">
+          <div class="sbtn"><span class="ic mdl2 blue">&#xE74C;</span><span class="tx">Model<br>Cleanup</span></div>
+          <div class="sbtn"><span class="ic mdl2 green">&#xE898;</span><span class="tx">IcZ<br>Transmit</span></div>
+          <div class="sbtn"><span class="ic mdl2 blue">&#xE8A5;</span><span class="tx">IcZ<br>AutoDoc</span></div>
+        </div>
+        <div class="ptitle">Tools</div>
+      </div>
+
+      <!-- featured panel: Section Box pulldown -->
+      <div class="panel">
+        <div class="buttons">
+          <div class="pull">
+            <div class="pullbtn open" id="pullbtn">
+              <span class="ic cube amber">&#xE809;</span>
+              <span class="lab">Section Box</span>
+              <span class="car mdl2">&#xE70D;</span>
+            </div>
+            <!-- flyout -->
+            <div class="flyout show" id="flyout">
+              <div class="fi"><span class="ic cube amber">&#xE809;</span>
+                <span class="t"><b>Section Box…</b><small>open the create window</small></span></div>
+              <div class="fsep"></div>
+              <div class="fi" id="fi_active"><span class="ic cube amber">&#xE809;</span>
+                <span class="t"><b>Box: Active View</b><small>selection &#x2192; active 3D view (auto section box)</small></span><span class="kb">B&#x200A;X</span></div>
+              <div class="fi"><span class="ic cube amber">&#xE908;</span>
+                <span class="t"><b>Box: New View</b><small>selection &#x2192; new / named 3D view</small></span><span class="kb">set</span></div>
+              <div class="fsep"></div>
+              <div class="fi"><span class="ic mdl2 green">&#xE710;</span>
+                <span class="t"><b>Grow Box</b><small>active box + saved step</small></span><span class="kb">set</span></div>
+              <div class="fi"><span class="ic mdl2 amber">&#xE738;</span>
+                <span class="t"><b>Shrink Box</b><small>active box &#x2212; saved step</small></span><span class="kb">set</span></div>
+              <div class="fi"><span class="ic mdl2 violet">&#xE7B3;</span>
+                <span class="t"><b>Toggle Box</b><small>off (remembered) / restore</small></span><span class="kb">set</span></div>
+            </div>
+            <!-- tooltip -->
+            <div class="tip" id="tip">
+              <h4><span class="ic cube">&#xE809;</span> Auto Section Box</h4>
+              <p>Automatically add a section box around the selected elements in the active 3D view — element extents plus the saved buffer. Bind it to <b>BX</b> to replace Revit's default.</p>
+              <div class="f1">Press F1 for more help</div>
+            </div>
+          </div>
+        </div>
+        <div class="ptitle">Section Box <span class="car mdl2">&#xE70D;</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hintbar">▸ hover the <b>Section Box</b> button to toggle the flyout · hover <b>Box: Active View</b> for the tooltip</div>
+
+  <div class="cap">
+    <b>IcZ Section Box</b> — one <code>.pulldown</code> keeps the Tools panel tidy while every entry stays an individual
+    <code>.pushbutton</code> with its own icon and its own assignable keyboard shortcut. <b>Box: Active View</b> is the
+    "auto section box" you bind to <b>BX</b>; the window, both create clones, Grow, Shrink and Toggle all share one
+    <code>lib/icz/viewbox</code> engine.
+  </div>
+</div>
+
+<script>
+(function(){
+  var pull=document.getElementById("pullbtn");
+  var fly=document.getElementById("flyout");
+  var tip=document.getElementById("tip");
+  var active=document.getElementById("fi_active");
+  pull.addEventListener("click",function(){
+    var on=fly.classList.toggle("show");
+    pull.classList.toggle("open",on);
+    if(!on) tip.classList.remove("show");
+  });
+  active.addEventListener("mouseenter",function(){ tip.classList.add("show"); });
+  active.addEventListener("mouseleave",function(){ tip.classList.remove("show"); });
+})();
+</script>
+</body>
+</html>

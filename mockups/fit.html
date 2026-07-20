@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "Fit Workbench Complete R16",
+  "schemaVersion": 1,
+  "description": "FIT (MEP Workbench) round 16 — COMPLETE interactive mockup of the whole tool, built 1:1 from the real ui.xaml. Every page (Dashboard, Fittings Audit, System Connectivity [NEW], Flex Conversion, Spatial Routing, Prefab Auto-Slicer, Modify & Align, Coordinate Stamping, Parameter Sync) is fully rendered with its real controls, gear→Settings flips, the flex op-host (Convert/Audit/Simplify/Split/Parallel), per-page action bars, collapsible results console, notification banner and footer. Rail restructured into DIAGNOSE / FABRICATE / DOCUMENT groups with rail section captions. Interactive: rail switch, rail collapse, gear settings flip, flex op tabs, console chevron, theme toggle. This is the literal 1:1 spec to rewrite ui.xaml + script.py wholesale.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIT — MEP Workbench · Round 16 Complete Rebuild</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --input-text:#ECF4F7; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel2:#1C2B33; --hover:#1C2B33;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --input-text:#263238; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel2:#E7EDF0; --hover:#E3EAEE;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  body.light{background:#cfd8dc}
+  .win{width:1220px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55);display:flex;flex-direction:column}
+  /* titlebar */
+  .tb{position:relative;display:flex;align-items:center;gap:10px;background:var(--titlebar);border-bottom:1px solid var(--border);padding:9px 14px}
+  .tb .hamb{color:var(--text-2);font-size:14px;cursor:pointer;user-select:none}
+  .tb .ttl{font-size:12.5px;color:var(--text-2)} .tb .ttl b{color:var(--text-main);font-weight:600}
+  .chip{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);font:11px Consolas,monospace;border-radius:6px;padding:3px 12px}
+  .chip .ci{color:var(--accent);font-size:10px}
+  .tbtn{margin-left:auto;background:none;border:none;color:var(--text-2);font-size:13px;padding:2px 6px;cursor:pointer}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .main{display:flex;min-height:672px}
+  /* rail */
+  .rail{width:236px;background:var(--nav);border-right:1px solid var(--border);padding:8px 8px 10px;display:flex;flex-direction:column;gap:1px;transition:width .12s}
+  .cap{font-size:9px;letter-spacing:.1em;color:var(--text-2);font-weight:700;padding:11px 10px 3px;user-select:none}
+  .nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:7px;font-size:12px;color:var(--text-2);cursor:pointer;white-space:nowrap;user-select:none}
+  .nav:hover{background:var(--hover)}
+  .nav .g{font-family:"Segoe UI Symbol";width:22px;text-align:center;font-size:13px;flex:none}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600}
+  .nav .bdg{margin-left:auto;font-size:9px;font-weight:700;border-radius:99px;padding:1px 6px;font-variant-numeric:tabular-nums}
+  .bdg.warn{background:rgba(255,179,0,.16);color:var(--warn)} .bdg.fail{background:rgba(255,82,82,.16);color:var(--fail)}
+  .bdg.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .railfill{flex:1}
+  .rby{font-size:11px;color:var(--text-2);padding:8px 10px 2px}
+  .rail.col{width:56px}
+  .rail.col .nav{justify-content:center;padding:8px 0} .rail.col .nav .txt,.rail.col .nav .bdg,.rail.col .cap,.rail.col .rby{display:none}
+  .rail.col .nav .g{width:auto;font-size:16px}
+  /* content */
+  .content{flex:1;display:flex;flex-direction:column;background:var(--window-bg);min-width:0}
+  .pgwrap{flex:1;overflow:auto;position:relative}
+  .page{display:none;flex-direction:column} .page.show{display:flex}
+  .surf{display:none;flex-direction:column} .surf.show{display:flex}
+  .scroll{padding:14px 18px 8px;display:flex;flex-direction:column;gap:12px}
+  .hd{display:flex;align-items:flex-start;gap:10px;padding:12px 18px 0}
+  .hd h2{font-size:17px;font-weight:700}
+  .hd .sub{font-size:11px;color:var(--text-2);margin-top:3px;max-width:760px}
+  .gear{margin-left:auto;width:28px;height:28px;border:1px solid var(--border);background:var(--panel2);border-radius:6px;color:var(--text-2);cursor:pointer;font-size:13px;flex:none}
+  .kpis{display:grid;gap:10px}.k4{grid-template-columns:repeat(4,1fr)}.k2{grid-template-columns:repeat(2,1fr)}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:11px 13px}
+  .tile.mini{display:flex;align-items:center;justify-content:space-between;padding:9px 14px}
+  .tile .lab{font-size:9.5px;letter-spacing:.05em;color:var(--text-2)}
+  .tile .val{font-size:25px;font-weight:700;margin:5px 0 2px;font-variant-numeric:tabular-nums}
+  .tile.mini .val{font-size:20px;margin:0}
+  .tile .s{font-size:9.5px;color:var(--text-2)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px}
+  .card h3{font-size:12px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+  .card h3 .r{margin-left:auto;font-weight:400;color:var(--text-2)}
+  .desc{font-size:10.5px;color:var(--text-2);margin-bottom:10px;line-height:1.5}
+  .hero{display:grid;grid-template-columns:360px 1fr;gap:12px}
+  .donutwrap{display:flex;gap:16px;align-items:center}
+  .leg{font-size:11.5px;display:flex;flex-direction:column;gap:6px}
+  .leg .r{display:flex;align-items:center;gap:8px}
+  .sw{width:11px;height:11px;border-radius:3px}
+  .leg b{margin-left:4px;color:var(--text-2);font-weight:600}
+  .barrow{display:grid;grid-template-columns:150px 1fr 46px;gap:10px;align-items:center;font-size:11px;margin:5px 0}
+  .barrow.click{cursor:pointer;border-radius:6px;padding:2px 4px;margin:3px 0} .barrow.click:hover{background:var(--hover)}
+  .track{height:13px;background:var(--track);border-radius:4px;overflow:hidden;max-width:260px}
+  .fill{height:13px;border-radius:4px}
+  .ct{text-align:right;color:var(--text-2);font-variant-numeric:tabular-nums}
+  .mixrow{display:grid;grid-template-columns:92px 1fr 56px;gap:10px;align-items:center;font-size:11px;margin:4px 0}
+  .mixrow .track{max-width:320px}
+  /* buttons */
+  .acc{display:inline-flex;align-items:center;gap:8px;background:var(--accent);color:var(--accent-fg);font-weight:600;font-size:12px;border:none;border-radius:6px;padding:8px 15px;cursor:pointer}
+  .mini{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);font-size:11px;border-radius:6px;padding:5px 10px;cursor:pointer}
+  .mini:hover{border-color:var(--accent)}
+  .ghost{background:transparent;border:1px solid var(--border);color:var(--text-main);font-size:11px;border-radius:6px;padding:6px 12px;cursor:pointer}
+  /* forms */
+  .frow{display:grid;grid-template-columns:170px 1fr;gap:8px;align-items:center;margin:5px 0;font-size:11px}
+  .frow .fl{color:var(--text-2)}
+  .ctl{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--input-text);font-size:11px;padding:6px 9px}
+  .combo::after{content:"▾";float:right;color:var(--text-2)}
+  .chk{display:flex;align-items:center;gap:8px;font-size:11px;margin:6px 0}
+  .box{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);flex:none;display:inline-block}
+  .box.on{background:var(--accent);border-color:var(--accent)}
+  .sub2{font-size:10.5px;color:var(--text-2);line-height:1.5;margin:4px 0}
+  /* page action bar */
+  .foot{display:flex;align-items:center;gap:8px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;flex-wrap:wrap}
+  .foot .selc{font-size:11px;color:var(--text-2)}
+  .foot .rt{margin-left:auto;display:flex;gap:8px}
+  /* flex op tabs */
+  .optabs{display:flex;gap:6px;padding:8px 18px 0}
+  .optab{font-size:11px;border:1px solid var(--border);background:var(--panel2);border-radius:6px;padding:6px 14px;cursor:pointer;color:var(--text-2)}
+  .optab.sel{border-color:var(--accent);color:var(--text-main)}
+  .oppanel{display:none}.oppanel.show{display:block}
+  /* review card */
+  .rvwhd{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .rvwhd .cnt{margin-left:auto;font-size:11px;color:var(--text-2)}
+  .rows{border:1px dashed var(--border);border-radius:6px;padding:8px;font:11px Consolas,monospace;color:var(--text-2);min-height:34px}
+  .rrow{display:flex;align-items:center;gap:8px;padding:3px 4px;border-radius:4px;cursor:pointer}
+  .rrow:hover{background:var(--hover)} .rid{color:var(--accent)}
+  .btag{font-size:9px;font-weight:700;border-radius:99px;padding:1px 6px}
+  .btag.warn{background:rgba(255,179,0,.16);color:var(--warn)}.btag.fail{background:rgba(255,82,82,.16);color:var(--fail)}
+  .seam{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:center;font-size:10.5px}
+  .node{background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:8px;text-align:center}
+  .node b{display:block;font-size:11px;margin-bottom:2px}.node.acc2{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .arw{color:var(--accent);font-size:14px;text-align:center}
+  .pill{font-size:9px;border-radius:99px;padding:2px 8px;font-weight:600}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}.pill.cent{background:rgba(76,175,80,.16);color:var(--pass)}
+  .lst{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:6px;font:11px Consolas,monospace;color:var(--text-2);min-height:60px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .banner{margin:10px 18px 0;background:var(--accent);color:#0B0E14;font-weight:600;font-size:11.5px;border-radius:6px;padding:8px 12px;display:flex;align-items:center}
+  .banner .x{margin-left:auto;cursor:pointer}
+  /* console */
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .chead{display:flex;align-items:center;gap:12px;padding:7px 16px;font-size:11px;color:var(--text-2)}
+  .chead .st{color:var(--text-main)} .chead .chev{margin-left:auto;cursor:pointer;background:none;border:none;color:var(--text-main);font-size:11px}
+  .cbody{padding:0 16px 10px} .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.6 Consolas,monospace;padding:9px;height:92px;overflow:auto}
+  .console.col .cbody{display:none}
+  .appfoot{display:flex;align-items:center;gap:10px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .hall b{font-weight:800;color:var(--text-main)}.hall span{font-weight:300}
+  .sep{width:1px;height:13px;background:var(--border)}.gdot{width:7px;height:7px;border-radius:50%;background:var(--pass)}
+  .fr{margin-left:auto}
+  .note{width:1220px;max-width:100%;font-size:11px;color:#8FA6B2;text-align:center;line-height:1.6}
+  .wrap{width:1220px;max-width:100%;background:#0d141a;border:1px solid #283B45;border-radius:10px;padding:16px 20px}
+  .wrap h4{color:#ECF4F7;font:600 12px "Segoe UI";margin-bottom:8px}
+  table.wm{width:100%;border-collapse:collapse;font:11px Consolas,monospace}
+  table.wm th{text-align:left;color:#ECF4F7;font:600 10px "Segoe UI";padding:5px 8px;border-bottom:1px solid #283B45}
+  table.wm td{padding:5px 8px;border-bottom:1px solid #1c2b33;vertical-align:top;color:#8FA6B2}
+  table.wm code{color:#00BCD4}.tn{color:#4CAF50}
+</style>
+</head>
+<body>
+<div class="win">
+  <!-- TITLEBAR -->
+  <div class="tb">
+    <span class="hamb" title="btn_burger · ToggleRail" onclick="rail()">☰</span>
+    <div class="ttl"><b>MEP Workbench</b></div>
+    <div class="chip" title="lbl_file"><span class="ci">▤</span> Snowdon Towers Sample Plumbing</div>
+    <button class="tbtn" title="btn_theme · E706 · ToggleTheme" onclick="document.body.classList.toggle('light')">☀</button>
+    <div class="dot" style="background:#FEBC2E"></div><div class="dot" style="background:#28C840"></div><div class="dot" style="background:#FF5F57"></div>
+  </div>
+  <div class="main">
+    <!-- RAIL (restructured: DIAGNOSE / FABRICATE / DOCUMENT) -->
+    <div class="rail" id="rail">
+      <div class="cap">DIAGNOSE</div>
+      <div class="nav sel" data-p="dash" onclick="go(this)" title="nav_dashboard · Tag=dashboard · E80F"><span class="g">⌂</span><span class="txt">Dashboard</span></div>
+      <div class="nav" data-p="audit" onclick="go(this)" title="nav_audit · Tag=audit · E9F9"><span class="g">▤</span><span class="txt">Fittings &amp; Accessories Audit</span><span class="bdg warn">57</span></div>
+      <div class="nav" data-p="conn" onclick="go(this)" title="nav_connectivity · Tag=connectivity · E839 (NEW)"><span class="g">◈</span><span class="txt">System Connectivity</span><span class="bdg new">NEW</span></div>
+      <div class="cap">FABRICATE</div>
+      <div class="nav" data-p="flex" onclick="go(this)" title="nav_flex · Tag=flex · E9D9"><span class="g">∿</span><span class="txt">Flex Conversion</span></div>
+      <div class="nav" data-p="route" onclick="go(this)" title="nav_route · Tag=route · E707"><span class="g">⚗</span><span class="txt">Spatial Routing Engine</span></div>
+      <div class="nav" data-p="prefab" onclick="go(this)" title="nav_prefab · Tag=prefab · E945"><span class="g">⚡</span><span class="txt">Prefabrication Auto-Slicer</span></div>
+      <div class="nav" data-p="modify" onclick="go(this)" title="nav_modify · Tag=modify · E90F"><span class="g">✎</span><span class="txt">Modify &amp; Align</span></div>
+      <div class="cap">DOCUMENT</div>
+      <div class="nav" data-p="coords" onclick="go(this)" title="nav_coords · Tag=coords · E809"><span class="g">⊞</span><span class="txt">Coordinate Stamping</span></div>
+      <div class="nav" data-p="sync" onclick="go(this)" title="nav_sync · Tag=sync · E8AB"><span class="g">⇄</span><span class="txt">Parameter Synchronization</span></div>
+      <div class="railfill"></div>
+      <div class="rby" title="lbl_by">IcZ Workspace Core</div>
+    </div>
+
+    <div class="content">
+      <div class="banner" id="banner" style="display:none">Health scan complete — 91% compliant, 57 flagged.<span class="x" onclick="document.getElementById('banner').style.display='none'">✕</span></div>
+      <div class="pgwrap">
+
+      <!-- ================= DASHBOARD ================= -->
+      <div class="page show" data-pg="dash">
+        <div class="scroll">
+          <div><h2 style="font-size:18px;font-weight:700">MEP Workbench</h2><div class="sub2">Seven automation engines with a live model snapshot. Read the health — now including the network — then pick an engine.</div></div>
+          <div class="kpis k4">
+            <div class="tile" title="kpi_elements_val"><div class="lab">ELEMENTS IN MODEL</div><div class="val">1,904</div><div class="s">pipes / ducts / flex / fittings / accessories</div></div>
+            <div class="tile" title="kpi_scope_val"><div class="lab">AUDIT SCOPE</div><div class="val">642</div><div class="s">pipe / duct fittings + accessories</div></div>
+            <div class="tile" title="kpi_issues_val · kpi_issues_sub"><div class="lab">OPEN ISSUES</div><div class="val" style="color:var(--warn)">57</div><div class="s">44 warn · 13 fail</div></div>
+            <div class="tile" title="kpi_compliance_val · kpi_scan_sub"><div class="lab">COMPLIANCE</div><div class="val" style="color:var(--pass)">91%</div><div class="s">scanned just now</div></div>
+          </div>
+          <div class="hero">
+            <div class="card">
+              <h3>Model compliance <button class="mini r" title="btn_dash_scan · Dash_Scan_Click" onclick="document.getElementById('banner').style.display='flex'">Scan health</button></h3>
+              <div class="donutwrap">
+                <svg width="150" height="150" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--pass)" stroke-width="7.5" stroke-dasharray="91 9" stroke-dashoffset="25"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--warn)" stroke-width="7.5" stroke-dasharray="6.9 93.1" stroke-dashoffset="-66"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--fail)" stroke-width="7.5" stroke-dasharray="2.1 97.9" stroke-dashoffset="-72.9"/><text x="21" y="22.6" text-anchor="middle" font-size="8" font-weight="700" fill="var(--text-main)">91%</text></svg>
+                <div class="leg" title="dash_donut_host · leg_*_ct"><div class="r"><div class="sw" style="background:var(--pass)"></div>Pass<b>585</b></div><div class="r"><div class="sw" style="background:var(--warn)"></div>Warning<b>44</b></div><div class="r"><div class="sw" style="background:var(--fail)"></div>Fail<b>13</b></div></div>
+              </div>
+              <div class="sub2" title="dash_scan_hint" style="margin-top:10px">Scan health runs the five compliance rules + the connectivity walk, read-only.</div>
+            </div>
+            <div class="card">
+              <h3>Model health — by signal <span class="r">A–E fittings + Connectivity</span></h3>
+              <div class="barrow" title="rule_a_fill · rule_a_ct"><span>A · Routing prefs</span><div class="track"><div class="fill" style="width:38%;background:var(--warn)"></div></div><span class="ct">17</span></div>
+              <div class="barrow" title="rule_b_fill · rule_b_ct"><span>B · Accessories</span><div class="track"><div class="fill" style="width:52%;background:var(--warn)"></div></div><span class="ct">23</span></div>
+              <div class="barrow" title="rule_c_fill · rule_c_ct"><span>C · Placed fittings</span><div class="track"><div class="fill" style="width:27%;background:var(--warn)"></div></div><span class="ct">12</span></div>
+              <div class="barrow" title="rule_d_fill · rule_d_ct"><span>D · Clearance</span><div class="track"><div class="fill" style="width:29%;background:var(--fail)"></div></div><span class="ct">13</span></div>
+              <div class="barrow" title="rule_e_fill · rule_e_ct"><span>E · Headroom</span><div class="track"><div class="fill" style="width:100%;background:var(--warn)"></div></div><span class="ct">44</span></div>
+              <div class="barrow click" onclick="jump('conn')" title="NEW rule_conn_fill · rule_conn_ct → deep-links to System Connectivity"><span>◈ Connectivity <span class="pill new">new</span></span><div class="track"><div class="fill" style="width:70%;background:var(--fail)"></div></div><span class="ct">31</span></div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Element mix by type</h3>
+            <div class="mixrow" title="mix_fitting_*"><span>Fittings</span><div class="track"><div class="fill" style="width:34%;background:var(--accent)"></div></div><span class="ct">512</span></div>
+            <div class="mixrow" title="mix_pipe_*"><span>Pipes</span><div class="track"><div class="fill" style="width:64%;background:var(--accent)"></div></div><span class="ct">861</span></div>
+            <div class="mixrow" title="mix_duct_*"><span>Ducts</span><div class="track"><div class="fill" style="width:20%;background:var(--accent)"></div></div><span class="ct">204</span></div>
+            <div class="mixrow" title="mix_acc_*"><span>Accessories</span><div class="track"><div class="fill" style="width:10%;background:var(--accent)"></div></div><span class="ct">130</span></div>
+            <div class="mixrow" title="mix_flex_*"><span>Flex</span><div class="track"><div class="fill" style="width:15%;background:var(--accent)"></div></div><span class="ct">197</span></div>
+          </div>
+          <div style="font-size:13px;font-weight:700;margin:2px 0 2px">Engines</div>
+          <div class="grid2">
+            <div class="card" style="cursor:pointer" onclick="jump('audit')" title="Dash_Audit"><h3>▤ Fittings &amp; Accessories Audit</h3><div class="desc">Validates fittings and accessories against editable compliance rules — five checks, each a clickable review matrix with zoom and isolate.</div></div>
+            <div class="card" style="cursor:pointer" onclick="jump('conn')" title="Dash_Connectivity (NEW)"><h3>◈ System Connectivity <span class="pill new">new</span></h3><div class="desc">Walks the connector graph — open ends, disconnected islands and orphan fittings — the network check the workbench never had.</div></div>
+            <div class="card" style="cursor:pointer" onclick="jump('flex')" title="Dash_Flex"><h3>∿ Flex Conversion</h3><div class="desc">Converts rigid runs to flex. Replace swaps and reconnects; Containment preserves originals and draws alongside.</div></div>
+            <div class="card" style="cursor:pointer" onclick="jump('route')" title="Dash_Route"><h3>⚗ Spatial Routing Engine</h3><div class="desc">Pick start + target: Deterministic or A* plans an all-90° run and draws pipes/ducts with fittings at every corner.</div></div>
+            <div class="card" style="cursor:pointer" onclick="jump('prefab')" title="Dash_Prefab"><h3>⚡ Prefabrication Auto-Slicer</h3><div class="desc">Segments pipes/ducts into stock-length pieces and places couplings at each joint.</div></div>
+            <div class="card" style="cursor:pointer" onclick="jump('sync')" title="Dash_Sync"><h3>⇄ Parameter Synchronization</h3><div class="desc">Synchronizes IFLS / AKS / Prozessmedium from linked source fittings onto host targets by MEP system.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= AUDIT ================= -->
+      <div class="page" data-pg="audit">
+        <div class="surf show" data-surf="audit-view">
+          <div class="hd"><div><h2>Fittings &amp; Accessories Audit</h2><div class="sub">Five checks against editable rules — clickable review grids. Same scan seam as the dashboard.</div></div><button class="gear" title="Settings_Click Tag=audit · E713" onclick="flip('audit',1)">⚙</button></div>
+          <div class="scroll">
+            <div class="kpis k4">
+              <div class="tile" title="aud_kpi_scanned"><div class="lab">SCANNED</div><div class="val">642</div><div class="s">fittings + accessories</div></div>
+              <div class="tile" title="aud_kpi_flagged"><div class="lab">FLAGGED</div><div class="val" style="color:var(--warn)">57</div><div class="s">across all five rules</div></div>
+              <div class="tile" title="aud_kpi_pass"><div class="lab">PASS RATE</div><div class="val" style="color:var(--pass)">91%</div><div class="s">instance compliance</div></div>
+              <div class="tile" title="aud_kpi_time"><div class="lab">SCAN TIME</div><div class="val">1.8s</div><div class="s">quick-filtered collectors</div></div>
+            </div>
+            <div class="hero">
+              <div class="card"><h3>Result breakdown</h3><div class="donutwrap">
+                <svg width="140" height="140" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--pass)" stroke-width="7.5" stroke-dasharray="91 9" stroke-dashoffset="25"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--warn)" stroke-width="7.5" stroke-dasharray="7 93" stroke-dashoffset="-66"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--fail)" stroke-width="7.5" stroke-dasharray="2 98" stroke-dashoffset="-73"/></svg>
+                <div class="leg" title="audit_donut_host · aud_leg_*"><div class="r"><div class="sw" style="background:var(--pass)"></div>Pass<b>585</b></div><div class="r"><div class="sw" style="background:var(--warn)"></div>Warning<b>44</b></div><div class="r"><div class="sw" style="background:var(--fail)"></div>Fail<b>13</b></div></div></div></div>
+              <div class="card"><h3>Flagged by rule</h3>
+                <div class="barrow" title="aud_rule_a_*"><span>A · Routing prefs</span><div class="track"><div class="fill" style="width:38%;background:var(--warn)"></div></div><span class="ct">17</span></div>
+                <div class="barrow" title="aud_rule_b_*"><span>B · Accessories</span><div class="track"><div class="fill" style="width:52%;background:var(--warn)"></div></div><span class="ct">23</span></div>
+                <div class="barrow" title="aud_rule_c_*"><span>C · Placed fittings</span><div class="track"><div class="fill" style="width:27%;background:var(--warn)"></div></div><span class="ct">12</span></div>
+                <div class="barrow" title="aud_rule_d_*"><span>D · Clearance</span><div class="track"><div class="fill" style="width:29%;background:var(--fail)"></div></div><span class="ct">13</span></div>
+                <div class="barrow" title="aud_rule_e_*"><span>E · Headroom</span><div class="track"><div class="fill" style="width:100%;background:var(--warn)"></div></div><span class="ct">44</span></div>
+              </div>
+            </div>
+            <div class="card"><div class="rvwhd"><b style="font-size:12px">A · Routing-preference fittings</b><button class="mini" title="btn_review_routing">Scan</button><span class="cnt" title="rp_count">17 flagged</span></div><div class="sub2">Each type's routing-preference fittings must carry every marker in the type name.</div><div class="rows" title="rp_rows_panel"><div class="rrow"><span class="rid">▸ 772014</span> Elbow — missing marker H2SO4</div><div class="rrow"><span class="rid">▸ 772119</span> Tee — missing marker VENT</div></div><div style="display:flex;gap:6px;margin-top:6px"><button class="mini">All</button><button class="mini">None</button><button class="mini">Remove ✓</button><button class="mini">Show</button></div></div>
+            <div class="card"><div class="rvwhd"><b style="font-size:12px">B · Accessory pairing</b><button class="mini" title="btn_review_acc">Scan</button><span class="cnt" title="acc_count">23 flagged</span></div><div class="sub2">Family-scoped (fitting_config.json): each configured accessory must match the family/type for its host marker.</div><div class="rows" title="acc_rows_panel"><div class="rrow"><span class="rid">▸ 801233</span> Valve — wrong family for CW</div></div><div style="display:flex;gap:6px;margin-top:6px"><button class="mini">All</button><button class="mini">None</button><button class="mini">Remove ✓</button><button class="mini">Show</button></div></div>
+            <div class="card"><div class="rvwhd"><b style="font-size:12px">C · Placed fittings</b><button class="mini" title="btn_review_pf">Scan</button><span class="cnt" title="pf_count">12 flagged</span></div><div class="sub2">Every placed fitting must carry the markers common to the curves it connects.</div><div class="rows" title="pf_rows_panel"><div class="rrow"><span class="rid">▸ 811902</span> Coupling — marker mismatch</div></div><div style="display:flex;gap:6px;margin-top:6px"><button class="mini">All</button><button class="mini">None</button><button class="mini">Remove ✓</button><button class="mini">Show</button></div></div>
+            <div class="card"><div class="rvwhd"><b style="font-size:12px">D · Maintenance clearance</b><button class="mini" title="btn_review_clr">Scan</button><span class="cnt" title="clr_count">13 blocked</span></div><div class="sub2">Invisible clearance cube (settings radius, default 500 mm) tested against walls/ceilings/columns by exact solid intersection.</div><div class="rows" title="clr_rows_panel"><div class="rrow"><span class="rid">▸ 820551</span> <span class="btag fail">blocked</span> Damper — wall within 380 mm</div></div><div style="display:flex;gap:6px;margin-top:6px"><button class="mini">All</button><button class="mini">None</button><button class="mini">Remove ✓</button><button class="mini">Show</button></div></div>
+            <div class="card"><div class="rvwhd"><b style="font-size:12px">E · Headroom above (to slab / roof)</b><button class="mini" title="btn_review_hdr">Scan</button><span class="cnt" title="hdr_count">44 flagged</span></div><div class="sub2">Casts a ray up from each pipe/duct/accessory to the nearest floor/roof; flags headroom below the threshold.</div>
+              <div class="frow"><span class="fl">Flag under (mm) — tb_hdr_min</span><span class="ctl" style="max-width:120px">2000</span></div>
+              <div class="rows" title="hdr_rows_panel"><div class="rrow"><span class="rid">▸ 831770</span> Pipe — 1,840 mm to slab</div></div>
+              <div style="display:flex;gap:6px;margin-top:6px"><button class="mini">All</button><button class="mini">None</button><button class="mini">Remove ✓</button><button class="mini">Show</button></div>
+              <div style="border:1px solid var(--border);border-radius:6px;padding:10px;margin-top:10px;background:var(--titlebar)"><div class="sub2" style="margin:0 0 6px">Stamp headroom into a parameter (current selection)</div><div style="display:flex;gap:8px;align-items:center"><span class="ctl" title="tb_hdr_param" style="width:200px">H.4 Headroom</span><span class="chk" title="cb_hdr_overwrite"><span class="box on"></span>Overwrite</span><button class="mini" style="margin-left:auto" title="Headroom_Write_Click">Write to param</button></div></div>
+            </div>
+          </div>
+          <div class="foot"><button class="acc" title="btn_run · lbl_run · Run_Click">▷ GENERATE AUDIT MATRIX</button></div>
+        </div>
+        <!-- AUDIT SETTINGS -->
+        <div class="surf" data-surf="audit-set">
+          <div class="hd"><div><h2>Fittings Audit — Configuration</h2><div class="sub">Editable rules from fitting_config.json. Default toggles persist across sessions.</div></div></div>
+          <div class="scroll">
+            <div class="card">
+              <div class="sub2">Default rule toggles (which checks the audit runs by default)</div>
+              <div class="chk" title="cb_audit_def_a"><span class="box on"></span>Rule A on by default (routing-preference fittings)</div>
+              <div class="chk" title="cb_audit_def_b"><span class="box on"></span>Rule B on by default (accessories)</div>
+              <div class="chk" title="cb_audit_def_c"><span class="box on"></span>Rule C on by default (placed fittings)</div>
+              <div class="chk" title="cb_audit_def_d"><span class="box"></span>Rule D on by default (maintenance clearance)</div>
+              <div class="frow" style="margin-top:8px"><span class="fl">Clearance (mm) — tb_audit_clear_mm</span><span class="ctl" style="max-width:160px">500</span></div>
+              <div class="frow"><span class="fl">Accessory radius (mm) — tb_audit_search_mm</span><span class="ctl" style="max-width:160px">1500</span></div>
+            </div>
+            <div class="grid2">
+              <div class="card"><h3>System markers</h3><div class="sub2">Tokens matched case-insensitively in fitting names.</div><div class="lst" title="lst_audit_markers">H2SO4 · HNO2 · VENT · CW · HW · F</div><div style="display:flex;gap:6px;margin-top:6px"><span class="ctl" style="flex:1" title="tb_audit_marker_new"></span><button class="mini">Add</button><button class="mini">Del</button></div></div>
+              <div class="card"><h3>Ignore fitting keywords</h3><div class="sub2">Family-name substrings that skip the marker check (GENERIC, STANDARD).</div><div class="lst" title="lst_audit_ignore">GENERIC · STANDARD</div><div style="display:flex;gap:6px;margin-top:6px"><span class="ctl" style="flex:1" title="tb_audit_ignore_new"></span><button class="mini">Add</button><button class="mini">Del</button></div></div>
+            </div>
+            <div class="card"><h3>Pairing whitelists</h3><div class="frow"><span class="fl">Pairing map — cb_audit_pairing_map</span><span class="ctl combo">pipe_fitting_pairing</span></div><div class="lst" title="lst_audit_pairing_keys" style="margin:8px 0">BALL_VALVE · CHECK_VALVE · STRAINER</div><div style="display:flex;gap:6px"><span class="ctl" style="flex:1" title="tb_audit_pairing_new_key"></span><button class="mini">Add key</button><button class="mini">Del key</button></div><div class="sub2" style="margin-top:8px">Selected entry value (JSON) — tb_audit_pairing_value</div><div class="lst" style="min-height:70px">{ "H2SO4": [{"family":"BALL_VALVE","type":"DN50"}] }</div><button class="mini" style="margin-top:6px;float:right">Update entry</button><div style="clear:both"></div></div>
+            <div class="sub2" title="lbl_audit_cfg_path">Config: …/FIT.pushbutton/fitting_config.json</div>
+          </div>
+          <div class="foot"><button class="ghost" title="Back_Click Tag=audit" onclick="flip('audit',0)">← Back</button><button class="ghost" title="Audit_Reload">Reload</button><div class="rt"><button class="acc" title="SaveCfg_Click Tag=audit">⤓ Save config</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= SYSTEM CONNECTIVITY (NEW) ================= -->
+      <div class="page" data-pg="conn">
+        <div class="surf show">
+          <div class="hd"><div><h2>System Connectivity <span class="pill new">new page</span></h2><div class="sub">Verify the network, not just the fittings — open ends, disconnected islands, orphan fittings, from one read-only connector-graph walk (icz.mep.connectivity_scan).</div></div></div>
+          <div class="scroll">
+            <div class="kpis k4">
+              <div class="tile" title="conn_kpi_systems"><div class="lab">MEP SYSTEMS</div><div class="val">18</div><div class="s">piping · plumbing · duct</div></div>
+              <div class="tile" title="conn_kpi_open"><div class="lab">OPEN CONNECTORS</div><div class="val" style="color:var(--warn)">31</div><div class="s">End, not nested</div></div>
+              <div class="tile" title="conn_kpi_islands"><div class="lab">DISCONNECTED ISLANDS</div><div class="val" style="color:var(--fail)">6</div><div class="s">no base equipment</div></div>
+              <div class="tile" title="conn_kpi_orphans"><div class="lab">ORPHAN FITTINGS</div><div class="val" style="color:var(--warn)">9</div><div class="s">0 connected refs</div></div>
+            </div>
+            <div class="hero">
+              <div class="card"><h3>Network integrity <button class="mini r" title="btn_conn_scan · Conn_Scan_Click → _conn_scan_ev">Scan connectivity</button></h3><div class="donutwrap">
+                <svg width="150" height="150" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--pass)" stroke-width="7.5" stroke-dasharray="86 14" stroke-dashoffset="25"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--warn)" stroke-width="7.5" stroke-dasharray="9 91" stroke-dashoffset="-61"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--fail)" stroke-width="7.5" stroke-dasharray="5 95" stroke-dashoffset="-70"/><text x="21" y="22.6" text-anchor="middle" font-size="8" font-weight="700" fill="var(--text-main)">86%</text></svg>
+                <div class="leg" title="conn_donut_host · conn_legend_host"><div class="r"><div class="sw" style="background:var(--pass)"></div>Connected<b>1,772</b></div><div class="r"><div class="sw" style="background:var(--warn)"></div>Open-ended<b>31</b></div><div class="r"><div class="sw" style="background:var(--fail)"></div>Orphaned<b>9</b></div></div></div>
+                <div class="sub2" style="margin-top:8px">Centre = connected refs ÷ total. Read-only walk — no transaction.</div></div>
+              <div class="card"><h3>By system <span class="r">click → _isolate_system</span></h3>
+                <div class="barrow click" title="conn_bars_host"><span>PD — Sanitary 3</span><div class="track"><div class="fill" style="width:100%;background:var(--fail)"></div></div><span class="ct">11</span></div>
+                <div class="barrow click"><span>PD — Domestic CW</span><div class="track"><div class="fill" style="width:64%;background:var(--warn)"></div></div><span class="ct">7</span></div>
+                <div class="barrow click"><span>PD — Domestic HW</span><div class="track"><div class="fill" style="width:45%;background:var(--warn)"></div></div><span class="ct">5</span></div>
+                <div class="barrow click"><span>PD — Vent 2</span><div class="track"><div class="fill" style="width:36%;background:var(--warn)"></div></div><span class="ct">4</span></div>
+                <div class="barrow click"><span>&lt;no system&gt;</span><div class="track"><div class="fill" style="width:82%;background:var(--fail)"></div></div><span class="ct">9</span></div>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="card"><h3>One connector seam <span class="pill cent">centralize</span></h3><div class="seam"><div class="node">4 scattered walks<br>flexpipe · audit<br>modify · route</div><div class="arw">→</div><div class="node acc2"><b>icz.mep</b>neighbors ·<br>connected_components<br>connectivity_scan</div><div class="arw">→</div><div class="node"><b>page + dash</b>donut · bars<br>grid · signal</div></div><div class="sub2" style="margin-top:8px">The AllRefs/IsConnected walk (re-implemented in flexpipe_logic._collect_adjacent_connectors, audit_logic._connector_manager, modify_logic open-End, route_logic MEPSystem) delegates to lib/icz/mep.py — which already owns get_connector_manager / is_open_mep_connector / collect_pairs. Net Python LOC goes down; no duplicate function.</div></div>
+              <div class="card"><h3>Review grid — click a row <span class="pill new">new</span></h3><div class="rows" title="conn_grid_host · icz.review_grid.build"><div class="rrow"><span class="rid">▸ 884213</span> <span class="btag fail">island</span> pipe · Sanitary 3</div><div class="rrow"><span class="rid">▸ 884219</span> <span class="btag warn">open end</span> elbow · Domestic CW</div><div class="rrow"><span class="rid">▸ 901552</span> <span class="btag warn">orphan</span> tee · &lt;none&gt;</div><div class="rrow"><span class="rid">▸ 901771</span> <span class="btag warn">open end</span> pipe · Domestic HW</div></div><div class="sub2" style="margin-top:8px">Read-only; nothing mutates the model.</div></div>
+            </div>
+          </div>
+          <div class="foot"><span class="selc">Read-only walk · no transaction</span><div class="rt"><button class="acc" title="btn_conn_scan">⟲ SCAN CONNECTIVITY</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= FLEX ================= -->
+      <div class="page" data-pg="flex">
+        <div class="surf show" data-surf="flex-view">
+          <div class="hd"><div><h2>Flex Conversion</h2><div class="sub">Rebuild rigid runs as flex — one op-host, five operations.</div></div><button class="gear" title="Settings_Click Tag=flex" onclick="flip('flex',1)">⚙</button></div>
+          <div class="optabs" title="op_flex_* · FlexOp_Click">
+            <div class="optab sel" onclick="flexop(this,'convert')">Convert</div>
+            <div class="optab" onclick="flexop(this,'audit')">Audit</div>
+            <div class="optab" onclick="flexop(this,'simplify')">Simplify</div>
+            <div class="optab" onclick="flexop(this,'split')">Split</div>
+            <div class="optab" onclick="flexop(this,'parallel')">Parallel</div>
+          </div>
+          <div class="scroll">
+            <div class="oppanel show" data-op="convert"><div class="card"><h3>Flex Conversion Engine</h3><div class="desc">Replace swaps each pipe/duct with flex and reconnects (originals deleted). Containment keeps originals and draws alongside. Both build one through-run + branch stubs; ends land on connector origins.</div>
+              <div class="frow"><span class="fl">Mode — cb_flex_mode</span><span class="ctl combo">Pipe</span></div>
+              <div class="frow"><span class="fl">Strategy — cb_flex_strategy</span><span class="ctl combo">Replace (swap, deletes originals)</span></div>
+              <div class="frow"><span class="fl">Flex Type — cb_flex_type</span><span class="ctl combo">Flex Pipe – Round</span></div>
+              <div class="frow"><span class="fl">Diameter — cb_flex_dia</span><span class="ctl combo">from source</span></div>
+              <div class="frow"><span class="fl">Workset — cb_flex_ws</span><span class="ctl combo">MEP – Plumbing</span></div>
+              <div class="chk" title="cb_flex_show_advanced"><span class="box"></span>Show advanced options (verts / sag / smoothing / parallel lanes / lane spacing — tb_flex_lanes, tb_flex_lane_gap)</div>
+              <div class="sub2">MEP topology cheatsheet: Tee + 3 pipes → 1 through + 1 stub = 2 flex.</div>
+            </div></div>
+            <div class="oppanel" data-op="audit"><div class="card"><h3>Flex QA</h3><div class="donutwrap"><svg width="130" height="130" viewBox="0 0 42 42"><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--track)" stroke-width="7.5"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--pass)" stroke-width="7.5" stroke-dasharray="78 22" stroke-dashoffset="25"/><circle cx="21" cy="21" r="15.9" fill="none" stroke="var(--fail)" stroke-width="7.5" stroke-dasharray="22 78" stroke-dashoffset="-53"/></svg><div class="leg" title="flex_donut_host"><div class="r"><div class="sw" style="background:var(--pass)"></div>Clean<b title="flex_leg_clean_ct">154</b></div><div class="r"><div class="sw" style="background:var(--fail)"></div>Flagged<b title="flex_leg_flagged_ct">43</b></div></div></div></div>
+              <div class="card" style="margin-top:12px"><h3>Flex Audit</h3><div class="desc">Read-only scan of every flex against flex_config.json thresholds: over-length, excess vertices, sharp kinks, tight bend radius, sag, open ends.</div><div class="chk" title="cb_flex_audit_viewonly"><span class="box"></span>Active view only</div><div class="rows" title="flex_audit_rows_panel"><div class="rrow"><span class="rid">▸ 908812</span> flex duct — 1,720 mm (over max)</div></div><div style="display:flex;gap:6px;margin-top:6px"><button class="mini">All</button><button class="mini">None</button><button class="mini">Remove ✓</button><button class="mini">Show</button></div></div></div>
+            <div class="oppanel" data-op="simplify"><div class="card"><h3>Simplify (RDP)</h3><div class="desc">Reduce vertices with Ramer-Douglas-Peucker, endpoints fixed. Runs on selection or the active view; tangents zeroed after edit.</div><div class="frow"><span class="fl">RDP tolerance (mm) — tb_flex_simplify_tol</span><span class="ctl" style="max-width:120px">15</span></div><div class="chk" title="cb_flex_simplify_viewonly"><span class="box"></span>Active view (ignore selection)</div></div></div>
+            <div class="oppanel" data-op="split"><div class="card"><h3>Split flex</h3><div class="desc">Select exactly ONE flex (Pick), use 'Pick &amp; Split' and click near the split location; the flex is cut at the nearest interior vertex.</div><div class="sub2" title="lbl_flex_split_hint">No flex selected.</div></div></div>
+            <div class="oppanel" data-op="parallel"><div class="card"><h3>Parallel flex</h3><div class="desc">One lane engine, two sources. Alongside an existing flex (offset lanes) or inside a containment run (packed lanes, tray section read from the model).</div>
+              <div class="frow"><span class="fl">Lane source — cb_flex_par_mode</span><span class="ctl combo">Alongside existing flex</span></div>
+              <div class="frow"><span class="fl">Lanes (N) — tb_flex_par_n</span><span class="ctl" style="max-width:120px">1</span></div>
+              <div class="frow" title="panel_flex_par_a"><span class="fl">Lane spacing (mm) — tb_flex_par_offset</span><span class="ctl" style="max-width:120px">300</span></div>
+              <div class="sub2" title="panel_flex_par_b">Packed-mode fields (cb_flex_par_type, tb_flex_par_od/clear/w/h) appear for "Inside containment run".</div>
+            </div></div>
+          </div>
+          <div class="foot"><span class="selc" title="lbl_flex_sel">Selection: 14</span><div class="rt"><button class="ghost" title="Flex_Refresh">Refresh</button><button class="ghost" title="Flex_Pick">Pick</button><button class="acc" id="flexact" title="btn_flex_run_convert · Flex_Run">▷ Commit Conversion</button></div></div>
+        </div>
+        <!-- FLEX SETTINGS -->
+        <div class="surf" data-surf="flex-set">
+          <div class="hd"><div><h2>Flex Conversion — Configuration</h2><div class="sub">Defaults + audit thresholds, persisted to flex_config.json.</div></div></div>
+          <div class="scroll">
+            <div class="card"><h3>Defaults</h3>
+              <div class="frow"><span class="fl">Default Mode — cb_flex_def_mode</span><span class="ctl combo">Pipe</span></div>
+              <div class="frow"><span class="fl">Default Strategy — cb_flex_def_strategy</span><span class="ctl combo">Containment (keeps originals)</span></div>
+              <div class="frow"><span class="fl">Default Smoothing — cb_flex_def_smooth</span><span class="ctl combo">Light</span></div>
+            </div>
+            <div class="card"><h3>Audit thresholds</h3>
+              <div class="grid2">
+                <div><div class="frow" style="grid-template-columns:1fr 90px"><span class="fl">Max length Duct (mm) — tb_flex_aud_len_duct</span><span class="ctl">1500</span></div>
+                <div class="frow" style="grid-template-columns:1fr 90px"><span class="fl">Max length Pipe (mm) — tb_flex_aud_len_pipe</span><span class="ctl"></span></div>
+                <div class="frow" style="grid-template-columns:1fr 90px"><span class="fl">Max vertices — tb_flex_aud_verts</span><span class="ctl">12</span></div></div>
+                <div><div class="frow" style="grid-template-columns:1fr 90px"><span class="fl">Max kink (deg) — tb_flex_aud_kink</span><span class="ctl">60</span></div>
+                <div class="frow" style="grid-template-columns:1fr 90px"><span class="fl">Min bend radius (×dia) — tb_flex_aud_bend</span><span class="ctl">1.0</span></div>
+                <div class="frow" style="grid-template-columns:1fr 90px"><span class="fl">Max sag (mm) — tb_flex_aud_sag</span><span class="ctl">50</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="foot"><button class="ghost" title="Back_Click Tag=flex" onclick="flip('flex',0)">← Back</button><div class="rt"><button class="acc" title="SaveCfg_Click Tag=flex">⤓ Save config</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= ROUTE ================= -->
+      <div class="page" data-pg="route">
+        <div class="surf show">
+          <div class="hd"><div><h2>Spatial Routing Engine</h2><div class="sub">Two engines, one creation seam: Deterministic (orthogonal, true-90) and A* pathfinder (IcZ.Core.dll).</div></div></div>
+          <div class="scroll">
+            <div class="kpis k2"><div class="tile mini" title="ro_kpi_levels"><span class="lab">LEVELS</span><span class="val">12</span></div><div class="tile mini" title="ro_kpi_grids"><span class="lab">GRID NODES</span><span class="val">28</span></div></div>
+            <div class="card">
+              <div class="sub2" title="lbl_route_start · lbl_route_end">Start: (not picked) · Target: (not picked) — each needs an open connector.</div>
+              <div class="frow"><span class="fl">Engine — cb_route_engine</span><span class="ctl combo">Deterministic (orthogonal)</span></div>
+              <div class="frow"><span class="fl">Mode — cb_route_mode</span><span class="ctl combo">Pipe</span></div>
+              <div class="frow"><span class="fl" title="lbl_route_system">Piping system — cb_route_system</span><span class="ctl combo">Domestic CW</span></div>
+              <div class="frow"><span class="fl" title="lbl_route_type">Pipe type — cb_route_type</span><span class="ctl combo">Standard</span></div>
+              <div class="frow"><span class="fl">Level — cb_route_level</span><span class="ctl combo">L03</span></div>
+              <div class="frow"><span class="fl" title="lbl_route_rise">Rise / drop at — cb_route_rise</span><span class="ctl combo">End of run</span></div>
+            </div>
+            <div class="card"><h3>Fine-tuning</h3>
+              <div class="frow"><span class="fl">Bend policy — cb_route_bend</span><span class="ctl combo">90° only</span></div>
+              <div class="frow"><span class="fl">Grid cell (mm) — tb_route_cell</span><span class="ctl" style="max-width:120px">250</span></div>
+              <div class="frow"><span class="fl">Keep-away (mm) — tb_route_clear</span><span class="ctl" style="max-width:120px">50</span></div>
+              <div class="frow"><span class="fl">Search margin (mm) — tb_route_margin</span><span class="ctl" style="max-width:120px">5000</span></div>
+              <div class="frow"><span class="fl">Min straight (mm) — tb_route_minrun</span><span class="ctl" style="max-width:120px">0</span></div>
+              <div class="frow"><span class="fl">Vertical cost — tb_route_zcost</span><span class="ctl" style="max-width:120px">1.0</span></div>
+              <div class="sub2">Fine-tuning applies to A* (Deterministic uses only Min straight as a tight-corner warning + Rise/drop). A* uses the compiled IcZ.Core pathfinder when the DLL is built.</div>
+            </div>
+          </div>
+          <div class="foot"><button class="ghost" title="Route_Refresh">Refresh</button><button class="ghost" title="Route_PickStart">Pick start</button><button class="ghost" title="Route_PickTarget">Pick target</button><div class="rt"><button class="acc" title="Route_Generate">▷ Commit Route</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= PREFAB ================= -->
+      <div class="page" data-pg="prefab">
+        <div class="surf show">
+          <div class="hd"><div><h2>Prefabrication Auto-Slicer</h2><div class="sub">Cut every selected rigid pipe/duct into stock-length pieces and place a coupling at each cut.</div></div></div>
+          <div class="scroll">
+            <div class="kpis k2"><div class="tile mini" title="pf_kpi_pipes"><span class="lab">PIPES IN MODEL</span><span class="val">861</span></div><div class="tile mini" title="pf_kpi_ducts"><span class="lab">DUCTS IN MODEL</span><span class="val">204</span></div></div>
+            <div class="card"><h3>Auto-Slicer</h3><div class="desc">Pipes and ducts are bought in fixed stock lengths but Revit draws one long run. Pieces shorter than one stock length are left alone.</div><div class="sub2" title="lbl_prefab_sel">Selection: 22</div>
+              <div class="frow"><span class="fl">Mode — cb_prefab_mode</span><span class="ctl combo" style="max-width:160px">Pipe</span></div>
+              <div class="frow"><span class="fl">Stock length (mm) — tb_prefab_stock</span><span class="ctl" style="max-width:160px">6000</span></div>
+              <div class="chk" title="cb_prefab_unions"><span class="box on"></span>Place couplings at each cut</div>
+            </div>
+          </div>
+          <div class="foot"><button class="ghost" title="Prefab_Pick">Pick elements</button><div class="rt"><button class="acc" title="Prefab_Run">▷ Commit Fabrication Cuts</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= MODIFY ================= -->
+      <div class="page" data-pg="modify">
+        <div class="surf show">
+          <div class="hd"><div><h2>Modify &amp; Align</h2><div class="sub">Element-level edits on the current selection — cap open ends, make parallel to a reference, rotate about own axis.</div></div></div>
+          <div class="scroll">
+            <div class="kpis k2"><div class="tile mini" title="mf_kpi_pipes"><span class="lab">PIPES IN MODEL</span><span class="val">861</span></div><div class="tile mini" title="mf_kpi_ducts"><span class="lab">DUCTS IN MODEL</span><span class="val">204</span></div></div>
+            <div class="card"><h3>Modify &amp; Align (selected pipes / ducts)</h3>
+              <div class="frow"><span class="fl">Cap open ends</span><button class="mini" title="Prefab_Endcap_Run" style="justify-self:start">Cap ends</button></div>
+              <div class="frow"><span class="fl">Fallback cap family — cb_prefab_cap</span><span class="ctl combo">(type routing pref)</span></div>
+              <div class="frow"><span class="fl">Make parallel</span><span><button class="mini" title="Prefab_ParRef_Pick">Pick reference</button> <button class="mini" title="Prefab_Parallel_Run">Make parallel</button></span></div>
+              <div class="sub2" title="lbl_prefab_parref">Reference: (not picked)</div>
+              <div class="frow"><span class="fl">Rotate about own axis — tb_prefab_rot</span><span><span class="ctl" style="width:70px;display:inline-block">90</span> deg <button class="mini" title="Prefab_Rotate_Run">Rotate</button></span></div>
+              <div class="sub2">Open-End detection here delegates to icz.mep.open_connectors after round 16 (de-dup, same behaviour).</div>
+            </div>
+          </div>
+          <div class="foot"><div class="selc" title="lbl_modify_sel">Selection: 8</div><div class="rt"><button class="acc" title="Modify_Pick">✛ Pick elements</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= COORDS ================= -->
+      <div class="page" data-pg="coords">
+        <div class="surf show" data-surf="coords-view">
+          <div class="hd"><div><h2>Coordinate Stamping</h2><div class="sub">Write each element's plan position into two text parameters (metres, 3 dp) after a site offset.</div></div><button class="gear" title="Settings_Click Tag=coords" onclick="flip('coords',1)">⚙</button></div>
+          <div class="scroll">
+            <div class="kpis k2"><div class="tile mini" title="co_kpi_grids"><span class="lab">GRID NODES</span><span class="val">28</span></div><div class="tile mini" title="co_kpi_levels"><span class="lab">LEVELS</span><span class="val">12</span></div></div>
+            <div class="card"><h3>Coordinate Stamping Engine</h3><div class="desc">Absolute = world feet → mm + offset → metres; Grid-relative = nearest grid node + plan offset (A-1 X+305); Shared site = base-point offsets and rotation resolved by the model.</div>
+              <div class="frow"><span class="fl">Reference — cb_coords_mode</span><span class="ctl combo">Absolute (world + offset)</span></div>
+              <div class="frow"><span class="fl">Offset X (mm) — tb_off_x</span><span class="ctl" style="max-width:200px">651200</span></div>
+              <div class="frow"><span class="fl">Offset Y (mm) — tb_off_y</span><span class="ctl" style="max-width:200px">597200</span></div>
+              <div class="frow"><span class="fl">Param X name — tb_px</span><span class="ctl" style="max-width:200px">H.2 Position X</span></div>
+              <div class="frow"><span class="fl">Param Y name — tb_py</span><span class="ctl" style="max-width:200px">H.3 Position Y</span></div>
+              <div class="sub2">Or select by category / family instead of picking:</div>
+              <div style="display:flex;gap:8px;align-items:center"><span class="fl" style="font-size:11px;color:var(--text-2)">Category</span><span class="ctl combo" title="cb_coords_cat" style="flex:1">Pipe Fittings</span><span class="fl" style="font-size:11px;color:var(--text-2)">Family</span><span class="ctl combo" title="cb_coords_fam" style="flex:1">All</span><button class="mini" title="Coords_SelectBy">Select</button></div>
+            </div>
+          </div>
+          <div class="foot"><div class="selc" title="lbl_coords_sel">Selection: 31</div><span class="chk" title="cb_coords_overwrite"><span class="box"></span>Overwrite filled</span><div class="rt"><button class="ghost" title="Coords_Pick">Pick elements</button><button class="acc" title="Coords_Run">▷ Commit Coordinates</button></div></div>
+        </div>
+        <div class="surf" data-surf="coords-set">
+          <div class="hd"><div><h2>Coordinate Stamping — Configuration</h2><div class="sub">Defaults persisted to coords_config.json.</div></div></div>
+          <div class="scroll"><div class="card"><h3>Defaults</h3>
+            <div class="frow"><span class="fl">Default Offset X — tb_coords_def_offx</span><span class="ctl" style="max-width:200px">651200</span></div>
+            <div class="frow"><span class="fl">Default Offset Y — tb_coords_def_offy</span><span class="ctl" style="max-width:200px">597200</span></div>
+            <div class="frow"><span class="fl">Default Param X — tb_coords_def_px</span><span class="ctl" style="max-width:200px">H.2 Position X</span></div>
+            <div class="frow"><span class="fl">Default Param Y — tb_coords_def_py</span><span class="ctl" style="max-width:200px">H.3 Position Y</span></div>
+          </div></div>
+          <div class="foot"><button class="ghost" title="Back_Click Tag=coords" onclick="flip('coords',0)">← Back</button><div class="rt"><button class="acc" title="SaveCfg_Click Tag=coords">⤓ Save config</button></div></div>
+        </div>
+      </div>
+
+      <!-- ================= SYNC ================= -->
+      <div class="page" data-pg="sync">
+        <div class="surf show" data-surf="sync-view">
+          <div class="hd"><div><h2>Parameter Synchronization</h2><div class="sub">Copy IFLS / AKS / Prozessmedium from linked source fittings onto host targets by MEP system type.</div></div><button class="gear" title="Settings_Click Tag=sync" onclick="flip('sync',1)">⚙</button></div>
+          <div class="scroll">
+            <div class="kpis k2"><div class="tile mini" title="sy_kpi_links"><span class="lab">LINKED MODELS</span><span class="val">3</span></div><div class="tile mini" title="sy_kpi_fittings"><span class="lab">FITTINGS</span><span class="val">512</span></div></div>
+            <div class="card"><h3>Metadata Synchronization Matrix</h3><div class="desc">Pick target host fittings (or select by category / family), then Synchronize. Editable config lives in Settings (gear, top-right).</div>
+              <div class="sub2">Select targets by category / family (or use Pick targets):</div>
+              <div style="display:flex;gap:8px;align-items:center"><span class="fl" style="font-size:11px;color:var(--text-2)">Category</span><span class="ctl combo" title="cb_sync_cat" style="flex:1">Pipe Fittings</span><span class="fl" style="font-size:11px;color:var(--text-2)">Family</span><span class="ctl combo" title="cb_sync_fam" style="flex:1">All</span><button class="mini" title="Sync_SelectBy">Select</button></div>
+            </div>
+          </div>
+          <div class="foot"><div class="selc" title="lbl_sync_sel">Selection: 0</div><span class="chk" title="cb_sync_overwrite"><span class="box"></span>Overwrite filled</span><div class="rt"><button class="ghost" title="Sync_Pick">Pick targets</button><button class="acc" title="Sync_Run">▷ Synchronize</button></div></div>
+        </div>
+        <div class="surf" data-surf="sync-set">
+          <div class="hd"><div><h2>Metadata Synchronization — Configuration</h2><div class="sub">Matched by MEP System Name; gated by horizontal + vertical limits, nearest pair wins.</div></div></div>
+          <div class="scroll">
+            <div class="card"><h3>Match + tolerances</h3>
+              <div class="frow"><span class="fl">Match param — tb_match</span><span class="ctl" style="max-width:220px">MEP System Name</span></div>
+              <div class="frow"><span class="fl">Max horizontal (m) — tb_hmax</span><span class="ctl" style="max-width:120px">1.5</span></div>
+              <div class="frow"><span class="fl">Max vertical (m) — tb_vmax</span><span class="ctl" style="max-width:120px">0.5</span></div>
+            </div>
+            <div class="grid2">
+              <div class="card"><h3>Source family keywords</h3><div class="lst" title="lst_kw">VALVE · SENSOR · METER</div><div style="display:flex;gap:6px;margin-top:6px"><span class="ctl" style="flex:1" title="tb_kw_new"></span><button class="mini">Add</button><button class="mini">Del</button></div></div>
+              <div class="card"><h3>Params to sync</h3><div class="lst" title="lst_psync">IFLS · AKS · Prozessmedium</div><div style="display:flex;gap:6px;margin-top:6px"><span class="ctl" style="flex:1" title="tb_psync_new"></span><button class="mini">Add</button><button class="mini">Del</button></div></div>
+              <div class="card"><h3>Triple-map targets</h3><div class="lst" title="lst_triple">IFLS_1 · IFLS_2 · IFLS_3</div><div style="display:flex;gap:6px;margin-top:6px"><span class="ctl" style="flex:1" title="tb_triple_new"></span><button class="mini">Add</button><button class="mini">Del</button></div></div>
+              <div class="card"><h3>Special valves (legacy)</h3><div class="lst" title="lst_valve">3-WAY · SAFETY</div><div style="display:flex;gap:6px;margin-top:6px"><span class="ctl" style="flex:1" title="tb_valve_new"></span><button class="mini">Add</button><button class="mini">Del</button></div></div>
+            </div>
+          </div>
+          <div class="foot"><button class="ghost" title="Back_Click Tag=sync" onclick="flip('sync',0)">← Back</button><div class="rt"><button class="acc" title="SaveCfg_Click Tag=sync">⤓ Save config</button></div></div>
+        </div>
+      </div>
+
+      </div><!-- /pgwrap -->
+
+      <!-- RESULTS CONSOLE (row_results; collapses to 0 on Dashboard) -->
+      <div class="console" id="cons">
+        <div class="chead"><span class="st" id="csum" title="footer_status">Select an operation from the dashboard or the nav rail.</span><span class="sep"></span><span title="cb_isolate">Isolate on click</span><span title="OnResetView">Reset view</span><span title="Results_Clear">Clear</span><button class="chev" id="chev" title="btn_console_toggle · Console_Toggle · E70D" onclick="tog()">⌄</button></div>
+        <div class="cbody"><pre title="txt_results">MEP Workbench — round 16 rebuild.
+Rail regrouped: DIAGNOSE / FABRICATE / DOCUMENT.
+System Connectivity: 86% connected · 31 open ends · 6 islands · 9 orphans.
+A report ALWAYS auto-expands a collapsed console — errors are never swallowed.</pre></div>
+      </div>
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- FOOTER -->
+  <div class="appfoot">
+    <div class="hall" title="hallmark E8FD"><b>IcZ</b> <span>Workspace</span></div>
+    <span class="sep"></span><div class="gdot"></div><span title="foot_model">Model loaded</span>
+    <span class="fr" id="footpage" title="foot_page">Dashboard</span>
+  </div>
+</div>
+
+<!-- WIRING MAP -->
+<div class="wrap">
+  <h4>WIRING MAP — round-16 full rebuild (every surface → real x:Name/handler → change). This mockup is the 1:1 spec for the ui.xaml + script.py rewrite.</h4>
+  <table class="wm">
+    <tr><th style="width:15%">Page</th><th style="width:42%">Real controls (x:Name)</th><th>Round-16</th></tr>
+    <tr><td>Shell</td><td><code>btn_burger ToggleRail</code> · <code>lbl_file</code> · <code>btn_theme/min/max/close</code> · <code>nav_panel</code> · <code>banner/banner_text</code> · <code>split_results/results_border/txt_results/footer_status/cb_isolate/btn_console_toggle</code> · <code>run_progress/foot_model/foot_page</code></td><td class="tn">nav_panel FULL-REPLACE: 3 caption TextBlocks (railcap_diagnose/fabricate/document) + reorder + nav_connectivity. apply_rail_icon_stack hides captions on collapse.</td></tr>
+    <tr><td>Dashboard</td><td><code>kpi_elements/scope/issues/compliance_val</code> · <code>btn_dash_scan Dash_Scan_Click</code> · <code>dash_donut_host · leg_*_ct</code> · <code>rule_a..e_fill/_ct</code> · <code>mix_*_fill/_val</code> · engine cards <code>Dash_Audit/Coords/Flex/Sync/Prefab/Route</code></td><td class="tn">+ rule_conn_fill/_ct 6th signal (deep-link) + Dash_Connectivity engine card. Scan seam also runs connectivity_scan.</td></tr>
+    <tr><td>Audit</td><td><code>btn_run/lbl_run Run_Click</code> · <code>aud_kpi_* · audit_donut_host · aud_rule_a..e</code> · 5 review cards <code>rp/acc/pf/clr/hdr_rows_panel</code> + <code>Review_*_Click</code> + All/None/Remove/Show · <code>tb_hdr_min/param cb_hdr_overwrite Headroom_Write_Click</code>; settings <code>cb_audit_def_a..d · tb_audit_clear_mm/search_mm · lst_audit_markers/ignore · cb_audit_pairing_map · lst_audit_pairing_keys · tb_audit_pairing_*</code></td><td>UNCHANGED body — rail group only.</td></tr>
+    <tr><td>System Connectivity <span class="tn">NEW</span></td><td><code>btn_conn_scan Conn_Scan_Click → _conn_scan_ev</code> · <code>conn_kpi_systems/open/islands/orphans</code> · <code>conn_donut_host/conn_legend_host</code> · <code>conn_bars_host</code> (MouseUp _isolate_system) · <code>conn_grid_host</code> (icz.review_grid)</td><td class="tn">NEW page_connectivity + <code>icz.mep.neighbors/open_connectors/connected_components/connectivity_scan</code> (read-only, reuses get_connector_manager/is_open_mep_connector — no dup). 4 walks delegate to it.</td></tr>
+    <tr><td>Flex</td><td>op-host <code>op_flex_convert/audit/simplify/split/parallel FlexOp_Click</code> · <code>btn_flex_run_* Flex_Run/FlexAudit_Scan/FlexSimplify_Run/FlexSplit_Pick/FlexParallel_Run</code> · convert <code>cb_flex_mode/strategy/type/dia/ws + grid_flex_advanced (tb_flex_lanes/lane_gap)</code> · <code>flex_donut_host · flex_audit_rows_panel · cb_flex_par_mode/panel_flex_par_a/b</code>; settings <code>cb_flex_def_* · tb_flex_aud_*</code></td><td>UNCHANGED body. modify_logic open-End → icz.mep.open_connectors (de-dup).</td></tr>
+    <tr><td>Route</td><td><code>ro_kpi_levels/grids · lbl_route_start/end · cb_route_engine/mode/system/type/level/rise/bend · tb_route_cell/clear/margin/minrun/zcost · Route_Refresh/PickStart/PickTarget/Generate</code></td><td>UNCHANGED body. route_logic MEPSystem resolve → icz.mep.</td></tr>
+    <tr><td>Prefab</td><td><code>pf_kpi_pipes/ducts · lbl_prefab_sel · cb_prefab_mode · tb_prefab_stock · cb_prefab_unions · Prefab_Pick/Prefab_Run</code></td><td>UNCHANGED body.</td></tr>
+    <tr><td>Modify</td><td><code>mf_kpi_pipes/ducts · Prefab_Endcap_Run · cb_prefab_cap · Prefab_ParRef_Pick/Parallel_Run · lbl_prefab_parref · tb_prefab_rot Prefab_Rotate_Run · Modify_Pick</code></td><td>UNCHANGED body.</td></tr>
+    <tr><td>Coords</td><td><code>co_kpi_grids/levels · cb_coords_mode Coords_ModeChanged · tb_off_x/y · tb_px/py · cb_coords_cat/fam Coords_SelectBy · cb_coords_overwrite · Coords_Pick/Coords_Run</code>; settings <code>tb_coords_def_*</code></td><td>UNCHANGED body.</td></tr>
+    <tr><td>Sync</td><td><code>sy_kpi_links/fittings · cb_sync_cat/fam Sync_SelectBy · cb_sync_overwrite · Sync_Pick/Sync_Run</code>; settings <code>tb_match/hmax/vmax · lst_kw/psync/triple/valve</code></td><td>UNCHANGED body.</td></tr>
+    <tr><td>theme guideline</td><td>Step 3e-bis (nav badge)</td><td class="tn">+ Step 3e-ter rail section caption (railcap_*, TextSecondary, hidden on collapse) — codify on land.</td></tr>
+  </table>
+</div>
+
+<div class="note"><b>FIT — MEP Workbench · round 16 COMPLETE rebuild (approval gate).</b> Every page is interactive and built 1:1 from the real <code>ui.xaml</code>: click the grouped rail, the ☰ collapse, each page's ⚙ Settings flip (Audit / Flex / Coords / Sync), the Flex op tabs (Convert/Audit/Simplify/Split/Parallel), the ☀ theme, the console ⌄, and the dashboard's 6th Connectivity signal (deep-links). Hover any control to see its real x:Name. C# stays gated OUT (connector reads are I/O-bound); API verified in revitapi2023 + 2026; no .bat change. FIT stays a single pushbutton — no ribbon pulldown, no icon-generator script (rail = MDL2 glyph TextBlocks). Green-light this and it becomes the literal spec for the ui.xaml + script.py full-replace.</div>
+
+<script>
+  function go(el){
+    document.querySelectorAll('.nav').forEach(function(n){n.classList.remove('sel')});
+    el.classList.add('sel'); show(el.getAttribute('data-p'), el.querySelector('.txt').textContent);
+  }
+  function jump(p){
+    document.querySelectorAll('.nav').forEach(function(n){var m=n.getAttribute('data-p')===p;n.classList.toggle('sel',m);if(m)show(p,n.querySelector('.txt').textContent);});
+  }
+  function show(p,label){
+    document.querySelectorAll('.page').forEach(function(g){g.classList.toggle('show',g.getAttribute('data-pg')===p)});
+    if(label) document.getElementById('footpage').textContent=label;
+    var c=document.getElementById('cons'); c.style.display = (p==='dash') ? 'none' : 'block';
+  }
+  function flip(page,toSettings){
+    var pg=document.querySelector('.page[data-pg="'+page+'"]');
+    pg.querySelectorAll('.surf').forEach(function(s,i){ s.classList.toggle('show', toSettings? i===1 : i===0); });
+  }
+  function flexop(tab,op){
+    document.querySelectorAll('.optab').forEach(function(t){t.classList.remove('sel')}); tab.classList.add('sel');
+    document.querySelectorAll('.oppanel').forEach(function(p){p.classList.toggle('show',p.getAttribute('data-op')===op)});
+    var m={convert:'▷ Commit Conversion',audit:'⌕ Scan flex',simplify:'⇄ Simplify',split:'✂ Pick & Split',parallel:'⇉ Generate'};
+    document.getElementById('flexact').textContent=m[op];
+  }
+  function rail(){ document.getElementById('rail').classList.toggle('col'); }
+  function tog(){ var c=document.getElementById('cons'),v=document.getElementById('chev'); c.classList.toggle('col'); v.textContent=c.classList.contains('col')?'⌃':'⌄'; }
+  show('dash','Dashboard');
+</script>
+</body>
+</html>

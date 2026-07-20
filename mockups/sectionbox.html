@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "SectionBox Pulldown R13",
+  "schemaVersion": 1,
+  "description": "SectionBox round-13 REVISION 2 per live-Revit feedback: (1) the window is smaller/tighter (no KPI strip, compact cards); (2) all ribbon buttons are grouped under ONE pyRevit .pulldown so they don't fill the Tools panel - each child keeps its own icon + assignable keyboard shortcut; (3) the single Quick Box is split into two target 'clones' - Box: Active View and Box: New View - alongside Grow / Shrink / Toggle; (4) every caller still calls the SAME shared lib/icz/viewbox engine (build_box/place_box/grow/remove_box), no clone of logic. Shows the compact window + the expanded pulldown with per-item icons, names, x:Names and shortcut chips.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SectionBox — Pulldown + Compact · Round 13 rev2</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel2:#1C2B33; --hover:#1C2B33; --warn:#FFB300;
+    --ribbon:#2B2B2B; --ribbontext:#DDD;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel2:#E7EDF0; --hover:#E3EAEE; --warn:#F57F17;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:20px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  body.light{background:#cfd8dc}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+
+  /* ── ribbon panel with the pulldown ── */
+  .ribbonrow{width:620px;max-width:100%;display:flex;gap:16px;align-items:flex-start}
+  .ribpanel{background:var(--ribbon);border:1px solid #000;border-radius:5px;padding:6px 4px 2px;min-width:120px;position:relative}
+  .ribpanel .pl{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;border-radius:4px;cursor:pointer;color:var(--ribbontext)}
+  .ribpanel .pl:hover{background:#3a3a3a}
+  .ribpanel .pl .ic{font-family:"Segoe MDL2 Assets";font-size:28px;color:#f2c14e}
+  .ribpanel .pl .nm{font-size:11px;display:flex;align-items:center;gap:3px}
+  .ribpanel .pl .nm .car{font-family:"Segoe MDL2 Assets";font-size:8px}
+  .ribtitle{text-align:center;font-size:10px;color:#999;border-top:1px solid #000;margin-top:3px;padding-top:2px}
+  .dropdown{position:absolute;top:100%;left:2px;margin-top:2px;background:#333;border:1px solid #000;border-radius:5px;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:10;min-width:210px;overflow:hidden}
+  .di{display:flex;align-items:center;gap:9px;padding:8px 11px;color:#eee;font-size:12px;cursor:pointer;border-bottom:1px solid #2a2a2a}
+  .di:last-child{border-bottom:none}
+  .di:hover{background:var(--accent);color:#06222B}
+  .di .ic{font-family:"Segoe MDL2 Assets";font-size:17px;color:#f2c14e;width:20px;text-align:center}
+  .di:hover .ic{color:#06222B}
+  .di .t{flex:1}
+  .di .t b{font-size:12px;font-weight:600}
+  .di .t small{display:block;font-size:9.5px;opacity:.7}
+  .di .kb{font:9px Consolas,monospace;background:rgba(255,255,255,.12);border-radius:3px;padding:1px 5px}
+  .di:hover .kb{background:rgba(0,0,0,.15)}
+  .di .xn{font:8.5px Consolas,monospace;color:var(--accent);background:rgba(0,188,212,.12);border-radius:3px;padding:0 4px}
+  .di:hover .xn{color:#06222B;background:rgba(0,0,0,.12)}
+  .sep{height:1px;background:#111;margin:2px 0}
+  .rnote{width:620px;max-width:100%;font-size:11px;color:#7f97a3;line-height:1.5}
+  .rnote b{color:#b9c9d1}.rnote code{color:var(--accent);font-family:Consolas,monospace}
+
+  /* ── the compact window (smaller than rev1) ── */
+  .window{width:600px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:9px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.55)}
+  .titlebar{height:36px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 12px}
+  .burger{color:var(--text-2);font-size:14px;cursor:pointer}
+  .tb-ico{color:var(--accent);font-size:14px}
+  .tb-name{font-weight:700;letter-spacing:.3px;font-size:12.5px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:3px 10px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:11px}
+  .docchip .path{font-family:Consolas,monospace;font-size:10.5px;max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:9px}
+  .theme-btn{color:var(--text-2);font-size:13px;cursor:pointer}
+  .dots{display:flex;gap:7px}
+  .dot{width:12px;height:12px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:7px}
+  .dot.c{background:#FF5F57;color:#7A1410}.dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}
+  .main{display:flex;min-height:352px}
+  .rail{width:150px;background:var(--nav);border-right:1px solid var(--border);padding:10px 7px;display:flex;flex-direction:column;gap:2px}
+  .nav{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:6px;font-size:12px;color:var(--text-2);cursor:pointer;white-space:nowrap}
+  .nav .g{font-family:"Segoe MDL2 Assets";width:20px;text-align:center;font-size:13px}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600}
+  .nav:hover{background:var(--hover)}
+  .by{margin-top:auto;font-size:9.5px;color:var(--text-2);padding:8px 9px 2px;border-top:1px solid var(--border);line-height:1.4}
+  .content{flex:1;padding:12px 13px;display:flex;flex-direction:column;gap:9px;min-width:0}
+  h2.pg{font-size:13px;font-weight:600}
+  .sub{font-size:10.5px;color:var(--text-2);margin-top:2px;line-height:1.45}
+  .page{display:none;flex-direction:column;gap:9px}
+  .page.on{display:flex}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:7px;padding:11px}
+  .card h3{font-size:11.5px;font-weight:600;margin-bottom:7px}
+  .lbl{font-size:10px;color:var(--text-2);margin:7px 0 3px}
+  .in,.sel2,textarea.in{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:5px 7px;font-size:11px;font-family:inherit}
+  .row-lab{display:grid;grid-template-columns:92px 1fr;gap:7px;align-items:center;margin-bottom:6px}
+  .row-lab .fl{font-size:11px}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:6px 9px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-family:"Segoe MDL2 Assets"}
+  .rad{display:inline-flex;align-items:center;gap:6px;font-size:11px;cursor:pointer}
+  .rad .rb{width:14px;height:14px;border:1px solid var(--border);border-radius:50%;background:var(--input-bg);position:relative;flex:none}
+  .rad.on .rb{border-color:var(--accent)}
+  .rad.on .rb::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .hint{font-size:10px;color:var(--text-2);margin-top:7px;line-height:1.45}
+  .xn{font:8.5px Consolas,monospace;color:var(--accent);background:rgba(0,188,212,.10);border:1px solid var(--border);border-radius:3px;padding:0 4px;margin-left:5px}
+  .pill{font-size:8.5px;border-radius:99px;padding:1px 6px;font-weight:600;background:rgba(0,188,212,.16);color:var(--accent)}
+  .footer{display:flex;align-items:center;gap:9px;background:var(--titlebar);border-top:1px solid var(--border);padding:7px 12px;font-size:10.5px;color:var(--text-2)}
+  .hallmark .mdl2{color:var(--accent);margin-right:4px}.hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .fdiv{width:1px;height:12px;background:var(--border)}
+  .run{margin-left:auto;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .run .g{font-family:"Segoe MDL2 Assets"}
+  .caption{font-size:11px;color:#7f97a3;max-width:620px;line-height:1.5}
+  .caption b{color:#b9c9d1}.caption code{color:var(--accent);font-family:Consolas,monospace}
+  .lblrow{display:flex;align-items:center;gap:8px}
+</style>
+</head>
+<body>
+
+<!-- ═══════ RIBBON: one .pulldown, expanded ═══════ -->
+<div class="ribbonrow">
+  <div class="ribpanel">
+    <div class="pl" id="plbtn">
+      <span class="ic">&#xE809;</span>
+      <span class="nm">Section Box <span class="car mdl2">&#xE70D;</span></span>
+    </div>
+    <div class="ribtitle">Tools</div>
+    <!-- the expanded dropdown -->
+    <div class="dropdown" id="dropdown">
+      <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Section Box…</b><small>open the create window</small></span><span class="xn">SectionBox</span></div>
+      <div class="sep"></div>
+      <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Box: Active View</b><small>selection → active 3D view</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxActive</span></div>
+      <div class="di"><span class="ic mdl2">&#xE8B3;</span><span class="t"><b>Box: New View</b><small>selection → new / named 3D view</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxNew</span></div>
+      <div class="sep"></div>
+      <div class="di"><span class="ic mdl2">&#xE710;</span><span class="t"><b>Grow Box</b><small>active box + saved step</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxGrow</span></div>
+      <div class="di"><span class="ic mdl2">&#xE738;</span><span class="t"><b>Shrink Box</b><small>active box − saved step</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxShrink</span></div>
+      <div class="di"><span class="ic mdl2">&#xE7B3;</span><span class="t"><b>Toggle Box</b><small>off (remembered) / restore</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxToggle</span></div>
+    </div>
+  </div>
+  <div class="rnote">
+    <b>One <code>.pulldown</code></b> replaces the five flat buttons — the Tools panel shows a single <b>Section Box ▾</b>. Every entry is its own
+    <code>.pushbutton</code>, so it keeps its <b>own icon</b> and takes its <b>own keyboard shortcut</b> (right-click → Assign shortcut). The single
+    <i>Quick Box</i> is split into the two target <b>clones</b> you asked for: <b>Box: Active View</b> and <b>Box: New View</b>. All of them call the
+    same <code>lib/icz/viewbox</code> functions the window calls — no cloned logic. <span style="color:var(--accent)">↑ hover the panel to see the dropdown</span>
+  </div>
+</div>
+
+<!-- ═══════ THE SMALLER WINDOW ═══════ -->
+<div class="window">
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE809;</span>
+    <span class="tb-name">Section Box</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path">Snowdon Towers Sample HVAC.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="themeBtn">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="rail">
+      <div class="nav sel" data-pg="create"><span class="g mdl2">&#xE809;</span>Create Box</div>
+      <div class="nav" data-pg="settings"><span class="g mdl2">&#xE713;</span>Settings</div>
+      <div class="by">Grow · Shrink · Toggle · Box↦Active · Box↦New live on the ribbon pulldown</div>
+    </div>
+
+    <div class="content">
+      <!-- CREATE -->
+      <div class="page on" id="pg_create">
+        <div><h2 class="pg">Create Box</h2>
+          <div class="sub">Fit a box to the selection — a tag boxes what it tags, a scope box gives an oriented box, a pipe gets a slender box.</div></div>
+
+        <div class="card">
+          <h3>&#x1F3AF; Subject</h3>
+          <div class="lblrow" style="flex-wrap:wrap;gap:6px">
+            <button class="btn" id="btn_prev"><span class="g">&#xE890;</span>Preview</button>
+            <button class="btn" id="btn_pm"><span class="g">&#xE1E3;</span>Pick in model<span class="xn">btn_pick_model</span></button>
+            <button class="btn" id="btn_pl"><span class="g">&#xE71B;</span>Pick in link<span class="xn">btn_pick_link</span></button>
+          </div>
+          <div class="hint" id="sel">3 element(s) selected. — "Pick in link" boxes an element from a <b>linked model</b>.</div>
+          <div class="lbl">Paste element IDs (optional — overrides selection) <span class="xn">txt_ids</span></div>
+          <textarea class="in" rows="2" placeholder="Comma / space / newline separated IDs"></textarea>
+        </div>
+
+        <div class="card">
+          <h3>&#x1F5BC; Target 3D View</h3>
+          <div style="display:flex;gap:18px;flex-wrap:wrap">
+            <span class="rad on" data-r="tg" id="rb_active"><span class="rb"></span>Active 3D view<span class="xn">rb_target_active</span></span>
+            <span class="rad" data-r="tg" id="rb_named"><span class="rb"></span>Create / reuse named<span class="xn">rb_target_named</span></span>
+          </div>
+          <div id="named" style="opacity:.45;pointer-events:none;margin-top:6px">
+            <div class="row-lab"><span class="fl">View name</span><input class="in" value="IcZ Section Box"></div>
+            <div class="row-lab"><span class="fl">Template</span><select class="sel2"><option>&lt;None&gt;</option></select></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>&#x1F4D0; Box Size</h3>
+          <div style="display:flex;flex-direction:column;gap:7px">
+            <span class="rad on" data-r="sz" id="rb_pad"><span class="rb"></span>Pad by <input class="in" style="width:52px;margin:0 5px" value="500"> mm/side</span>
+            <span class="rad" data-r="sz" id="rb_cube"><span class="rb"></span>Cube <input class="in" style="width:58px;margin:0 5px" value="5000"> mm total</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="page" id="pg_settings">
+        <div><h2 class="pg">Settings</h2>
+          <div class="sub">Defaults used on launch and by the ribbon Box / Grow / Shrink commands.</div></div>
+        <div class="card">
+          <h3>&#x2699; Defaults</h3>
+          <div class="row-lab" style="grid-template-columns:150px 120px"><span class="fl">View name</span><input class="in" value="IcZ Section Box"></div>
+          <div class="row-lab" style="grid-template-columns:150px 120px"><span class="fl">Pad (mm)</span><input class="in" value="500"></div>
+          <div class="row-lab" style="grid-template-columns:150px 120px"><span class="fl">Cube (mm)</span><input class="in" value="5000"></div>
+          <div class="row-lab" style="grid-template-columns:150px 120px"><span class="fl">Grow/shrink step</span><input class="in" value="500"></div>
+          <button class="btn" style="margin-top:6px"><span class="g">&#xE74E;</span>Save Defaults</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span id="fstat">Ready.</span>
+    <button class="run" id="run"><span class="g mdl2">&#xE768;</span> Create Section Box</button>
+  </div>
+</div>
+
+<div class="caption">
+  <b>Rev 2 (from live-Revit feedback):</b> smaller window (no KPI strip, tighter cards, 600&#xD7;~430) · all buttons under one <code>.pulldown</code>
+  (<code>SectionBox.pulldown</code>) so the Tools panel isn't filled · Quick Box split into <b>Box: Active View</b> + <b>Box: New View</b> clones ·
+  Grow / Shrink / Toggle unchanged · each pulldown item keeps its own icon + shortcut · all share <code>lib/icz/viewbox</code>. The window stays
+  <b>Create + Settings</b> only (say the word if you'd rather it also carry Grow/Shrink/Toggle inline).
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(s){return document.querySelector(s);};
+  var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
+  // keep dropdown open on hover of panel; toggle on click
+  var open=false;
+  function show(v){ open=v; $("#dropdown").style.display=v?"block":"none"; }
+  show(true);
+  $("#plbtn").addEventListener("click",function(){ show(!open); });
+  // window interactions
+  $$(".nav").forEach(function(n){ n.addEventListener("click",function(){
+    $$(".nav").forEach(function(x){x.classList.remove("sel");}); n.classList.add("sel");
+    $$(".page").forEach(function(p){p.classList.remove("on");});
+    var el=document.getElementById("pg_"+n.getAttribute("data-pg")); if(el)el.classList.add("on");
+    $("#run").style.display=(n.getAttribute("data-pg")==="create")?"flex":"none";
+  });});
+  $("#burger").addEventListener("click",function(){ var r=document.querySelector(".rail"); r.style.display=r.style.display==="none"?"flex":"none"; });
+  $("#themeBtn").addEventListener("click",function(){ document.body.classList.toggle("light"); this.innerHTML=document.body.classList.contains("light")?"&#xE708;":"&#xE706;"; });
+  $$(".rad").forEach(function(r){ r.addEventListener("click",function(){
+    var g=r.getAttribute("data-r"); $$('.rad[data-r="'+g+'"]').forEach(function(x){x.classList.remove("on");}); r.classList.add("on");
+    if(g==="tg"){ var nm=(r.id==="rb_named"); $("#named").style.opacity=nm?"1":".45"; $("#named").style.pointerEvents=nm?"auto":"none"; }
+  });});
+  $("#btn_prev").addEventListener("click",function(){ $("#sel").innerHTML="3 element(s) selected."; $("#fstat").textContent="Preview: 3 selected."; });
+  $("#btn_pm").addEventListener("click",function(){ $("#sel").innerHTML="2 element(s) picked (host)."; $("#fstat").textContent="Picked 2."; });
+  $("#btn_pl").addEventListener("click",function(){ $("#sel").innerHTML="1 element(s) picked in <b>[Struct.rvt]</b> — wrapped with the link transform."; $("#fstat").textContent="Picked 1 linked."; });
+  $("#run").addEventListener("click",function(){ $("#fstat").textContent="Section box set (3 element(s))."; });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>FQC — Family QC · Health Scorecard</title>
+<style>
+:root, .dark {
+  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
+  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
+  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
+  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
+  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
+  --passbg:rgba(76,175,80,.14); --warnbg:rgba(255,179,0,.14); --failbg:rgba(255,82,82,.14);
+}
+.light {
+  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
+  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
+  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
+  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
+  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
+  --passbg:rgba(46,125,50,.10); --warnbg:rgba(245,127,23,.10); --failbg:rgba(211,47,47,.10);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
+.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
+.app { width:1220px; max-width:100%; margin:0 auto; height:860px; background:var(--win);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.5); }
+.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
+.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
+.iconbtn:hover { background:var(--rowhover); }
+.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
+.docchip { position:absolute; left:50%; top:0; height:40px; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:0 12px; color:var(--text2); font-size:11px; }
+.docchip .box { display:flex; align-items:center; gap:6px; padding:3px 12px; border:1px solid var(--border); border-radius:6px; }
+.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
+.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
+.content { flex:1 1 auto; overflow:auto; padding:18px 22px; min-width:0; }
+.pagehead { display:flex; align-items:center; margin-bottom:14px; gap:12px; }
+.pagehead h1 { font-size:19px; font-weight:700; margin:0; }
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;border:1px solid var(--border);color:var(--text2);vertical-align:middle;}
+.profsel { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); }
+.combo { height:28px; padding:0 30px 0 10px; border-radius:6px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:11px; display:flex; align-items:center; position:relative; min-width:180px; }
+.combo:after { content:"\2304"; position:absolute; right:10px; top:2px; color:var(--accent); }
+.scanbtn { height:30px; padding:0 16px; border-radius:6px; cursor:pointer; background:var(--accent); color:var(--accentfg); border:0; display:flex; align-items:center; gap:8px; font-size:11px; font-weight:700; box-shadow:0 0 14px var(--glow); }
+.hero { display:grid; grid-template-columns:320px 1fr; gap:12px; margin-bottom:12px; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.card h2 { font-size:13px; font-weight:600; margin:0 0 10px; display:flex; align-items:center; gap:8px; }
+.card h2 .mdl2 { color:var(--accent); }
+.sub { font-size:11px; color:var(--text2); }
+.donutwrap { display:flex; flex-direction:column; align-items:center; }
+.donut { position:relative; width:180px; height:180px; margin:6px 0; }
+.donut .center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.donut .center b { font-size:34px; font-weight:800; color:var(--warn); } .donut .center span{font-size:10px;color:var(--text2);}
+.band { font-size:11px; font-weight:700; padding:3px 12px; border-radius:20px; background:var(--warnbg); color:var(--warn); margin-top:4px; }
+.kchips { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; width:100%; margin-top:12px; }
+.kchip { background:var(--win); border:1px solid var(--border); border-radius:8px; padding:8px 10px; text-align:center; }
+.kchip .v { font-size:17px; font-weight:700; } .kchip .l { font-size:9.5px; color:var(--text2); margin-top:2px; }
+.v.pass{color:var(--pass);} .v.warn{color:var(--warn);} .v.fail{color:var(--fail);}
+.group { border:1px solid var(--border); border-radius:8px; margin-bottom:8px; overflow:hidden; }
+.ghdr { display:flex; align-items:center; gap:10px; padding:9px 12px; background:var(--win); cursor:pointer; }
+.ghdr .mdl2 { color:var(--accent); font-size:13px; }
+.ghdr b { font-size:12px; }
+.ghdr .gscore { margin-left:auto; font-size:11px; font-weight:700; }
+.ghdr .chev { color:var(--text2); font-size:10px; transition:transform .2s; }
+.group.closed .chev { transform:rotate(-90deg); }
+.group.closed .rows { display:none; }
+.crow { display:grid; grid-template-columns:80px 1fr 1.2fr; align-items:center; gap:10px; padding:7px 12px; border-top:1px solid var(--border); font-size:11.5px; }
+.crow:hover { background:var(--rowhover); }
+.crow .why { color:var(--text2); font-size:10.5px; }
+.pill{font-size:10px;font-weight:700;padding:2px 0;border-radius:20px;text-align:center;width:56px;}
+.pill.pass{background:var(--passbg);color:var(--pass);} .pill.warn{background:var(--warnbg);color:var(--warn);} .pill.fail{background:var(--failbg);color:var(--fail);}
+.footer{flex:0 0 auto;height:56px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
+.fsep{width:1px;height:12px;background:var(--border);}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
+.fstatus{color:var(--text2);font-size:11px;opacity:.8;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.fbtn{height:36px;padding:0 14px;border-radius:6px;background:var(--input);border:1px solid var(--border);color:var(--text);font-weight:600;font-size:11.5px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+.fbtn.primary{background:var(--accent);border:0;color:var(--accentfg);font-weight:700;box-shadow:0 0 14px var(--glow);}
+</style>
+</head>
+<body class="dark">
+<div class="app">
+  <div class="titlebar">
+    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xF158;</div><div class="title">Family QC</div>
+    <div class="docchip"><div class="box"><span class="mdl2">&#xE8F1;</span><span>Valve_Butterfly_DN_Generic.rfa — Family Editor</span></div></div>
+    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
+      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+  </div>
+  <div class="content">
+    <div class="pagehead">
+      <h1>Health Scorecard</h1><span class="tag">famqa engine · profile-driven</span>
+      <div class="profsel">Profile <div class="combo">Firm Default (MEP content) v3</div>
+        <button class="scanbtn" id="scanbtn"><span class="mdl2">&#xE721;</span> SCAN FAMILY</button></div>
+    </div>
+
+    <div class="hero">
+      <div class="card">
+        <h2><span class="mdl2">&#xEB51;</span> Overall health</h2>
+        <div class="donutwrap">
+          <div class="donut"><svg width="180" height="180" viewBox="0 0 180 180" id="donut"></svg>
+            <div class="center"><b id="score">78%</b><span>weighted score</span></div></div>
+          <div class="band" id="bandlbl">AMBER — review before delivery</div>
+          <div class="kchips">
+            <div class="kchip"><div class="v pass" id="k-pass">14</div><div class="l">PASS</div></div>
+            <div class="kchip"><div class="v warn" id="k-warn">4</div><div class="l">WARN</div></div>
+            <div class="kchip"><div class="v fail" id="k-fail">2</div><div class="l">FAIL</div></div>
+          </div>
+          <div class="sub" style="margin-top:12px;text-align:center">20 checks · 5 categories · scan ran through an ExternalEvent against the open family definition</div>
+        </div>
+      </div>
+      <div class="card" style="overflow:auto">
+        <h2><span class="mdl2">&#xE9D2;</span> Per-check breakdown <span class="sub" style="font-weight:400">· click a group to collapse</span></h2>
+
+        <div class="group">
+          <div class="ghdr"><span class="mdl2">&#xE8EF;</span><b>Geometry</b><span class="gscore" style="color:var(--pass)">92%</span><span class="chev mdl2">&#xE70D;</span></div>
+          <div class="rows">
+            <div class="crow"><span class="pill pass">PASS</span><span>Solid count within budget</span><span class="why">3 solids · limit 12</span></div>
+            <div class="crow"><span class="pill pass">PASS</span><span>No imported (CAD) geometry</span><span class="why">0 ImportInstance found</span></div>
+            <div class="crow"><span class="pill warn">WARN</span><span>Voids cutting nothing</span><span class="why">1 unused void — dead weight in every instance</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="ghdr"><span class="mdl2">&#xE8AC;</span><b>Parameters</b><span class="gscore" style="color:var(--warn)">71%</span><span class="chev mdl2">&#xE70D;</span></div>
+          <div class="rows">
+            <div class="crow"><span class="pill pass">PASS</span><span>Shared params for schedulable values</span><span class="why">DN, Weight, Kv bound as shared</span></div>
+            <div class="crow"><span class="pill fail">FAIL</span><span>Naming convention</span><span class="why">2 params off-standard: "width2", "TEMP_check"</span></div>
+            <div class="crow"><span class="pill warn">WARN</span><span>Formula robustness</span><span class="why">1 formula divides by a user-editable value</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="ghdr"><span class="mdl2">&#xE71B;</span><b>Connectors</b><span class="gscore" style="color:var(--pass)">100%</span><span class="chev mdl2">&#xE70D;</span></div>
+          <div class="rows">
+            <div class="crow"><span class="pill pass">PASS</span><span>Connectors on references</span><span class="why">2 pipe connectors, both on ref planes</span></div>
+            <div class="crow"><span class="pill pass">PASS</span><span>Flow direction set</span><span class="why">In / Out assigned</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="ghdr"><span class="mdl2">&#xE7C1;</span><b>Types &amp; Catalog</b><span class="gscore" style="color:var(--warn)">75%</span><span class="chev mdl2">&#xE70D;</span></div>
+          <div class="rows">
+            <div class="crow"><span class="pill pass">PASS</span><span>Type names follow size series</span><span class="why">DN50…DN300, consistent</span></div>
+            <div class="crow"><span class="pill warn">WARN</span><span>Orphan type</span><span class="why">"Default" type left from template</span></div>
+          </div>
+        </div>
+
+        <div class="group">
+          <div class="ghdr"><span class="mdl2">&#xE946;</span><b>Metadata &amp; Hygiene</b><span class="gscore" style="color:var(--fail)">55%</span><span class="chev mdl2">&#xE70D;</span></div>
+          <div class="rows">
+            <div class="crow"><span class="pill fail">FAIL</span><span>OmniClass / classification set</span><span class="why">Classification code empty</span></div>
+            <div class="crow"><span class="pill pass">PASS</span><span>File size</span><span class="why">412 KB · limit 2 MB</span></div>
+            <div class="crow"><span class="pill warn">WARN</span><span>Purgeable content</span><span class="why">3 unused nested symbols</span></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
+    <div class="fsep"></div>
+    <div class="fdot"></div>
+    <div class="fstatus">Scan complete — 20 checks in 1.8 s · profile "Firm Default (MEP content) v3" · %APPDATA% overlay active</div>
+    <button class="fbtn"><span class="mdl2">&#xE713;</span> Profile Settings</button>
+    <button class="fbtn primary"><span class="mdl2">&#xE898;</span> EXPORT HTML REPORT</button>
+  </div>
+</div>
+<script>
+document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
+document.querySelectorAll('.ghdr').forEach(function(h){ h.onclick=function(){ h.parentElement.classList.toggle('closed'); }; });
+function drawDonut(pct){
+  var R=74,C=2*Math.PI*R,ln=C*pct/100;
+  var col = pct>=85?'var(--pass)':(pct>=65?'var(--warn)':'var(--fail)');
+  document.getElementById('donut').innerHTML=
+   '<circle cx="90" cy="90" r="'+R+'" fill="none" stroke="var(--track)" stroke-width="16"/>'+
+   '<circle cx="90" cy="90" r="'+R+'" fill="none" stroke="'+col+'" stroke-width="16" stroke-linecap="round" stroke-dasharray="'+ln+' '+(C-ln)+'" transform="rotate(-90 90 90)"/>';
+  var s=document.getElementById('score'); s.textContent=pct+'%'; s.style.color=col;
+}
+drawDonut(78);
+var scanning=false;
+document.getElementById('scanbtn').onclick=function(){
+  if(scanning) return; scanning=true;
+  var p=0, target=78+Math.floor(Math.random()*7)-3;
+  var iv=setInterval(function(){ p+=4; if(p>=target){p=target;clearInterval(iv);scanning=false;} drawDonut(p); },40);
+};
+</script>
+</body>
+</html>

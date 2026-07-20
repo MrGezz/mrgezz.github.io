@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>EXP — IcZ Transmit · Transmit Center</title>
+<style>
+:root, .dark {
+  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
+  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
+  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
+  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
+  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
+  --passbg:rgba(76,175,80,.14); --warnbg:rgba(255,179,0,.14); --failbg:rgba(255,82,82,.14);
+}
+.light {
+  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
+  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
+  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
+  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
+  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
+  --passbg:rgba(46,125,50,.10); --warnbg:rgba(245,127,23,.10); --failbg:rgba(211,47,47,.10);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; }
+body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
+.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
+.app { width:1220px; max-width:100%; margin:0 auto; height:860px; background:var(--win);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
+  box-shadow:0 24px 70px rgba(0,0,0,.5); }
+.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
+.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
+.iconbtn:hover { background:var(--rowhover); }
+.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
+.docchip { position:absolute; left:50%; top:0; height:40px; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:0 12px; color:var(--text2); font-size:11px; }
+.docchip .box { display:flex; align-items:center; gap:6px; padding:3px 12px; border:1px solid var(--border); border-radius:6px; }
+.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
+.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
+.body { flex:1 1 auto; display:flex; min-height:0; }
+.rail { width:216px; background:var(--nav); border-right:1px solid var(--border); display:flex; flex-direction:column; flex:0 0 auto; }
+.rail .scroll { flex:1 1 auto; overflow:auto; padding:8px 6px; }
+.grouphdr { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:.4px; margin:12px 0 4px 8px; }
+.navrow { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:5px; margin:1px 0; cursor:pointer; }
+.navrow:hover { background:var(--rowhover); } .navrow.sel { background:var(--navsel); border-left:3px solid var(--accent); padding-left:5px; }
+.navrow .ic { color:var(--accent); font-size:14px; width:20px; text-align:center; }
+.navrow .lb { font-size:12px; } .navrow .lb small { display:block; font-size:9px; color:var(--text2); }
+.railfoot { border-top:1px solid var(--border); padding:10px 8px; font-size:10px; color:var(--text2); }
+.content { flex:1 1 auto; overflow:auto; padding:18px 22px; min-width:0; }
+.pagehead { display:flex; align-items:center; margin-bottom:14px; }
+.pagehead h1 { font-size:19px; font-weight:700; margin:0; }
+.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;border:1px solid var(--border);color:var(--text2);margin-left:8px;vertical-align:middle;}
+.profsel { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); }
+.combo { height:28px; padding:0 30px 0 10px; border-radius:6px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:11px; display:flex; align-items:center; position:relative; min-width:150px; }
+.combo:after { content:"\2304"; position:absolute; right:10px; top:2px; color:var(--accent); }
+.card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+.card h2 { font-size:13px; font-weight:600; margin:0 0 10px; letter-spacing:.2px; display:flex; align-items:center; gap:8px; }
+.card h2 .mdl2 { color:var(--accent); }
+.sub { font-size:11px; color:var(--text2); }
+.steps { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.dest { display:flex; align-items:center; gap:8px; }
+.dest .path { flex:1; height:30px; border:1px solid var(--border); border-radius:6px; background:var(--input); display:flex; align-items:center; padding:0 10px; font-size:11px; color:var(--text2); overflow:hidden; white-space:nowrap; }
+.browse { height:30px; padding:0 12px; border-radius:6px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; }
+.chk { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); margin-top:9px; }
+.chk input { accent-color:var(--accent); }
+.fmtgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:12px; }
+.fmt { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; cursor:pointer; position:relative; transition:border-color .15s, transform .15s; }
+.fmt:hover { transform:translateY(-2px); }
+.fmt .fic { font-size:22px; color:var(--text2); margin-bottom:6px; }
+.fmt .fn { font-size:12px; font-weight:700; }
+.fmt .fs { font-size:9.5px; color:var(--text2); margin-top:3px; }
+.fmt .tick { position:absolute; top:8px; right:8px; width:16px; height:16px; border-radius:4px; border:1px solid var(--border); font-size:10px; display:flex; align-items:center; justify-content:center; color:transparent; }
+.fmt.on { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 6px 18px -8px var(--glow); }
+.fmt.on .fic { color:var(--accent); }
+.fmt.on .tick { background:var(--accent); border-color:var(--accent); color:var(--accentfg); }
+.midgrid { display:grid; grid-template-columns:1.4fr 1fr; gap:12px; }
+.qrow { display:grid; grid-template-columns:26px 1fr 60px 90px; align-items:center; gap:8px; padding:7px 6px; border-radius:6px; font-size:11.5px; }
+.qrow:hover { background:var(--rowhover); }
+.qrow .qi { color:var(--accent); text-align:center; font-size:14px; }
+.qrow .qc { text-align:right; color:var(--text2); }
+.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-align:center;}
+.pill.pass{background:var(--passbg);color:var(--pass);} .pill.warn{background:var(--warnbg);color:var(--warn);} .pill.idle{background:var(--track);color:var(--text2);}
+.log { background:var(--input); border:1px solid var(--border); border-radius:8px; height:172px; overflow:auto; padding:10px 12px; font-family:Consolas,monospace; font-size:10.5px; line-height:1.7; color:var(--text2); }
+.log .ok { color:var(--pass); } .log .wn { color:var(--warn); } .log .ac { color:var(--accent); }
+.namebuild { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px; }
+.token { font-family:Consolas,monospace; font-size:10px; background:var(--navsel); color:var(--accent); border:1px solid var(--border); padding:2px 7px; border-radius:5px; }
+.namesample { font-family:Consolas,monospace; font-size:10.5px; color:var(--text2); margin-top:8px; }
+.namesample b { color:var(--text); font-weight:600; }
+.footer{flex:0 0 auto;height:56px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
+.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
+.fsep{width:1px;height:12px;background:var(--border);}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
+.fstatus{color:var(--text2);font-size:11px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
+.commit{width:200px;height:40px;border-radius:6px;border:0;cursor:pointer;background:var(--accent);color:var(--accentfg);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 16px var(--glow);}
+.commit:hover{background:var(--accenthover);}
+.ghost{height:40px;padding:0 16px;border-radius:6px;background:var(--input);border:1px dashed var(--border);color:var(--text);font-weight:600;font-size:12px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+</style>
+</head>
+<body class="dark">
+<div class="app">
+  <div class="titlebar">
+    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xE898;</div><div class="title">IcZ Transmit</div>
+    <div class="docchip"><div class="box"><span class="mdl2">&#xE8A5;</span><span>Snowdon Towers Sample Plumbing</span></div></div>
+    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
+      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+  </div>
+  <div class="body">
+    <div class="rail">
+      <div class="scroll">
+        <div class="navrow sel"><span class="ic mdl2">&#xE898;</span><span class="lb">Transmit Center</span></div>
+        <div class="grouphdr">SELECTION</div>
+        <div class="navrow"><span class="ic mdl2">&#xE8A1;</span><span class="lb">Pick Drawings<small>24 sheets ticked</small></span></div>
+        <div class="navrow"><span class="ic mdl2">&#xE879;</span><span class="lb">Pick 3D &amp; Schedules<small>2 views · 5 schedules</small></span></div>
+        <div class="grouphdr">OUTPUT</div>
+        <div class="navrow"><span class="ic mdl2">&#xE7C3;</span><span class="lb">Formats</span></div>
+        <div class="navrow"><span class="ic mdl2">&#xE81C;</span><span class="lb">Issue History<small>12 records</small></span></div>
+        <div class="navrow"><span class="ic mdl2">&#xE8FF;</span><span class="lb">PDF Preview</span></div>
+        <div class="grouphdr">&nbsp;</div>
+        <div class="navrow"><span class="ic mdl2">&#xE713;</span><span class="lb">Settings &amp; Profiles</span></div>
+      </div>
+      <div class="railfoot">profiles v2 · <span style="color:var(--accent)">profile_IcZ.json</span></div>
+    </div>
+    <div class="content">
+      <div class="pagehead"><h1>Transmit Center <span class="tag">one transmittal · every format</span></h1>
+        <div class="profsel">Profile <div class="combo">IcZ — Weekly Issue</div></div></div>
+
+      <div class="steps">
+        <div class="card">
+          <h2><span class="mdl2">&#xE8B7;</span> Step 1 · Where the files go</h2>
+          <div class="dest"><div class="path">D:\Issues\2026-07-21_WeeklyIssue\</div><div class="browse"><span class="mdl2">&#xE838;</span> Browse</div></div>
+          <label class="chk"><input type="checkbox" checked> Split output into per-format subfolders (DWG\ PDF\ NWC\ …)</label>
+          <label class="chk"><input type="checkbox" checked> Suppress Revit warnings mid-batch (failures preprocessor)</label>
+        </div>
+        <div class="card">
+          <h2><span class="mdl2">&#xE8AC;</span> Filename builder <span class="sub" style="font-weight:400">token-based · live preview</span></h2>
+          <div class="namebuild">
+            <span class="token">{proj}</span><span class="token">{sheet}</span><span class="token">{rev}</span><span class="token">{date}</span>
+            <span class="sub" style="margin-left:4px">drag to reorder · separator "_"</span>
+          </div>
+          <div class="namesample">→ <b>STP_P-401_C02_2026-07-21.pdf</b></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px">
+        <h2><span class="mdl2">&#xE7C3;</span> Step 2 · Tick the formats <span class="sub" style="font-weight:400">each with its own options page</span></h2>
+        <div class="fmtgrid" id="fmts">
+          <div class="fmt on" data-f="DWG"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE7B3;</div><div class="fn">DWG</div><div class="fs">logos + OLE schedules</div></div>
+          <div class="fmt on" data-f="PDF"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE8A5;</div><div class="fn">PDF</div><div class="fs">vector · per-sheet</div></div>
+          <div class="fmt on" data-f="NWC"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE879;</div><div class="fn">NWC</div><div class="fs">preflight · no open tx</div></div>
+          <div class="fmt" data-f="IFC"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE81E;</div><div class="fn">IFC</div><div class="fs">2x3 CV2.0</div></div>
+          <div class="fmt" data-f="IMG"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xEB9F;</div><div class="fn">Images</div><div class="fs">PNG / JPEG / TIFF</div></div>
+          <div class="fmt on" data-f="XLSX"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE9F9;</div><div class="fn">Excel</div><div class="fs">xlsxlite · no COM</div></div>
+        </div>
+        <div class="sub">A Drawing Register / Sheet Index is appended to every run. Excel export needs no Excel install — schedules write through the pure-Python OOXML writer and protect values like Ø, 100×200 and DN.</div>
+      </div>
+
+      <div class="midgrid">
+        <div class="card">
+          <h2><span class="mdl2">&#xE9D5;</span> Run log <span class="sub" style="font-weight:400" id="runstate">idle — press Transmit Now</span></h2>
+          <div class="log" id="log"><span class="sub">// results stream here during the batch — no popups, no stalls</span></div>
+        </div>
+        <div class="card">
+          <h2><span class="mdl2">&#xE8A1;</span> Queue</h2>
+          <div class="qrow"><span class="qi mdl2">&#xE8A5;</span><span>Sheets — P-401 … P-424</span><span class="qc">24</span><span class="pill idle" id="q-sheets">queued</span></div>
+          <div class="qrow"><span class="qi mdl2">&#xE879;</span><span>3D views for NWC</span><span class="qc">2</span><span class="pill idle" id="q-nwc">queued</span></div>
+          <div class="qrow"><span class="qi mdl2">&#xE9F9;</span><span>Schedules → XLSX</span><span class="qc">5</span><span class="pill idle" id="q-xlsx">queued</span></div>
+          <div class="qrow"><span class="qi mdl2">&#xE8AC;</span><span>Drawing Register</span><span class="qc">1</span><span class="pill idle" id="q-reg">queued</span></div>
+          <div class="sub" style="margin-top:8px">Performance summary (count · elapsed · warn · error per format) lands in Issue History when the run completes.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer">
+    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
+    <div class="fsep"></div>
+    <div class="fdot"></div>
+    <div class="fstatus" id="fstatus">Profile "IcZ — Weekly Issue" loaded · 24 sheets · 4 formats ticked</div>
+    <button class="ghost"><span class="mdl2">&#xE8FF;</span> PDF PREVIEW</button>
+    <button class="commit" id="runbtn"><span class="mdl2">&#xE898;</span> TRANSMIT NOW</button>
+  </div>
+</div>
+<script>
+document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
+document.querySelectorAll('.fmt').forEach(function(f){ f.onclick=function(){ f.classList.toggle('on'); count(); }; });
+function count(){ var n=document.querySelectorAll('.fmt.on').length;
+  document.getElementById('fstatus').textContent='Profile "IcZ — Weekly Issue" loaded · 24 sheets · '+n+' formats ticked'; }
+var running=false;
+document.getElementById('runbtn').onclick=function(){
+  if(running) return; running=true;
+  var log=document.getElementById('log'); log.innerHTML='';
+  var fmts=[].map.call(document.querySelectorAll('.fmt.on'),function(f){return f.dataset.f;});
+  var lines=[['ac','[00.0s] Transmit run started — profile "IcZ — Weekly Issue", '+fmts.length+' format(s): '+fmts.join(' · ')]];
+  if(fmts.indexOf('DWG')>=0){ lines.push(['ok','[04.1s] DWG    24/24 sheets — logos embedded, 3 schedule OLE frames placed']); }
+  if(fmts.indexOf('PDF')>=0){ lines.push(['ok','[11.8s] PDF    24/24 sheets — vector, per-sheet files']); }
+  if(fmts.indexOf('NWC')>=0){ lines.push(['ok','[15.2s] NWC    2/2 views — preflight passed, exported with no open transaction']); }
+  if(fmts.indexOf('IFC')>=0){ lines.push(['ok','[21.6s] IFC    1/1 model — IFC2x3 CV2.0']); }
+  if(fmts.indexOf('IMG')>=0){ lines.push(['ok','[23.9s] IMG    24/24 sheets — PNG 300dpi']); }
+  if(fmts.indexOf('XLSX')>=0){ lines.push(['wn','[25.0s] XLSX   5/5 schedules — 1 warning: merged header normalized (xlsxlite)']); }
+  lines.push(['ok','[26.4s] Register — Drawing Register / Sheet Index written']);
+  lines.push(['ac','[26.5s] Done. '+(lines.length-1)+' step(s) · 0 errors · summary logged to Issue History.']);
+  var pills={DWG:'q-sheets',PDF:'q-sheets',NWC:'q-nwc',XLSX:'q-xlsx'};
+  document.getElementById('runstate').textContent='running…';
+  var i=0;(function tick(){
+    if(i<lines.length){ log.innerHTML+='<div class="'+lines[i][0]+'">'+lines[i][1]+'</div>'; log.scrollTop=log.scrollHeight; i++; setTimeout(tick,420); }
+    else{ running=false; document.getElementById('runstate').textContent='finished — 0 errors';
+      ['q-sheets','q-nwc','q-xlsx','q-reg'].forEach(function(id){var p=document.getElementById(id);p.className='pill pass';p.textContent='done';}); }
+  })();
+};
+</script>
+</body>
+</html>
