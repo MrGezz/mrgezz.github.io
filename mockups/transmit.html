@@ -1,211 +1,540 @@
 <!DOCTYPE html>
+<script type="application/json" id="cowork-artifact-meta">
+{
+  "name": "IcZ Transmit — Stepper + Cockpit Restructure R17",
+  "schemaVersion": 1,
+  "description": "Mining round-17 FULL RESTRUCTURE of IcZ Transmit + B47 fold-in. NO left rail (that shell is common across AA/RO1/FIT/PSU). Transmit is a LINEAR PIPELINE, so it gets a unique identity: a TOP WORKFLOW STEPPER (Destination -> Contents -> Formats -> Issue) plus a PERSISTENT right-hand ISSUE COCKPIT (live summary of the whole transmittal + Transmit Now always reachable). Secondary surfaces (PDF Preview, Issue History, Machine & Profile) are compact top-right tabs, outside the linear flow. Formats uses horizontal sub-tab CHIPS (CAD/DWG / PDF / NWC / IFC / Image / Sheet Index / Naming) - not a left sub-rail. B47 OLE logo options (ole_clean_logos / ole_remove_background / ole_block_swaps) land in the CAD/DWG sub-tab as a Logo Embedding card + block-swap rules editor. Header carries NO IcZ (tool identity only); the sole IcZ hallmark + standardized model-state chip (foot_model) + current-section label (foot_page) live in the footer. Global CM2 tokens per theme patching guidline.md; every control tagged to its real x:Name / handler. APPROVAL GATE - staged 1:1 rebuild follows green light.",
+  "mcpTools": [],
+  "mcpServerNames": []
+}
+</script>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>EXP — IcZ Transmit · Transmit Center</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IcZ Transmit — Stepper + Cockpit · R17</title>
 <style>
-:root, .dark {
-  --win:#0B1013; --text:#ECF4F7; --text2:#8FA6B2; --border:#283B45;
-  --input:#0F161A; --card:#141E24; --title:#0F161A; --nav:#0F161A;
-  --navsel:rgba(0,188,212,.12); --rowhover:#1C2B33; --accent:#00BCD4;
-  --accenthover:#4DD0E1; --accentfg:#06222B; --pass:#4CAF50; --warn:#FFB300;
-  --fail:#FF5252; --track:#1C2B33; --panel:#152026; --glow:rgba(0,188,212,.40);
-  --passbg:rgba(76,175,80,.14); --warnbg:rgba(255,179,0,.14); --failbg:rgba(255,82,82,.14);
-}
-.light {
-  --win:#ECEFF1; --text:#263238; --text2:#546E7A; --border:#CFD8DC;
-  --input:#FFFFFF; --card:#FFFFFF; --title:#E7EDF0; --nav:#E7EDF0;
-  --navsel:rgba(0,151,167,.10); --rowhover:#E3EAEE; --accent:#0097A7;
-  --accenthover:#00838F; --accentfg:#FFFFFF; --pass:#2E7D32; --warn:#F57F17;
-  --fail:#D32F2F; --track:#E3EAEE; --panel:#FFFFFF; --glow:rgba(0,151,167,.33);
-  --passbg:rgba(46,125,50,.10); --warnbg:rgba(245,127,23,.10); --failbg:rgba(211,47,47,.10);
-}
-* { box-sizing:border-box; }
-html,body { margin:0; }
-body { background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif; font-size:12px; padding:20px; }
-.mdl2 { font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; }
-.app { width:1220px; max-width:100%; margin:0 auto; height:860px; background:var(--win);
-  border:1px solid var(--border); border-radius:10px; overflow:hidden; display:flex; flex-direction:column;
-  box-shadow:0 24px 70px rgba(0,0,0,.5); }
-.titlebar { position:relative; height:40px; background:var(--title); display:flex; align-items:center; padding:0 12px; gap:8px; flex:0 0 auto; }
-.iconbtn { width:34px; height:30px; display:flex; align-items:center; justify-content:center; border-radius:5px; color:var(--text); cursor:pointer; }
-.iconbtn:hover { background:var(--rowhover); }
-.title { font-weight:600; font-size:13px; } .brand-i{color:var(--accent);font-size:14px;}
-.docchip { position:absolute; left:50%; top:0; height:40px; transform:translateX(-50%); display:flex; align-items:center; gap:6px; padding:0 12px; color:var(--text2); font-size:11px; }
-.docchip .box { display:flex; align-items:center; gap:6px; padding:3px 12px; border:1px solid var(--border); border-radius:6px; }
-.rightgrp { margin-left:auto; display:flex; align-items:center; gap:8px; }
-.dots { display:flex; gap:7px; } .dot{width:14px;height:14px;border-radius:50%;}
-.dot.min{background:#FEBC2E;}.dot.max{background:#28C840;}.dot.close{background:#FF5F57;}
-.body { flex:1 1 auto; display:flex; min-height:0; }
-.rail { width:216px; background:var(--nav); border-right:1px solid var(--border); display:flex; flex-direction:column; flex:0 0 auto; }
-.rail .scroll { flex:1 1 auto; overflow:auto; padding:8px 6px; }
-.grouphdr { font-size:10px; font-weight:700; color:var(--text2); letter-spacing:.4px; margin:12px 0 4px 8px; }
-.navrow { display:flex; align-items:center; gap:10px; padding:7px 8px; border-radius:5px; margin:1px 0; cursor:pointer; }
-.navrow:hover { background:var(--rowhover); } .navrow.sel { background:var(--navsel); border-left:3px solid var(--accent); padding-left:5px; }
-.navrow .ic { color:var(--accent); font-size:14px; width:20px; text-align:center; }
-.navrow .lb { font-size:12px; } .navrow .lb small { display:block; font-size:9px; color:var(--text2); }
-.railfoot { border-top:1px solid var(--border); padding:10px 8px; font-size:10px; color:var(--text2); }
-.content { flex:1 1 auto; overflow:auto; padding:18px 22px; min-width:0; }
-.pagehead { display:flex; align-items:center; margin-bottom:14px; }
-.pagehead h1 { font-size:19px; font-weight:700; margin:0; }
-.tag{display:inline-block;font-size:10px;padding:1px 7px;border-radius:20px;border:1px solid var(--border);color:var(--text2);margin-left:8px;vertical-align:middle;}
-.profsel { margin-left:auto; display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); }
-.combo { height:28px; padding:0 30px 0 10px; border-radius:6px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:11px; display:flex; align-items:center; position:relative; min-width:150px; }
-.combo:after { content:"\2304"; position:absolute; right:10px; top:2px; color:var(--accent); }
-.card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
-.card h2 { font-size:13px; font-weight:600; margin:0 0 10px; letter-spacing:.2px; display:flex; align-items:center; gap:8px; }
-.card h2 .mdl2 { color:var(--accent); }
-.sub { font-size:11px; color:var(--text2); }
-.steps { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
-.dest { display:flex; align-items:center; gap:8px; }
-.dest .path { flex:1; height:30px; border:1px solid var(--border); border-radius:6px; background:var(--input); display:flex; align-items:center; padding:0 10px; font-size:11px; color:var(--text2); overflow:hidden; white-space:nowrap; }
-.browse { height:30px; padding:0 12px; border-radius:6px; background:var(--input); border:1px solid var(--border); color:var(--text); font-size:11px; display:flex; align-items:center; gap:6px; cursor:pointer; }
-.chk { display:flex; align-items:center; gap:8px; font-size:11px; color:var(--text2); margin-top:9px; }
-.chk input { accent-color:var(--accent); }
-.fmtgrid { display:grid; grid-template-columns:repeat(6,1fr); gap:10px; margin-bottom:12px; }
-.fmt { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; text-align:center; cursor:pointer; position:relative; transition:border-color .15s, transform .15s; }
-.fmt:hover { transform:translateY(-2px); }
-.fmt .fic { font-size:22px; color:var(--text2); margin-bottom:6px; }
-.fmt .fn { font-size:12px; font-weight:700; }
-.fmt .fs { font-size:9.5px; color:var(--text2); margin-top:3px; }
-.fmt .tick { position:absolute; top:8px; right:8px; width:16px; height:16px; border-radius:4px; border:1px solid var(--border); font-size:10px; display:flex; align-items:center; justify-content:center; color:transparent; }
-.fmt.on { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 6px 18px -8px var(--glow); }
-.fmt.on .fic { color:var(--accent); }
-.fmt.on .tick { background:var(--accent); border-color:var(--accent); color:var(--accentfg); }
-.midgrid { display:grid; grid-template-columns:1.4fr 1fr; gap:12px; }
-.qrow { display:grid; grid-template-columns:26px 1fr 60px 90px; align-items:center; gap:8px; padding:7px 6px; border-radius:6px; font-size:11.5px; }
-.qrow:hover { background:var(--rowhover); }
-.qrow .qi { color:var(--accent); text-align:center; font-size:14px; }
-.qrow .qc { text-align:right; color:var(--text2); }
-.pill{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;text-align:center;}
-.pill.pass{background:var(--passbg);color:var(--pass);} .pill.warn{background:var(--warnbg);color:var(--warn);} .pill.idle{background:var(--track);color:var(--text2);}
-.log { background:var(--input); border:1px solid var(--border); border-radius:8px; height:172px; overflow:auto; padding:10px 12px; font-family:Consolas,monospace; font-size:10.5px; line-height:1.7; color:var(--text2); }
-.log .ok { color:var(--pass); } .log .wn { color:var(--warn); } .log .ac { color:var(--accent); }
-.namebuild { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:4px; }
-.token { font-family:Consolas,monospace; font-size:10px; background:var(--navsel); color:var(--accent); border:1px solid var(--border); padding:2px 7px; border-radius:5px; }
-.namesample { font-family:Consolas,monospace; font-size:10.5px; color:var(--text2); margin-top:8px; }
-.namesample b { color:var(--text); font-weight:600; }
-.footer{flex:0 0 auto;height:56px;background:var(--title);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:12px;}
-.hall b{font-weight:800;opacity:.85;}.hall span{font-weight:300;color:var(--text2);opacity:.7;}.hall .i{color:var(--accent);margin-right:6px;}
-.fsep{width:1px;height:12px;background:var(--border);}
-.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass);flex:0 0 auto;}
-.fstatus{color:var(--text2);font-size:11px;opacity:.8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;}
-.commit{width:200px;height:40px;border-radius:6px;border:0;cursor:pointer;background:var(--accent);color:var(--accentfg);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 16px var(--glow);}
-.commit:hover{background:var(--accenthover);}
-.ghost{height:40px;padding:0 16px;border-radius:6px;background:var(--input);border:1px dashed var(--border);color:var(--text);font-weight:600;font-size:12px;display:flex;align-items:center;gap:8px;cursor:pointer;}
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  body.light{background:#cfd8dc}
+  .g{font-family:"Segoe MDL2 Assets"}
+  .window{width:1200px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  /* titlebar — tool identity only, NO IcZ */
+  .titlebar{position:relative;display:flex;align-items:center;gap:10px;background:var(--titlebar);border-bottom:1px solid var(--border);padding:9px 14px}
+  .tident{display:flex;align-items:center;gap:8px}
+  .tident .ti{color:var(--accent);font-family:"Segoe MDL2 Assets";font-size:15px}
+  .tident b{color:var(--text-main);font-weight:700;font-size:13px;letter-spacing:.02em}
+  .chip{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);font:11px Consolas,monospace;border-radius:6px;padding:3px 12px}
+  .chip .ci{color:var(--accent);font-family:"Segoe MDL2 Assets";font-size:10px}
+  .tright{margin-left:auto;display:flex;align-items:center;gap:6px}
+  .tbtn{background:none;border:none;color:var(--text-2);font-family:"Segoe MDL2 Assets";font-size:13px;padding:3px 6px;cursor:pointer;border-radius:5px}
+  .tbtn:hover{background:var(--hover);color:var(--text-main)}
+  .tbtn.sel{color:var(--accent)}
+  .tsep{width:1px;height:14px;background:var(--border);margin:0 4px}
+  .dot{width:12px;height:12px;border-radius:50%;cursor:pointer;margin-left:2px}
+  .dmin{background:#3a4650}.dmax{background:#3a4650}.dcls{background:#c0655c}
+  /* WORKFLOW STEPPER — Transmit's identity */
+  .stepper{display:flex;align-items:center;background:var(--nav);border-bottom:1px solid var(--border);padding:0 18px}
+  .stp{display:flex;align-items:center;gap:10px;padding:13px 6px;cursor:pointer;position:relative}
+  .stp .num{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-2);font-family:"Segoe MDL2 Assets"}
+  .stp .stt{font-size:12.5px;font-weight:600;color:var(--text-2)}
+  .stp .sts{display:block;font-size:9.5px;color:var(--text-2);opacity:.7;font-weight:400}
+  .stp.on .num{border-color:var(--accent);background:var(--accent);color:var(--accent-fg)}
+  .stp.on .stt{color:var(--text-main)}
+  .stp.done .num{border-color:var(--pass);color:var(--pass)}
+  .stp.on::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--accent)}
+  .stpconn{flex:0 0 34px;height:1.5px;background:var(--border);margin:0 4px}
+  .stpspacer{flex:1}
+  .stp2{font-family:"Segoe MDL2 Assets";font-size:14px;color:var(--text-2);padding:12px 10px;cursor:pointer;border-radius:6px}
+  .stp2:hover{background:var(--hover);color:var(--text-main)}
+  .stp2.on{color:var(--accent)}
+  /* BODY = active step (left) + persistent cockpit (right) */
+  .body{display:grid;grid-template-columns:1fr 316px;min-height:560px}
+  .stage{padding:16px 20px;display:flex;flex-direction:column;gap:14px;overflow:auto;max-height:600px;background:var(--window-bg)}
+  .cockpit{background:var(--nav);border-left:1px solid var(--border);padding:16px 16px;display:flex;flex-direction:column}
+  .cockpit.hidefull{display:none}
+  .step-body{display:none;flex-direction:column;gap:14px}
+  .step-body.on{display:flex}
+  h2.pg{font-size:16px;font-weight:700}h2.pg .acc{color:var(--accent)}
+  .sub{font-size:11px;color:var(--text-2);line-height:1.5}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+  .card h3{font-size:12px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+  .card h3 .hg{color:var(--accent);font-family:"Segoe MDL2 Assets"}
+  .card h3 .np{font-size:8.5px;font-weight:700;letter-spacing:.05em;background:rgba(0,188,212,.16);color:var(--accent);border-radius:99px;padding:2px 8px;margin-left:4px}
+  .xn{font-size:9.5px;color:var(--accent);font-family:Consolas,monospace}
+  .fldrow{display:flex;gap:8px}
+  .inp{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:8px 10px;font-size:11.5px;font-family:inherit;width:100%}
+  .ghostbtn{display:inline-flex;align-items:center;gap:7px;background:var(--panel2);color:var(--text-main);border:1px solid var(--border);font-size:11px;border-radius:6px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+  .ghostbtn .g{color:var(--accent)}
+  .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:4px}
+  .ftile{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 8px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;position:relative}
+  .ftile.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .ftile .fg{font-size:22px;color:var(--accent);font-family:"Segoe MDL2 Assets"}
+  .ftile .fl{font-size:11px;font-weight:600}
+  .ftile .fchk{position:absolute;top:6px;right:7px;font-size:11px;color:var(--accent);font-family:"Segoe MDL2 Assets";display:none}
+  .ftile.on .fchk{display:block}
+  /* cockpit contents */
+  .cockpit h3{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--text-2);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .cockpit h3 .hg{color:var(--accent);font-family:"Segoe MDL2 Assets";font-size:13px}
+  .srow{display:flex;align-items:center;gap:9px;font-size:11.5px;padding:8px 0;border-top:1px solid var(--border)}
+  .srow:first-of-type{border-top:none}
+  .srow .sg{width:16px;text-align:center;color:var(--accent);font-family:"Segoe MDL2 Assets";font-size:12px}
+  .srow .sv{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+  .srow .sv.muted{color:var(--text-2);font-weight:400}
+  .runbtn{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;margin-top:16px;background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12.5px;border:none;border-radius:7px;padding:12px;cursor:pointer;box-shadow:0 0 16px rgba(0,188,212,.32)}
+  .runbtn .g{font-family:"Segoe MDL2 Assets"}
+  .actrow{display:flex;gap:8px;margin-top:9px}
+  .actrow .ghostbtn{flex:1;justify-content:center}
+  .cockpit .cfoot{margin-top:auto;font-size:10px;color:var(--text-2);line-height:1.5;padding-top:12px}
+  /* segmented + tables */
+  .seg{display:inline-flex;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:3px;gap:2px}
+  .seg button{background:none;border:none;color:var(--text-2);font-size:11.5px;font-weight:600;padding:7px 15px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:7px}
+  .seg button .g{font-size:12px}
+  .seg button.sel{background:var(--accent);color:var(--accent-fg)}
+  .toolrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .toolrow .grow{flex:1}
+  input.search{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:7px 10px;font-size:11.5px;font-family:inherit;width:220px}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{text-align:left;color:var(--text-2);font-weight:600;padding:7px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--card)}
+  td{padding:6px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+  tr:hover td{background:var(--hover)}
+  input.cell{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:5px 8px;font-size:11px;font-family:inherit;width:100%}
+  .mono{font-family:Consolas,monospace;color:var(--accent)}
+  .chk{width:14px;height:14px;border:1.5px solid var(--accent);border-radius:3px;display:inline-block;vertical-align:middle;background:var(--accent);position:relative;cursor:pointer;flex:none}
+  .chk.off{background:transparent}
+  .chk::after{content:"\2713";position:absolute;left:1px;top:-2.5px;color:var(--accent-fg);font-size:10px}
+  .chk.off::after{content:""}
+  .cklab{display:flex;align-items:center;gap:8px;font-size:11.5px;padding:4px 0;cursor:pointer}
+  /* format sub-tab chips (horizontal — not a rail) */
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip2{display:flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--border);color:var(--text-2);border-radius:99px;padding:7px 14px;font-size:11.5px;font-weight:600;cursor:pointer}
+  .chip2 .g{color:var(--accent);font-size:12px}
+  .chip2.sel{background:var(--nav-sel);border-color:var(--accent);color:var(--text-main)}
+  .fpane{display:none;flex-direction:column;gap:12px}
+  .fpane.on{display:flex}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .fld{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11.5px;padding:3px 0}
+  .fld .lb{color:var(--text-main)}
+  .fld select,.fld input{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:5px 7px;font-size:11px;font-family:inherit;min-width:120px}
+  .gatebar{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:6px;padding:9px 12px;font-size:11px;color:var(--text-main)}
+  .gatebar .g{color:var(--accent);font-family:"Segoe MDL2 Assets"}
+  .row{display:flex;align-items:flex-start;gap:11px;padding:9px 0;border-top:1px solid var(--border)}
+  .row:first-of-type{border-top:none}
+  .row .meta{flex:1}
+  .row .meta .lab{font-size:12px;font-weight:600}
+  .row .meta .dsc{font-size:10.5px;color:var(--text-2);margin-top:3px;line-height:1.5}
+  .row .meta .xn{margin-top:4px}
+  .prevwrap{display:grid;grid-template-columns:1fr 22px 1fr;gap:10px;align-items:center;margin-top:8px}
+  .prevcell{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+  .prevcell .cap{font-size:9.5px;color:var(--text-2);margin-bottom:7px}
+  .cadbg{background:repeating-conic-gradient(#11181d 0% 25%, #0b1013 0% 50%) 50%/14px 14px;border:1px solid var(--border);border-radius:6px;height:56px;display:flex;align-items:center;justify-content:center}
+  .logobox{background:#fff;padding:5px 11px;border-radius:2px}
+  .logobox.keyed{background:transparent}
+  .logo-t{font:800 14px "Segoe UI";color:#0B6E8C}.logo-t .y{color:#E8B400}
+  .prevarrow{color:var(--accent);font-size:14px;text-align:center;font-family:"Segoe MDL2 Assets"}
+  .browse{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:4px 9px;font-size:10.5px;cursor:pointer;white-space:nowrap}
+  .rowdel{background:none;border:none;color:var(--fail);font-family:"Segoe MDL2 Assets";font-size:12px;cursor:pointer;padding:0 4px}
+  .editbar{display:flex;gap:9px;margin-top:10px;align-items:center;flex-wrap:wrap}
+  .logbox{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;font:11px/1.7 Consolas,monospace;color:var(--text-main);padding:12px;height:250px;overflow:auto}
+  .logbox .ok{color:var(--pass)}.logbox .wn{color:var(--warn)}.logbox .lnk{color:var(--accent);text-decoration:underline dotted;cursor:pointer}
+  .pill{font-size:9.5px;border-radius:99px;padding:2px 8px;font-weight:600}
+  .pill.pass{background:rgba(76,175,80,.16);color:var(--pass)}.pill.warn{background:rgba(255,179,0,.16);color:var(--warn)}
+  .pdfhost{background:var(--panel);border:1px dashed var(--border);border-radius:8px;height:300px;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:12px;gap:9px;flex-direction:column}
+  .pdfhost .pg{font-size:34px;color:var(--accent);font-family:"Segoe MDL2 Assets"}
+  /* footer standard */
+  .footer{display:flex;align-items:center;gap:10px;background:var(--titlebar);border-top:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--text-2)}
+  .hallmark{display:flex;align-items:center;gap:6px}
+  .hallmark .hg{color:var(--accent);font-family:"Segoe MDL2 Assets";font-size:11px}
+  .hallmark b{font-weight:800;color:var(--text-main);opacity:.9}.hallmark span{font-weight:300;color:var(--text-2)}
+  .sep{width:1px;height:12px;background:var(--border)}
+  .statedot{width:7px;height:7px;border-radius:4px;background:var(--pass);margin:0 7px 0 0}
+  .fright{margin-left:auto;display:flex;align-items:center;gap:10px}
+  .map{width:1200px;max-width:100%;background:#0c1418;border:1px solid #22323b;border-radius:10px;padding:16px 18px;font-size:11px;color:#b8c9d2}
+  .map h4{color:#dfeef4;font-size:12px;margin-bottom:8px}
+  .map code{font-family:Consolas,monospace;color:#00BCD4}
+  .map table{font-size:10.5px}.map th,.map td{border-color:#22323b;vertical-align:top;padding:5px 8px}
+  .map .flow{color:#8FA6B2;line-height:1.7;margin-top:8px}
+  .note{width:1200px;max-width:100%;font-size:11px;color:#8FA6B2;line-height:1.6}
 </style>
 </head>
-<body class="dark">
-<div class="app">
+<body>
+<div class="window">
+  <!-- TITLE BAR — tool identity only, NO IcZ; secondary surfaces as icons -->
   <div class="titlebar">
-    <div class="iconbtn mdl2">&#xE700;</div><div class="mdl2 brand-i">&#xE898;</div><div class="title">IcZ Transmit</div>
-    <div class="docchip"><div class="box"><span class="mdl2">&#xE8A5;</span><span>Snowdon Towers Sample Plumbing</span></div></div>
-    <div class="rightgrp"><div class="iconbtn mdl2" id="themebtn" title="theme">&#xE706;</div>
-      <div class="dots"><div class="dot min"></div><div class="dot max"></div><div class="dot close"></div></div></div>
+    <span class="tident"><span class="ti">&#xE724;</span><b>Transmit</b></span>
+    <span class="chip"><span class="ci">&#xE7C3;</span> Snowdon Towers - Central.rvt</span>
+    <span class="tright">
+      <button class="tbtn" title="PDF Preview" onclick="goSec(this,'preview')">&#xE8A5;</button>
+      <button class="tbtn" title="Issue History" onclick="goSec(this,'history')">&#xE81C;</button>
+      <button class="tbtn" title="Machine &amp; Profile" onclick="goSec(this,'machine')">&#xE713;</button>
+      <span class="tsep"></span>
+      <button class="tbtn" title="Theme" onclick="document.body.classList.toggle('light')">&#xE706;</button>
+      <span class="dot dmin"></span><span class="dot dmax"></span><span class="dot dcls"></span>
+    </span>
   </div>
+
+  <!-- WORKFLOW STEPPER -->
+  <div class="stepper" id="stepper">
+    <div class="stp done" data-s="dest" onclick="goStep(this)"><span class="num">&#xE73E;</span><span><span class="stt">Destination</span><span class="sts">where + what</span></span></div>
+    <div class="stpconn"></div>
+    <div class="stp" data-s="contents" onclick="goStep(this)"><span class="num">2</span><span><span class="stt">Contents</span><span class="sts">drawings · models · schedules</span></span></div>
+    <div class="stpconn"></div>
+    <div class="stp" data-s="formats" onclick="goStep(this)"><span class="num">3</span><span><span class="stt">Formats</span><span class="sts">per-format options</span></span></div>
+    <div class="stpconn"></div>
+    <div class="stp on" data-s="issue" onclick="goStep(this)"><span class="num">4</span><span><span class="stt">Issue</span><span class="sts">run + log</span></span></div>
+    <div class="stpspacer"></div>
+  </div>
+
   <div class="body">
-    <div class="rail">
-      <div class="scroll">
-        <div class="navrow sel"><span class="ic mdl2">&#xE898;</span><span class="lb">Transmit Center</span></div>
-        <div class="grouphdr">SELECTION</div>
-        <div class="navrow"><span class="ic mdl2">&#xE8A1;</span><span class="lb">Pick Drawings<small>24 sheets ticked</small></span></div>
-        <div class="navrow"><span class="ic mdl2">&#xE879;</span><span class="lb">Pick 3D &amp; Schedules<small>2 views · 5 schedules</small></span></div>
-        <div class="grouphdr">OUTPUT</div>
-        <div class="navrow"><span class="ic mdl2">&#xE7C3;</span><span class="lb">Formats</span></div>
-        <div class="navrow"><span class="ic mdl2">&#xE81C;</span><span class="lb">Issue History<small>12 records</small></span></div>
-        <div class="navrow"><span class="ic mdl2">&#xE8FF;</span><span class="lb">PDF Preview</span></div>
-        <div class="grouphdr">&nbsp;</div>
-        <div class="navrow"><span class="ic mdl2">&#xE713;</span><span class="lb">Settings &amp; Profiles</span></div>
-      </div>
-      <div class="railfoot">profiles v2 · <span style="color:var(--accent)">profile_IcZ.json</span></div>
-    </div>
-    <div class="content">
-      <div class="pagehead"><h1>Transmit Center <span class="tag">one transmittal · every format</span></h1>
-        <div class="profsel">Profile <div class="combo">IcZ — Weekly Issue</div></div></div>
+    <div class="stage">
 
-      <div class="steps">
+      <!-- STEP 1 · DESTINATION (page_dashboard: folder + profile + format tiles) -->
+      <div class="step-body" id="s_dest">
+        <div><h2 class="pg">Destination <span class="acc">&amp; formats</span></h2>
+          <div class="sub">Where the package goes, and which file types this issue includes. The cockpit on the right keeps the running total as you tick.</div></div>
         <div class="card">
-          <h2><span class="mdl2">&#xE8B7;</span> Step 1 · Where the files go</h2>
-          <div class="dest"><div class="path">D:\Issues\2026-07-21_WeeklyIssue\</div><div class="browse"><span class="mdl2">&#xE838;</span> Browse</div></div>
-          <label class="chk"><input type="checkbox" checked> Split output into per-format subfolders (DWG\ PDF\ NWC\ …)</label>
-          <label class="chk"><input type="checkbox" checked> Suppress Revit warnings mid-batch (failures preprocessor)</label>
-        </div>
-        <div class="card">
-          <h2><span class="mdl2">&#xE8AC;</span> Filename builder <span class="sub" style="font-weight:400">token-based · live preview</span></h2>
-          <div class="namebuild">
-            <span class="token">{proj}</span><span class="token">{sheet}</span><span class="token">{rev}</span><span class="token">{date}</span>
-            <span class="sub" style="margin-left:4px">drag to reorder · separator "_"</span>
+          <div class="fldrow">
+            <input class="inp" value="C:\Issues\2026-07-21 - FOR CONSTRUCTION" readonly>
+            <button class="ghostbtn" onclick="alert('BrowseFolder')"><span class="g">&#xE838;</span> Browse&hellip;</button>
           </div>
-          <div class="namesample">→ <b>STP_P-401_C02_2026-07-21.pdf</b></div>
+          <div class="toolrow" style="margin-top:10px">
+            <span class="sub">Profile</span>
+            <select style="min-width:220px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:6px"><option>ISO - FOR CONSTRUCTION</option><option>Client A standard</option></select>
+            <button class="ghostbtn" onclick="alert('ProfileSaveAs')">Save As…</button>
+          </div>
+          <div class="xn" style="margin-top:8px">path_tb · BrowseFolder · profile_cb / ProfileChanged · ProfileSaveAs</div>
+        </div>
+        <div class="card">
+          <h3><span class="hg">&#xE9E9;</span> What to issue</h3>
+          <div class="tiles">
+            <div class="ftile on" onclick="ftile(this,'dwg')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE7C3;</span><span class="fl">CAD / DWG</span></div>
+            <div class="ftile on" onclick="ftile(this,'pdf')"><span class="fchk">&#xE73E;</span><span class="fg">&#xEA90;</span><span class="fl">PDF</span></div>
+            <div class="ftile" onclick="ftile(this,'nwc')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE81E;</span><span class="fl">NWC</span></div>
+            <div class="ftile" onclick="ftile(this,'img')"><span class="fchk">&#xE73E;</span><span class="fg">&#xEB9F;</span><span class="fl">Images</span></div>
+            <div class="ftile" onclick="ftile(this,'ifc')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE9F9;</span><span class="fl">IFC</span></div>
+            <div class="ftile on" onclick="ftile(this,'xls')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE8FD;</span><span class="fl">Schedules</span></div>
+            <div class="ftile on" onclick="ftile(this,'dr')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE71D;</span><span class="fl">Sheet Index</span></div>
+          </div>
+          <div class="xn" style="margin-top:9px">run_dwg · run_pdf · run_nwc · run_img · run_ifc · run_xls · run_dr &nbsp;|&nbsp; CheckAll / UncheckAll</div>
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:12px">
-        <h2><span class="mdl2">&#xE7C3;</span> Step 2 · Tick the formats <span class="sub" style="font-weight:400">each with its own options page</span></h2>
-        <div class="fmtgrid" id="fmts">
-          <div class="fmt on" data-f="DWG"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE7B3;</div><div class="fn">DWG</div><div class="fs">logos + OLE schedules</div></div>
-          <div class="fmt on" data-f="PDF"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE8A5;</div><div class="fn">PDF</div><div class="fs">vector · per-sheet</div></div>
-          <div class="fmt on" data-f="NWC"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE879;</div><div class="fn">NWC</div><div class="fs">preflight · no open tx</div></div>
-          <div class="fmt" data-f="IFC"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE81E;</div><div class="fn">IFC</div><div class="fs">2x3 CV2.0</div></div>
-          <div class="fmt" data-f="IMG"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xEB9F;</div><div class="fn">Images</div><div class="fs">PNG / JPEG / TIFF</div></div>
-          <div class="fmt on" data-f="XLSX"><span class="tick mdl2">&#xE73E;</span><div class="fic mdl2">&#xE9F9;</div><div class="fn">Excel</div><div class="fs">xlsxlite · no COM</div></div>
+      <!-- STEP 2 · CONTENTS (page_dwgpdf + page_nwc + page_schedules) -->
+      <div class="step-body" id="s_contents">
+        <div><h2 class="pg">Package <span class="acc">Contents</span></h2>
+          <div class="sub">Exactly which drawings, models and schedules are included — three old nav pages in one segmented view.</div></div>
+        <div class="toolrow">
+          <div class="seg">
+            <button class="sel" onclick="seg(this,'draw')"><span class="g">&#xE7C3;</span> Drawings <span style="opacity:.7">18</span></button>
+            <button onclick="seg(this,'models')"><span class="g">&#xE81E;</span> 3D Models <span style="opacity:.7">4</span></button>
+            <button onclick="seg(this,'sched')"><span class="g">&#xE8FD;</span> Schedules <span style="opacity:.7">6</span></button>
+          </div>
+          <div class="grow"></div><input class="search" placeholder="Search…">
         </div>
-        <div class="sub">A Drawing Register / Sheet Index is appended to every run. Excel export needs no Excel install — schedules write through the pure-Python OOXML writer and protect values like Ø, 100×200 and DN.</div>
+        <div class="card" id="seg_draw">
+          <div class="toolrow" style="margin-bottom:8px">
+            <span class="cklab"><span class="chk" onclick="tog(this)"></span> Sheets</span>
+            <span class="cklab"><span class="chk off" onclick="tog(this)"></span> Views</span>
+            <div class="xn" style="margin-left:auto">view_list · filter_sheets / filter_views · search_dwg · UpdateFilter</div>
+          </div>
+          <table><thead><tr><th style="width:34px"></th><th style="width:80px">No.</th><th>Name</th><th style="width:260px">Output Filename</th></tr></thead>
+            <tbody>
+              <tr><td><span class="chk" onclick="tog(this)"></span></td><td class="mono">A-101</td><td>Ground Floor Plan</td><td><input class="cell" value="A-101 - Ground Floor Plan"></td></tr>
+              <tr><td><span class="chk" onclick="tog(this)"></span></td><td class="mono">A-102</td><td>First Floor Plan</td><td><input class="cell" value="A-102 - First Floor Plan"></td></tr>
+              <tr><td><span class="chk off" onclick="tog(this)"></span></td><td class="mono">A-301</td><td>Section A-A</td><td><input class="cell" value="A-301 - Section A-A"></td></tr>
+            </tbody></table>
+        </div>
+        <div class="card" id="seg_models" style="display:none">
+          <div class="xn" style="margin-bottom:8px">nwc_list · search_nwc · UpdateFilterNwc</div>
+          <table><thead><tr><th style="width:34px"></th><th>3D View Name</th><th style="width:280px">Output Filename</th></tr></thead>
+            <tbody><tr><td><span class="chk" onclick="tog(this)"></span></td><td>Navisworks - Coordination</td><td><input class="cell" value="SNT-COORD"></td></tr></tbody></table>
+        </div>
+        <div class="card" id="seg_sched" style="display:none">
+          <div class="xn" style="margin-bottom:8px">sched_list · search_sched · UpdateFilterSched</div>
+          <table><thead><tr><th style="width:34px"></th><th>Schedule Name</th><th style="width:280px">Output Filename</th></tr></thead>
+            <tbody><tr><td><span class="chk" onclick="tog(this)"></span></td><td>Door Schedule</td><td><input class="cell" value="Door Schedule"></td></tr></tbody></table>
+        </div>
       </div>
 
-      <div class="midgrid">
-        <div class="card">
-          <h2><span class="mdl2">&#xE9D5;</span> Run log <span class="sub" style="font-weight:400" id="runstate">idle — press Transmit Now</span></h2>
-          <div class="log" id="log"><span class="sub">// results stream here during the batch — no popups, no stalls</span></div>
+      <!-- STEP 3 · FORMATS (settings blocks) — horizontal sub-tab chips -->
+      <div class="step-body" id="s_formats">
+        <div><h2 class="pg">Format <span class="acc">Options</span></h2>
+          <div class="sub">Per-format output settings — the old settings scroll, chip-navigated. Saved into the active profile.</div></div>
+        <div class="chips">
+          <div class="chip2 sel" onclick="fpane(this,'cad')"><span class="g">&#xE7C3;</span> CAD / DWG</div>
+          <div class="chip2" onclick="fpane(this,'pdf')"><span class="g">&#xEA90;</span> PDF</div>
+          <div class="chip2" onclick="fpane(this,'nwc')"><span class="g">&#xE81E;</span> NWC</div>
+          <div class="chip2" onclick="fpane(this,'ifc')"><span class="g">&#xE9F9;</span> IFC</div>
+          <div class="chip2" onclick="fpane(this,'img')"><span class="g">&#xEB9F;</span> Image</div>
+          <div class="chip2" onclick="fpane(this,'idx')"><span class="g">&#xE71D;</span> Sheet Index</div>
+          <div class="chip2" onclick="fpane(this,'name')"><span class="g">&#xE8AC;</span> Naming</div>
         </div>
-        <div class="card">
-          <h2><span class="mdl2">&#xE8A1;</span> Queue</h2>
-          <div class="qrow"><span class="qi mdl2">&#xE8A5;</span><span>Sheets — P-401 … P-424</span><span class="qc">24</span><span class="pill idle" id="q-sheets">queued</span></div>
-          <div class="qrow"><span class="qi mdl2">&#xE879;</span><span>3D views for NWC</span><span class="qc">2</span><span class="pill idle" id="q-nwc">queued</span></div>
-          <div class="qrow"><span class="qi mdl2">&#xE9F9;</span><span>Schedules → XLSX</span><span class="qc">5</span><span class="pill idle" id="q-xlsx">queued</span></div>
-          <div class="qrow"><span class="qi mdl2">&#xE8AC;</span><span>Drawing Register</span><span class="qc">1</span><span class="pill idle" id="q-reg">queued</span></div>
-          <div class="sub" style="margin-top:8px">Performance summary (count · elapsed · warn · error per format) lands in Issue History when the run completes.</div>
+
+        <!-- CAD/DWG pane — B47 -->
+        <div class="fpane on" id="fp_cad">
+          <div class="card"><h3><span class="hg">&#xE7C3;</span> DWG export</h3>
+            <div class="fld"><span class="lb">Layer standard</span><select><option>IcZ - ISO Layers</option><option>DWG Default</option></select></div>
+            <label class="cklab"><span class="chk" onclick="tog(this)"></span> Crisp logos (embed images as OLE)</label>
+            <label class="cklab"><span class="chk off" onclick="tog(this)"></span> Merge views on sheets</label>
+            <label class="cklab"><span class="chk" onclick="tog(this)"></span> Schedules / Excel / Legend tables</label>
+            <div class="xn" style="margin-top:8px">setup_cb · embed_ole · dwg_merged_views · sched_ole · sched_ole_excel · legend_ole</div></div>
+          <div class="card"><h3><span class="hg">&#xE790;</span> Logo Embedding <span class="np">NEW · B47</span></h3>
+            <div class="gatebar"><span class="g">&#xE946;</span> Applies when <b>&nbsp;Crisp logos&nbsp;</b> is on. Cleans the title-block logo raster before the OLE/EMF paste.</div>
+            <div style="height:4px"></div>
+            <div class="row" id="row_clean"><span class="chk off" onclick="tog(this);syncPrev()"></span>
+              <div class="meta"><div class="lab">Clean logos — key out the white box</div>
+                <div class="dsc">Adaptive Otsu paper detection → hard key → despeckle → defringe against the measured paper colour, via the shared <span class="mono">IcZ.Reader.ImageCleanup</span> (same code as the PDF signature import). Original extents preserved; coloured fills stay opaque.</div>
+                <div class="xn">ole_clean_logos → dwg.ole_clean_logos → _ole_clean_logo_rasters → reader.clean_image(mode="logo") → ImageCleanup.CleanLogoFile</div></div></div>
+            <div class="row" id="row_bg"><span class="chk off" onclick="tog(this);syncPrev()"></span>
+              <div class="meta"><div class="lab">Transparent background (remove white)</div>
+                <div class="dsc">Emit a transparent EMF so keyed pixels stay clear in the OLE frame. Pairs with Clean logos; off = a white matte (guaranteed-pristine path).</div>
+                <div class="xn">ole_transparent_bg → dwg.ole_remove_background → white_background flag in _run_ole_batch</div></div></div>
+            <div class="prevwrap">
+              <div class="prevcell"><div class="cap">BEFORE</div><div class="cadbg"><div class="logobox"><span class="logo-t">Ic<span class="y">Z</span></span></div></div></div>
+              <div class="prevarrow">&#xE72A;</div>
+              <div class="prevcell"><div class="cap" id="prevcap">AFTER — not cleaned</div><div class="cadbg"><div class="logobox" id="prevbox"><span class="logo-t">Ic<span class="y">Z</span></span></div></div></div>
+            </div></div>
+          <div class="card"><h3><span class="hg">&#xE895;</span> Block-swap rules <span class="np">NEW · B47</span></h3>
+            <div class="sub" style="margin-bottom:2px">Guaranteed-pristine vector path: replace a matched title-block image with a real AutoCAD block from a <span class="mono">.dwg</span>.</div>
+            <table><thead><tr><th style="width:24%">Match</th><th style="width:42%">Block DWG file</th><th style="width:26%">Block name</th><th style="width:8%"></th></tr></thead>
+              <tbody id="swaps">
+                <tr><td><input class="cell" value="*logo*.png"></td><td style="display:flex;gap:6px"><input class="cell" value="C:\Standards\Blocks\TitleLogo.dwg"><button class="browse" onclick="alert('.dwg picker')">&hellip;</button></td><td><input class="cell" value="TITLE_LOGO"></td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
+              </tbody></table>
+            <div class="editbar"><button class="ghostbtn" onclick="addSwap()"><span class="g">&#xE710;</span> Add rule</button>
+              <span class="xn">ole_swaps_grid · btn_swap_add → dwg.ole_block_swaps = [{match, block_dwg_path, block_name}]</span></div></div>
         </div>
+
+        <div class="fpane" id="fp_pdf">
+          <div class="card"><h3><span class="hg">&#xEA90;</span> PDF export</h3>
+            <div class="grid2"><div>
+              <label class="cklab"><span class="chk" onclick="tog(this)"></span> Combine into single PDF</label>
+              <div class="fld"><span class="lb">Combined name</span><input value="{project}_{date}"></div>
+              <label class="cklab"><span class="chk off" onclick="tog(this)"></span> Hide scope boxes / crop / view tags</label>
+              <label class="cklab"><span class="chk off" onclick="tog(this)"></span> Mask coincident lines · Stop on error</label>
+            </div><div>
+              <div class="fld"><span class="lb">Raster quality</span><select><option>High</option><option>Presentation</option></select></div>
+              <div class="fld"><span class="lb">Color depth</span><select><option>Color</option><option>Grayscale</option></select></div>
+              <div class="fld"><span class="lb">Paper format</span><select><option>Default</option><option>ISO_A1</option></select></div>
+            </div></div>
+            <div class="xn" style="margin-top:8px">pdf_combine · pdf_combined_name · pdf_hide_* · pdf_raster_quality · pdf_color_depth · pdf_paper_format · pdf_paper_orientation</div></div>
+          <div class="card"><h3><span class="hg">&#xE7C4;</span> PDF Issue Stamp <span class="np">B41</span></h3>
+            <div class="grid2"><div>
+              <label class="cklab"><span class="chk" onclick="tog(this)"></span> Stamp exported PDFs</label>
+              <div class="fld"><span class="lb">Preset</span><select><option>FOR CONSTRUCTION</option><option>Custom</option></select></div>
+              <div class="fld"><span class="lb">Text</span><input value="FOR CONSTRUCTION {date}"></div>
+            </div><div>
+              <div class="fld"><span class="lb">Position</span><select><option>Diagonal</option><option>Bottom Right</option></select></div>
+              <div class="fld"><span class="lb">Color</span><input value="#C00000" style="min-width:90px"></div>
+            </div></div>
+            <div class="xn" style="margin-top:8px">pdf_stamp_enabled · pdf_stamp_preset · pdf_stamp_text · pdf_stamp_position/size/color/opacity/pages</div></div>
+        </div>
+        <div class="fpane" id="fp_nwc"><div class="card"><h3><span class="hg">&#xE81E;</span> Navisworks (NWC)</h3>
+          <div class="grid2"><div>
+            <label class="cklab"><span class="chk" onclick="tog(this)"></span> Convert construction parts</label>
+            <label class="cklab"><span class="chk off" onclick="tog(this)"></span> Element IDs / properties</label>
+            <label class="cklab"><span class="chk" onclick="tog(this)"></span> Convert linked files</label>
+          </div><div>
+            <div class="fld"><span class="lb">Parameters</span><select><option>All</option><option>None</option></select></div>
+            <div class="fld"><span class="lb">Coordinates</span><select><option>Shared</option></select></div>
+            <div class="fld"><span class="lb">Config XML</span><button class="browse" onclick="alert('BrowseNwcXml')">Browse XML…</button></div>
+          </div></div>
+          <div class="xn" style="margin-top:8px">nwc_construction_parts · nwc_element_ids/props · nwc_linked_files · nwc_element_params · nwc_coordinates · nwc_faceting_factor · nwc_xml_tb</div></div></div>
+        <div class="fpane" id="fp_ifc"><div class="card"><h3><span class="hg">&#xE9F9;</span> IFC (Open BIM)</h3>
+          <div class="grid2"><div>
+            <div class="fld"><span class="lb">IFC version</span><select><option>IFC2x3CV2</option><option>IFC4</option></select></div>
+            <label class="cklab"><span class="chk off" onclick="tog(this)"></span> Wall / column splitting</label>
+          </div><div>
+            <label class="cklab"><span class="chk" onclick="tog(this)"></span> IFC common property sets</label>
+            <div class="fld"><span class="lb">Phase</span><input placeholder="(current)"></div>
+          </div></div>
+          <div class="xn" style="margin-top:8px">ifc_version · ifc_space_boundary_level · ifc_wall_column_split · ifc_export_ifc_common_property_sets · ifc_store_ifc_guid · ifc_phase</div></div></div>
+        <div class="fpane" id="fp_img"><div class="card"><h3><span class="hg">&#xEB9F;</span> Image (PNG / JPEG)</h3>
+          <div class="grid2"><div>
+            <div class="fld"><span class="lb">Format</span><select><option>PNG</option><option>JPEG</option></select></div>
+            <div class="fld"><span class="lb">Resolution (DPI)</span><select><option>300</option><option>600</option></select></div>
+          </div><div>
+            <div class="fld"><span class="lb">Pixel size</span><input value="2000" style="min-width:80px"></div>
+          </div></div>
+          <div class="xn" style="margin-top:8px">img_format · img_zoom_type · img_fit_direction · img_resolution · img_pixel_size · img_zoom_pct</div></div></div>
+        <div class="fpane" id="fp_idx"><div class="card"><h3><span class="hg">&#xE71D;</span> Sheet Index (Drawing Register)</h3>
+          <div class="fld"><span class="lb">Excel file name</span><input value="Drawing Register" style="min-width:200px"></div>
+          <div class="fld"><span class="lb">Sort rows by</span><input value="Sheet Number" style="min-width:200px"></div>
+          <table style="margin-top:8px"><thead><tr><th>Heading (Excel)</th><th>Revit parameter</th><th style="width:8%"></th></tr></thead>
+            <tbody>
+              <tr><td><input class="cell" value="Number"></td><td><input class="cell" value="Sheet Number"></td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
+              <tr><td><input class="cell" value="Size"></td><td><input class="cell" value="%sheetsize%"></td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
+            </tbody></table>
+          <div class="editbar"><button class="ghostbtn" onclick="alert('AddDrColumn')"><span class="g">&#xE710;</span> Add column</button>
+            <label class="cklab"><span class="chk" onclick="tog(this)"></span> Revision history columns</label>
+            <span class="xn">dr_filename · dr_sort_by · dr_cols_list · dr_expand_revs · dr_rev_cell / dr_rev_prefix</span></div></div></div>
+        <div class="fpane" id="fp_name"><div class="card"><h3><span class="hg">&#xE8AC;</span> Naming &amp; Filename Builder</h3>
+          <div class="fld"><span class="lb">Default for all exports</span><select style="min-width:220px"><option>View / Schedule name</option><option>Filename Builder tokens</option></select></div>
+          <table style="margin-top:8px"><thead><tr><th>Token</th><th>Sep</th><th style="width:8%"></th></tr></thead>
+            <tbody>
+              <tr><td class="mono">Sheet Number</td><td>-</td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
+              <tr><td class="mono">Sheet Name</td><td> </td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
+            </tbody></table>
+          <div class="fld" style="margin-top:6px"><span class="lb">Preview</span><span style="font-style:italic;color:var(--text-2)">A-101 - Ground Floor Plan.pdf</span></div>
+          <div class="xn" style="margin-top:6px">naming_mode / NamingChanged · naming_fmt_* · filename_list · filename_new_* · AddFilenameToken/RemoveFilenameToken · filename_policy/preview</div></div></div>
       </div>
+
+      <!-- STEP 4 · ISSUE (page_results) -->
+      <div class="step-body on" id="s_issue">
+        <div class="toolrow"><h2 class="pg">Issue <span class="acc">&amp; log</span></h2>
+          <button class="ghostbtn" style="margin-left:auto" onclick="alert('Results_Clear')">Clear Log</button></div>
+        <div class="sub">Press <b>Transmit Now</b> in the cockpit. Progress streams here; each finished folder/file is a clickable link, and the run is recorded to Issue History.</div>
+        <div class="logbox">
+          <div>[10:14:02] Transmit started — profile "ISO - FOR CONSTRUCTION"</div>
+          <div>[10:14:03] Destination: <span class="lnk">C:\Issues\2026-07-21 - FOR CONSTRUCTION</span></div>
+          <div class="ok">[10:14:12] PDF ✓ 18 sheets → combined Snowdon Towers_260721.pdf</div>
+          <div>[10:14:20] OLE: background-keyed 2 raster(s) before embed (dwg.ole_clean_logos)</div>
+          <div class="ok">[10:14:48] DWG ✓ 18 sheets · logos embedded (transparent)</div>
+          <div class="ok">[10:15:02] Schedules ✓ 6 → <span class="lnk">\XLSX</span></div>
+          <div class="wn">[10:15:03] NWC skipped — no 3D views ticked</div>
+          <div class="ok">[10:15:19] Sheet Index ✓ Drawing Register.xlsx (18 rows)</div>
+          <div>[10:15:19] Done — 42 files, 0 errors, 1:17 elapsed.</div>
+        </div>
+        <div class="xn">txt_results (RichTextBox, clickable links) · Results_Clear</div>
+      </div>
+
+      <!-- SECONDARY · PDF PREVIEW -->
+      <div class="step-body" id="s_preview">
+        <div class="toolrow"><h2 class="pg">PDF <span class="acc">Preview</span></h2>
+          <button class="ghostbtn" style="margin-left:auto" onclick="alert('PreviewSelectedSheet')">Preview Sheet</button>
+          <button class="ghostbtn" onclick="alert('PreviewBrowsePdf')">Open PDF…</button></div>
+        <div class="pdfhost"><span class="pg">&#xEA90;</span> Inline IcZ.PdfView host — render the first ticked drawing before issuing</div>
+        <div class="xn">pdf_host (icz.pdfview) · PreviewSelectedSheet · PreviewBrowsePdf · lbl_pdfview_path</div>
+      </div>
+      <!-- SECONDARY · ISSUE HISTORY -->
+      <div class="step-body" id="s_history">
+        <div class="toolrow"><h2 class="pg">Issue <span class="acc">History</span></h2>
+          <span class="sub" style="margin-left:6px">Transmittal Register</span>
+          <button class="ghostbtn" style="margin-left:auto" onclick="alert('HistoryExportSheet')">Transmittal Sheet…</button>
+          <button class="ghostbtn" onclick="alert('HistoryClear')">Clear</button></div>
+        <div class="card" style="padding:0"><table><thead><tr><th>Issued</th><th>Project</th><th>Profile</th><th>Formats</th><th>Sheets</th><th>Err</th><th>Elapsed</th></tr></thead>
+          <tbody>
+            <tr onclick="selHist(this)"><td>2026-07-21 10:15</td><td>Snowdon Towers</td><td>FOR CONSTRUCTION</td><td>PDF, DWG, XLSX</td><td>18</td><td><span class="pill pass">0</span></td><td>1:17</td></tr>
+            <tr onclick="selHist(this)"><td>2026-07-18 16:40</td><td>Snowdon Towers</td><td>PRELIMINARY</td><td>PDF</td><td>12</td><td><span class="pill warn">2</span></td><td>0:41</td></tr>
+          </tbody></table></div>
+        <div class="xn">history_list / HistoryRowSelected · history_detail · HistoryExportSheet · HistoryClear · lbl_history_count</div>
+      </div>
+      <!-- SECONDARY · MACHINE & PROFILE -->
+      <div class="step-body" id="s_machine">
+        <div><h2 class="pg">Machine &amp; <span class="acc">Profile</span></h2>
+          <div class="sub">Per-computer settings, kept out of the shared profile so they never dirty the snapshot.</div></div>
+        <div class="card"><h3><span class="hg">&#xE713;</span> This computer</h3>
+          <div class="fld"><span class="lb">AutoCAD for OLE embed</span><select style="min-width:180px"><option>Auto (newest)</option><option>2025</option><option>2026</option></select></div>
+          <label class="cklab"><span class="chk" onclick="tog(this)"></span> Create per-format subfolders (PDF/, DWG/, NWC/, XLSX/)</label>
+          <div class="xn" style="margin-top:8px">acad_ver_cb / AcadVerChanged (machine-level _LOCAL_CFG) · chk_split_folder</div></div>
+      </div>
+
+    </div>
+
+    <!-- PERSISTENT ISSUE COCKPIT -->
+    <div class="cockpit" id="cockpit">
+      <h3><span class="hg">&#xE9D9;</span> THIS ISSUE</h3>
+      <div class="srow"><span class="sg">&#xE7C3;</span> Drawings <span class="sv" id="s_dwgn">18</span></div>
+      <div class="srow"><span class="sg">&#xE81E;</span> 3D models <span class="sv muted" id="s_nwcn">0</span></div>
+      <div class="srow"><span class="sg">&#xE8FD;</span> Schedules <span class="sv" id="s_xlsn">6</span></div>
+      <div class="srow"><span class="sg">&#xE9E9;</span> Formats <span class="sv" id="s_fmt">5</span></div>
+      <div class="srow"><span class="sg">&#xE71D;</span> Sheet index <span class="sv">Yes</span></div>
+      <div class="srow"><span class="sg">&#xE898;</span> Est. files <span class="sv" id="s_files">42</span></div>
+      <button class="runbtn" onclick="alert('RunMasterExport()')"><span class="g">&#xE724;</span> Transmit Now</button>
+      <div class="actrow">
+        <button class="ghostbtn" onclick="allTiles(true)">Check all</button>
+        <button class="ghostbtn" onclick="allTiles(false)">Uncheck all</button>
+      </div>
+      <div class="cfoot">Destination set · profile "ISO - FOR CONSTRUCTION". The cockpit stays visible on every step so the whole issue — and Transmit Now — is always one glance away.<div class="xn" style="margin-top:6px">RunMasterExport · CheckAll · UncheckAll</div></div>
     </div>
   </div>
+
+  <!-- FOOTER — sole IcZ hallmark + standardized model-state chip + section label -->
   <div class="footer">
-    <div class="hall"><span class="mdl2 i">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></div>
-    <div class="fsep"></div>
-    <div class="fdot"></div>
-    <div class="fstatus" id="fstatus">Profile "IcZ — Weekly Issue" loaded · 24 sheets · 4 formats ticked</div>
-    <button class="ghost"><span class="mdl2">&#xE8FF;</span> PDF PREVIEW</button>
-    <button class="commit" id="runbtn"><span class="mdl2">&#xE898;</span> TRANSMIT NOW</button>
+    <span class="hallmark"><span class="hg">&#xE8FD;</span><b>IcZ</b><span>Workspace</span></span>
+    <span class="sep"></span>
+    <span class="statedot"></span>
+    <span id="foot_model">Model loaded &#183; workshared</span>
+    <span class="fright"><span id="foot_page">Issue</span></span>
   </div>
 </div>
+
+<!-- WIRING MAP -->
+<div class="map">
+  <h4>&#128279; Wiring map — stepper + cockpit shell; every real x:Name &amp; handler preserved (controls move surface, not identity); B47 = tagged NEW</h4>
+  <table>
+    <thead><tr><th>Surface (old source)</th><th>Real controls (x:Name)</th><th>Handlers</th></tr></thead>
+    <tbody>
+      <tr><td><b>Step 1 · Destination</b> (page_dashboard + profile bar)</td><td>path_tb, run_dwg/pdf/nwc/img/ifc/xls/dr, profile_cb</td><td>BrowseFolder, CheckAll, UncheckAll, ProfileChanged, ProfileSaveAs</td></tr>
+      <tr><td><b>Step 2 · Contents</b> (page_dwgpdf + page_nwc + page_schedules)</td><td>view_list, filter_sheets/views, search_dwg · nwc_list, search_nwc · sched_list, search_sched</td><td>UpdateFilter, UpdateFilterNwc, UpdateFilterSched</td></tr>
+      <tr><td><b>Step 3 · Formats</b> chips (settings PDF/DWG/NWC/IFC/IMG/Register/Naming)</td><td>setup_cb, embed_ole, dwg_merged_views, sched_ole(_excel), legend_ole · pdf_* · nwc_* · ifc_* · img_* · dr_* · naming_mode, naming_fmt_*, filename_*</td><td>PdfStampPreset_Changed, AddDrColumn/RemoveDrColumn, NamingChanged, Add/RemoveFilenameToken</td></tr>
+      <tr><td style="color:#dfeef4"><b>Formats › CAD/DWG — B47 NEW</b></td><td><code>ole_clean_logos</code>, <code>ole_transparent_bg</code>, <code>ole_swaps_grid</code> + <code>btn_swap_add</code>/row browse/del</td><td><code>OleSwap_Add/_Del/_Browse</code> (NEW) + <code>_collect_block_swaps</code></td></tr>
+      <tr><td><b>Step 4 · Issue</b> (page_results)</td><td>txt_results</td><td>RunMasterExport, Results_Clear</td></tr>
+      <tr><td><b>Cockpit</b> (persistent — new surface, existing state)</td><td>run_* mirror, live counts</td><td>RunMasterExport, CheckAll, UncheckAll</td></tr>
+      <tr><td><b>Top-right secondary</b> (page_pdfview · page_history · settings machine bits)</td><td>pdf_host, lbl_pdfview_path · history_list, history_detail, lbl_history_count · acad_ver_cb, chk_split_folder</td><td>PreviewSelectedSheet/BrowsePdf · HistoryRowSelected/ExportSheet/Clear · AcadVerChanged</td></tr>
+    </tbody>
+  </table>
+  <div class="flow"><b style="color:#dfeef4">Unique identity (your directive):</b> NO left rail (that shell is shared by AA/RO1/FIT/PSU). Transmit is a linear pipeline, so it uses a <b>top workflow stepper</b> (Destination→Contents→Formats→Issue) + a <b>persistent issue cockpit</b> (whole transmittal + Transmit Now always visible) + <b>horizontal Formats chips</b> (not a sub-rail). Header = tool name only (no IcZ). Global CM2 tokens per theme patching guidline.md. New codifiable patterns on land: <b>workflow stepper header</b> + <b>persistent cockpit dock</b>.</div>
+  <div class="flow"><b style="color:#dfeef4">Standardized footer:</b> sole IcZ hallmark · divider · model-state chip <code>[dot] foot_model</code> = "Model loaded · workshared/single-user" (<code>ActiveUIDocument.Document.IsWorkshared</code>) · right <code>foot_page</code> = active step/section, set on step change (boilerplate XAML + code-behind land verbatim per directive).</div>
+  <div class="flow"><b style="color:#dfeef4">B47 already built:</b> <code>ImageCleanup.CleanLogoFile</code> → <code>reader.clean_image(mode="logo")</code> → <code>_ole_clean_logo_rasters</code> (L2522), gated by <code>dwg.ole_clean_logos</code>. This round adds only the UI + block-swap handlers; load/save mirror <code>embed_ole</code> (L404 / L1073). No new C#, no .bat change.</div>
+</div>
+
+<div class="note">Values illustrative (Snowdon Towers sample). Interactive: stepper + top-right secondary tabs switch the stage, cockpit stays docked, format chips, segmented Contents, theme toggle, format tiles → live cockpit recount, B47 before/after preview + rules editor. Glyphs use Segoe MDL2 Assets with verified codepoints. On land: STAGED full-file rebuild of ui.xaml + script.py (assert-guarded transform → static suite: XML ET.parse, py AST, handler reconcile, all x:Names resolve, EOL preserved ui LF / script CRLF, 0 dup defs, config round-trip) → swap wholesale → sha compare → Read/Grep re-verify.</div>
+
 <script>
-document.getElementById('themebtn').onclick=function(){document.body.classList.toggle('dark');document.body.classList.toggle('light');};
-document.querySelectorAll('.fmt').forEach(function(f){ f.onclick=function(){ f.classList.toggle('on'); count(); }; });
-function count(){ var n=document.querySelectorAll('.fmt.on').length;
-  document.getElementById('fstatus').textContent='Profile "IcZ — Weekly Issue" loaded · 24 sheets · '+n+' formats ticked'; }
-var running=false;
-document.getElementById('runbtn').onclick=function(){
-  if(running) return; running=true;
-  var log=document.getElementById('log'); log.innerHTML='';
-  var fmts=[].map.call(document.querySelectorAll('.fmt.on'),function(f){return f.dataset.f;});
-  var lines=[['ac','[00.0s] Transmit run started — profile "IcZ — Weekly Issue", '+fmts.length+' format(s): '+fmts.join(' · ')]];
-  if(fmts.indexOf('DWG')>=0){ lines.push(['ok','[04.1s] DWG    24/24 sheets — logos embedded, 3 schedule OLE frames placed']); }
-  if(fmts.indexOf('PDF')>=0){ lines.push(['ok','[11.8s] PDF    24/24 sheets — vector, per-sheet files']); }
-  if(fmts.indexOf('NWC')>=0){ lines.push(['ok','[15.2s] NWC    2/2 views — preflight passed, exported with no open transaction']); }
-  if(fmts.indexOf('IFC')>=0){ lines.push(['ok','[21.6s] IFC    1/1 model — IFC2x3 CV2.0']); }
-  if(fmts.indexOf('IMG')>=0){ lines.push(['ok','[23.9s] IMG    24/24 sheets — PNG 300dpi']); }
-  if(fmts.indexOf('XLSX')>=0){ lines.push(['wn','[25.0s] XLSX   5/5 schedules — 1 warning: merged header normalized (xlsxlite)']); }
-  lines.push(['ok','[26.4s] Register — Drawing Register / Sheet Index written']);
-  lines.push(['ac','[26.5s] Done. '+(lines.length-1)+' step(s) · 0 errors · summary logged to Issue History.']);
-  var pills={DWG:'q-sheets',PDF:'q-sheets',NWC:'q-nwc',XLSX:'q-xlsx'};
-  document.getElementById('runstate').textContent='running…';
-  var i=0;(function tick(){
-    if(i<lines.length){ log.innerHTML+='<div class="'+lines[i][0]+'">'+lines[i][1]+'</div>'; log.scrollTop=log.scrollHeight; i++; setTimeout(tick,420); }
-    else{ running=false; document.getElementById('runstate').textContent='finished — 0 errors';
-      ['q-sheets','q-nwc','q-xlsx','q-reg'].forEach(function(id){var p=document.getElementById(id);p.className='pill pass';p.textContent='done';}); }
-  })();
-};
+  var steps=['dest','contents','formats','issue'];
+  var footlabel={dest:'Destination',contents:'Contents',formats:'Formats',issue:'Issue',preview:'PDF Preview',history:'Issue History',machine:'Machine & Profile'};
+  function showStage(id){document.querySelectorAll('.step-body').forEach(function(p){p.classList.remove('on')});document.getElementById('s_'+id).classList.add('on');
+    document.getElementById('foot_page').textContent=footlabel[id]||'';
+    // cockpit hides on non-pipeline secondary surfaces
+    var sec=(id=='preview'||id=='history'||id=='machine');
+    document.getElementById('cockpit').classList.toggle('hidefull',sec);
+    document.querySelector('.body').style.gridTemplateColumns=sec?'1fr':'1fr 316px';
+  }
+  function goStep(el){document.querySelectorAll('.stp').forEach(function(s){s.classList.remove('on')});el.classList.add('on');
+    document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('sel')});
+    showStage(el.dataset.s);}
+  function goSec(el,id){document.querySelectorAll('.stp').forEach(function(s){s.classList.remove('on')});
+    document.querySelectorAll('.tbtn').forEach(function(b){b.classList.remove('sel')});el.classList.add('sel');
+    showStage(id);}
+  function tog(el){el.classList.toggle('off')}
+  function seg(el,which){el.parentNode.querySelectorAll('button').forEach(function(b){b.classList.remove('sel')});el.classList.add('sel');
+    document.getElementById('seg_draw').style.display=which=='draw'?'':'none';
+    document.getElementById('seg_models').style.display=which=='models'?'':'none';
+    document.getElementById('seg_sched').style.display=which=='sched'?'':'none';}
+  function fpane(el,which){el.parentNode.querySelectorAll('.chip2').forEach(function(b){b.classList.remove('sel')});el.classList.add('sel');
+    document.querySelectorAll('.fpane').forEach(function(p){p.classList.remove('on')});document.getElementById('fp_'+which).classList.add('on');}
+  var fset={dwg:true,pdf:true,nwc:false,img:false,ifc:false,xls:true,dr:true};
+  function ftile(el,k){el.classList.toggle('on');fset[k]=el.classList.contains('on');recount();}
+  function allTiles(on){document.querySelectorAll('#s_dest .ftile').forEach(function(t){on?t.classList.add('on'):t.classList.remove('on')});for(var k in fset)fset[k]=on;recount();}
+  function recount(){var n=0;['dwg','pdf','nwc','img','ifc','xls'].forEach(function(k){if(fset[k])n++;});
+    document.getElementById('s_fmt').textContent=n;
+    document.getElementById('s_nwcn').textContent=fset.nwc?'4':'0';
+    document.getElementById('s_nwcn').className='sv'+(fset.nwc?'':' muted');
+    var files=(fset.pdf?18:0)+(fset.dwg?18:0)+(fset.xls?6:0)+(fset.nwc?4:0)+(fset.dr?1:0)+(fset.img?18:0)+(fset.ifc?1:0);
+    document.getElementById('s_files').textContent=files;}
+  function addSwap(){var tb=document.getElementById('swaps');var tr=document.createElement('tr');
+    tr.innerHTML='<td><input class="cell" placeholder="*logo*.png"></td><td style="display:flex;gap:6px"><input class="cell" placeholder="path to .dwg"><button class="browse" onclick="alert(\'.dwg picker\')">…</button></td><td><input class="cell" placeholder="BLOCK_NAME"></td><td><button class="rowdel" onclick="this.closest(\'tr\').remove()"></button></td>';
+    tb.appendChild(tr);}
+  function syncPrev(){var clean=!document.querySelector('#row_clean .chk').classList.contains('off');var bg=!document.querySelector('#row_bg .chk').classList.contains('off');
+    var box=document.getElementById('prevbox'),cap=document.getElementById('prevcap');
+    if(clean&&bg){box.classList.add('keyed');box.style.background='';cap.textContent='AFTER — cleaned + transparent';}
+    else if(clean){box.classList.remove('keyed');box.style.background='#e9edf0';cap.textContent='AFTER — cleaned (white matte)';}
+    else{box.classList.remove('keyed');box.style.background='#fff';cap.textContent='AFTER — not cleaned';}}
+  function selHist(tr){document.getElementById('foot_model').textContent='Model loaded · workshared';}
 </script>
 </body>
 </html>
