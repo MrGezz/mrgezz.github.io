@@ -473,27 +473,6 @@
 </div>
 
 <!-- WIRING MAP -->
-<div class="map">
-  <h4>&#128279; Wiring map — stepper + cockpit shell; every real x:Name &amp; handler preserved (controls move surface, not identity); B47 = tagged NEW</h4>
-  <table>
-    <thead><tr><th>Surface (old source)</th><th>Real controls (x:Name)</th><th>Handlers</th></tr></thead>
-    <tbody>
-      <tr><td><b>Step 1 · Destination</b> (page_dashboard + profile bar)</td><td>path_tb, run_dwg/pdf/nwc/img/ifc/xls/dr, profile_cb</td><td>BrowseFolder, CheckAll, UncheckAll, ProfileChanged, ProfileSaveAs</td></tr>
-      <tr><td><b>Step 2 · Contents</b> (page_dwgpdf + page_nwc + page_schedules)</td><td>view_list, filter_sheets/views, search_dwg · nwc_list, search_nwc · sched_list, search_sched</td><td>UpdateFilter, UpdateFilterNwc, UpdateFilterSched</td></tr>
-      <tr><td><b>Step 3 · Formats</b> chips (settings PDF/DWG/NWC/IFC/IMG/Register/Naming)</td><td>setup_cb, embed_ole, dwg_merged_views, sched_ole(_excel), legend_ole · pdf_* · nwc_* · ifc_* · img_* · dr_* · naming_mode, naming_fmt_*, filename_*</td><td>PdfStampPreset_Changed, AddDrColumn/RemoveDrColumn, NamingChanged, Add/RemoveFilenameToken</td></tr>
-      <tr><td style="color:#dfeef4"><b>Formats › CAD/DWG — B47 NEW</b></td><td><code>ole_clean_logos</code>, <code>ole_transparent_bg</code>, <code>ole_swaps_grid</code> + <code>btn_swap_add</code>/row browse/del</td><td><code>OleSwap_Add/_Del/_Browse</code> (NEW) + <code>_collect_block_swaps</code></td></tr>
-      <tr><td><b>Step 4 · Issue</b> (page_results)</td><td>txt_results</td><td>RunMasterExport, Results_Clear</td></tr>
-      <tr><td><b>Cockpit</b> (persistent — new surface, existing state)</td><td>run_* mirror, live counts</td><td>RunMasterExport, CheckAll, UncheckAll</td></tr>
-      <tr><td><b>Top-right secondary</b> (page_pdfview · page_history · settings machine bits)</td><td>pdf_host, lbl_pdfview_path · history_list, history_detail, lbl_history_count · acad_ver_cb, chk_split_folder</td><td>PreviewSelectedSheet/BrowsePdf · HistoryRowSelected/ExportSheet/Clear · AcadVerChanged</td></tr>
-    </tbody>
-  </table>
-  <div class="flow"><b style="color:#dfeef4">Unique identity (your directive):</b> NO left rail (that shell is shared by AA/RO1/FIT/PSU). Transmit is a linear pipeline, so it uses a <b>top workflow stepper</b> (Destination→Contents→Formats→Issue) + a <b>persistent issue cockpit</b> (whole transmittal + Transmit Now always visible) + <b>horizontal Formats chips</b> (not a sub-rail). Header = tool name only (no IcZ). Global CM2 tokens per theme patching guidline.md. New codifiable patterns on land: <b>workflow stepper header</b> + <b>persistent cockpit dock</b>.</div>
-  <div class="flow"><b style="color:#dfeef4">Standardized footer:</b> sole IcZ hallmark · divider · model-state chip <code>[dot] foot_model</code> = "Model loaded · workshared/single-user" (<code>ActiveUIDocument.Document.IsWorkshared</code>) · right <code>foot_page</code> = active step/section, set on step change (boilerplate XAML + code-behind land verbatim per directive).</div>
-  <div class="flow"><b style="color:#dfeef4">B47 already built:</b> <code>ImageCleanup.CleanLogoFile</code> → <code>reader.clean_image(mode="logo")</code> → <code>_ole_clean_logo_rasters</code> (L2522), gated by <code>dwg.ole_clean_logos</code>. This round adds only the UI + block-swap handlers; load/save mirror <code>embed_ole</code> (L404 / L1073). No new C#, no .bat change.</div>
-</div>
-
-<div class="note">Values illustrative (Snowdon Towers sample). Interactive: stepper + top-right secondary tabs switch the stage, cockpit stays docked, format chips, segmented Contents, theme toggle, format tiles → live cockpit recount, B47 before/after preview + rules editor. Glyphs use Segoe MDL2 Assets with verified codepoints. On land: STAGED full-file rebuild of ui.xaml + script.py (assert-guarded transform → static suite: XML ET.parse, py AST, handler reconcile, all x:Names resolve, EOL preserved ui LF / script CRLF, 0 dup defs, config round-trip) → swap wholesale → sha compare → Read/Grep re-verify.</div>
-
 <script>
   var steps=['dest','contents','formats','issue'];
   var footlabel={dest:'Destination',contents:'Contents',formats:'Formats',issue:'Issue',preview:'PDF Preview',history:'Issue History',machine:'Machine & Profile'};

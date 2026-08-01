@@ -261,7 +261,6 @@
           </table>
           </div>
         </div>
-        <div class="callout"><b>Why this belongs in RO1:</b> the tool already resolves each element's atomic BOQ code — the takeoff is just the aggregation the code exists to produce. Length via <code>CURVE_ELEM_LENGTH</code> (pipe/duct/tray), count for fittings/accessories/equipment, area for insulation; feet→metres via <code>icz.units</code>, export via the shared <code>icz.xlsxlite</code> writer (no new dependency, no duplicate). Rows are clickable (suite clickable-ID rule). <b>Proposed — awaiting your green light before implementation.</b></div>
       </div>
 
       <!-- ================= RESULTS ================= -->
@@ -398,26 +397,6 @@ Catalogue: SnowdonTowers\boq_data.json (this project) · switch per project in S
       <button class="runbtn" title="btn_run · Run_Click → _run_ev (writes SPEC_DESIGNATION + SPEC_DESCRIPTION)">▶ Run BOQ Lookup</button>
     </div>
   </div>
-</div>
-
-<div class="note"><b>RO1 — BOQ Lookup · round 14 restructure (approval gate).</b> CM2 tokens from <code>theme.py</code>; interactive — click rail pages, the ☀ theme toggle, and the console chevron ⌄. Pages are code-built (Python control construction), so the restructure FULL-REPLACES the <code>_show_*</code> page builders in <code>script.py</code>; the <code>ui.xaml</code> shell (chrome/rail/footer/content_host) is already canonical and stays. Headline: the <b>Quantity Takeoff</b> page (the missing "what else should it have"). Not built until you green-light 1:1.</div>
-
-<div class="map">
-  <h4>WIRING MAP — every control → its real seam (for a 1:1 implementation)</h4>
-  <table>
-    <tr><td style="width:150px"><b>Area</b></td><td style="width:230px"><b>Mockup control</b></td><td><b>Real x:Name / handler / method</b></td></tr>
-    <tr><td>Chrome (ui.xaml)</td><td>☰ · title · doc chip · ☀ · dots</td><td><code>btn_burger/ToggleRail</code> · <code>lbl_file</code> · <code>btn_theme/ToggleTheme</code> · <code>btn_min/max/close</code> — unchanged shell</td></tr>
-    <tr><td>Rail</td><td>6 nav rows</td><td><code>nav_panel</code> · <code>_nav_row</code> · <code>_show_page(key)</code>; PAGES gets a new <code>("take", …, "Quantity Takeoff")</code> entry</td></tr>
-    <tr><td>Dashboard</td><td>KPI strip · donut · unmapped bars · pipeline · scan</td><td>rebuilt <code>_show_dashboard</code>: new <code>_kpi_strip</code> + <code>_donut_card</code> (icz.piechart) + <code>_unmapped_card</code>; <code>_param_card</code> kept; <code>_on_scan → _scan_ev</code></td></tr>
-    <tr><td>Quantity Takeoff (NEW)</td><td>KPI · schedule table · Export XLSX · group-by</td><td>NEW <code>_show_takeoff</code> + <code>_takeoff_ev</code> (ExternalCall rollup) → <code>{atomic:{desc,count,len_ft,area_ft2,cat}}</code>; <code>_on_export_takeoff → icz.xlsxlite.write_xlsx(style="icz_light")</code>; length via <code>CURVE_ELEM_LENGTH</code>, ft→m via <code>icz.units</code></td></tr>
-    <tr><td>Results</td><td>summary strip · grid · Remove ✓ · IDs</td><td><code>_show_results</code> → <code>build_summary_strip</code> / <code>populate_review_grid</code> / <code>remove_checked_rows</code> (icz.review_grid); <code>_row_nav → _nav_ev</code>; <code>_STATUS_TAG</code> pills</td></tr>
-    <tr><td>BOQ Data</td><td>search · count tiles · rows</td><td><code>_show_data_browser</code> / <code>_refresh_data_results</code> / <code>_data_filter</code> / <code>_section_header</code> / <code>_data_row</code></td></tr>
-    <tr><td>Settings</td><td>tabs · add/reload/save · filter · cells</td><td><code>_show_settings</code> · <code>_edit_tabs</code> · <code>_edit_action_bar</code> · <code>_edit_render</code> · <code>_on_edit_add/reload/save/delete</code> → <code>boq_data.save()</code>; EDIT_TABLES</td></tr>
-    <tr><td>Console (NEW)</td><td>collapsible activity log</td><td><code>icz.shell.Console_Toggle</code> (centralized; WOT r12 precedent) — mirrors <code>footer_status</code></td></tr>
-    <tr><td>Dashboard · Matching Options</td><td>"Assume DN100 …" toggle</td><td><code>cb_add_dn_fallback</code> — <b>relocated out of the footer</b> into a legible Dashboard card, read by <code>_is_dn_fallback_on</code>; now persisted per project via <code>icz.configstore</code> (was an ephemeral footer checkbox). Same matching logic.</td></tr>
-    <tr><td>Footer (ui.xaml)</td><td>hallmark · status · Run</td><td><code>footer_status</code> · <code>btn_run/Run_Click/lbl_run</code> — cleaned to hallmark + status + Run only</td></tr>
-    <tr><td>Catalogue picker (NEW)</td><td>Settings "Catalogue Source" card + rail caption</td><td><code>_on_pick_catalogue</code> / <code>_on_new_catalogue</code> → <code>boq_data.switch_catalogue(path)</code> / <code>new_catalogue(path)</code>; per-project path remembered via <code>icz.configstore</code> (<code>boq_catalogues.json</code>, keyed by doc title/path), resolved at launch in <code>script.py</code>. No DLL embed.</td></tr>
-  </table>
 </div>
 
 <script>

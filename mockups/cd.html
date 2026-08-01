@@ -197,10 +197,6 @@ h2 .hint{font-weight:400;color:var(--text2);font-size:11px;margin-left:8px;}
   </div>
 </div>
 
-<div class="note">
-  <b>Proposal v2 — the fill fix.</b> Every band now uses proportional (<code>1fr</code> / star) columns instead of left-packed <code>WrapPanel</code>s, so the layout expands to fill a maximized window instead of hugging the left third:
-  <b>(1)</b> KPI strip = 5 equal columns (added <b>Repairable</b> so it pairs with the donut legend); <b>(2)</b> a three-panel hero — cleanliness donut, <b>findings-by-pass as clickable rows</b> whose wide bars stretch to fill, and a new <b>Safety &amp; scope</b> panel that occupies the formerly-empty right (dependents cascade, owned/skipped, est. reduction, last scan, isolate toggle); <b>(3)</b> the Quick-Launch tiles are folded into the findings rows (each row opens its pass — one place, not two). In WPF this is <code>kpi_band</code> → a star-column <code>Grid</code>/<code>UniformGrid</code> and a 3-star-column hero grid in <code>_health_card</code> — no engine changes. The alternative (a boxed ~1440px centered column) is one line if you'd rather cap width than fill it.
-</div>
 <script>
 var H={census:18330,counts:{dups:41,lines:23,mep:18,nvis:9,orphans:6},cascade:14};
 var S={pass:"var(--pass)",warn:"var(--warn)",fail:"var(--fail)"};

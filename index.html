@@ -289,6 +289,26 @@ section:not(.hero) .shot:hover{
 }
 .shot .openfull:hover{color:var(--accent); border-color:var(--accent); background:var(--accent-soft)}
 .shot .bar .ttl{margin-left:auto; margin-right:auto}
+
+/* Tool sections: the mockup IS the window — the fake title bar is dropped so the
+   embed's own chrome is the only chrome. Hero keeps the full browser frame. */
+section:not(.hero) .shot{
+  display:flex; flex-direction:column-reverse;
+  border-color:var(--line);
+  box-shadow:0 18px 46px -22px rgba(0,0,0,.65);
+}
+section:not(.hero) .shot .bar{
+  padding:5px 10px; justify-content:flex-end; background:transparent;
+  border-bottom:0; border-top:1px solid var(--line);
+}
+section:not(.hero) .shot .dots,
+section:not(.hero) .shot .bar .ttl{display:none}
+section:not(.hero) .shot .frame{flex:0 0 auto}
+section:not(.hero) .shot .openfull{padding:2px 9px; font-size:10.5px}
+
+/* the frame takes the embed's measured height (see fitFrames) — 16/9 is only the
+   pre-measure default, so a mockup is never cropped or padded with dead space */
+.frame.live{transition:none}
 .live-hint{
   display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--muted);
   margin:-22px 0 26px; padding:0 4px;
@@ -1265,7 +1285,7 @@ with SubTransaction(doc) as st:
               <a class="openfull" href="mockups/sectionbox.html" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Full size</a>
             </div>
             <div class="frame live">
-              <iframe src="mockups/sectionbox.html" data-w="640" loading="lazy" title="Section Box pulldown — live mockup"></iframe>
+              <iframe src="mockups/sectionbox.html" data-w="900" loading="lazy" title="Section Box pulldown — live mockup"></iframe>
             </div>
           </div>
           <div class="techtags">
@@ -2011,20 +2031,97 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   }));
   if (modSearch) modSearch.addEventListener('input', applyModFilter);
 
-  /* ---- Live mockup iframes: scale-to-fit while staying interactive ---- */
+  /* ---- Live mockup embeds: measure the UI, then fit the frame to it ----
+     The mockups carry nothing but their own window now, so the frame can take
+     the window's true size instead of a guessed data-w inside a fixed 16:9.
+     Downscaling uses `zoom` (re-rasterises → crisp text), never `transform`
+     (rasterise-then-resample → blurry), and never upscales past 1:1.       */
+  const ZOOMABLE = !!(window.CSS && CSS.supports && CSS.supports('zoom', '0.5'));
+  const PROBE = 1800;                         /* wide canvas: nothing hits max-width:100% */
+  const docOf = f => { try { return f.contentDocument; } catch (e) { return null; } };
+  /* Measuring is only honest with the page's own centring and vh sizing switched
+     off: a centred child reports the canvas back at you, and a 100vh box has no
+     size of its own at all. Neutralise both for the measurement, then restore. */
+  const RELAX = 'html,body{min-height:0!important;height:auto!important;overflow:visible!important;' +
+                'justify-content:flex-start!important;align-items:flex-start!important}';
+  const measure = (f, d, avail) => {
+    const st = d.createElement('style');
+    st.textContent = RELAX;
+    d.head.appendChild(st);
+    f.style.transform = 'none'; f.style.zoom = '';
+    f.style.height = '10px';
+    const cs = d.defaultView.getComputedStyle(d.body);
+    const padX = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.paddingRight) || 0);
+    const widest = canvas => {
+      f.style.width = canvas + 'px';
+      let wide = 0;
+      Array.prototype.forEach.call(d.body.children, c => {
+        if (c.tagName === 'SCRIPT' || c.tagName === 'STYLE' || c.tagName === 'LINK') return;
+        wide = Math.max(wide, c.scrollWidth, c.offsetWidth || 0);
+      });
+      return Math.ceil(wide + padX);
+    };
+    /* probed on two canvases: a design width is the same on both, a fluid
+       mockup just reports back whatever canvas it was handed */
+    const wWide = widest(PROBE), wNarrow = widest(PROBE - 400);
+    const fluid = wWide >= PROBE - 20 && wNarrow >= PROBE - 420;
+    let w = (fluid || wWide < 60) ? avail : wWide;
+    f.style.width = w + 'px';                 /* height is width-dependent — measure after */
+    const h = Math.ceil(d.body.scrollHeight);
+    st.remove();
+    return (h > 40) ? { w: w, h: h } : null;
+  };
   const fitFrames = () => {
     document.querySelectorAll('.frame.live iframe').forEach(f => {
-      const w = parseInt(f.dataset.w, 10) || 1260;
       const fr = f.parentElement;
-      if (!fr.clientWidth) return;
-      const s = fr.clientWidth / w;
-      f.style.width = w + 'px';
-      f.style.height = Math.ceil(fr.clientHeight / s) + 'px';
-      f.style.transform = 'scale(' + s + ')';
+      fr.style.aspectRatio = 'auto';          /* 16/9 is only the pre-measure default —
+                                                 left on, it drives width off our height */
+      const avail = fr.clientWidth;
+      if (!avail) return;
+      const d = docOf(f);
+      if (!d || !d.body) {                    /* not parsed yet / cross-origin */
+        const w = parseInt(f.dataset.w, 10);
+        if (!w) { fr.style.aspectRatio = ''; return; }
+        fr.style.height = Math.round(avail * 9 / 16) + 'px';
+        const s = avail / w;
+        f.style.width = w + 'px';
+        f.style.height = Math.ceil(fr.clientHeight / s) + 'px';
+        f.style.transform = 'scale(' + s + ')';
+        return;
+      }
+      const nat = measure(f, d, avail);
+      if (!nat) return;
+      /* fit: shrink to the column, never blow past 1:1 */
+      let w = nat.w, h = nat.h, s = Math.min(1, avail / w);
+      const apply = () => {
+        f.style.zoom = ''; f.style.transform = 'none';
+        f.style.width = (s === 1 ? '100%' : w + 'px');
+        f.style.height = h + 'px';
+        if (s < 1) { if (ZOOMABLE) f.style.zoom = s; else f.style.transform = 'scale(' + s + ')'; }
+      };
+      apply();
+      /* settle: with its own centring and vh sizing back on a mockup can want a
+         little more room than it measured — give it that, up to half again */
+      const de = d.documentElement;
+      for (let i = 0; i < 3; i++) {
+        const overX = de.scrollWidth - de.clientWidth, overY = de.scrollHeight - de.clientHeight;
+        if (overX <= 0 && overY <= 0) break;
+        if (overX > 0 && overX < 240) { w = (s === 1 ? avail : w) + overX; s = Math.min(1, avail / w); }
+        if (overY > 0 && h + overY <= nat.h * 1.6) h += overY;
+        apply();
+      }
+      fr.style.height = Math.round(h * s) + 'px';
     });
   };
   window.addEventListener('resize', fitFrames);
   window.addEventListener('load', fitFrames);
+  /* an embed only knows its size once its own document (and fonts) are in */
+  document.querySelectorAll('.frame.live iframe').forEach(f => {
+    f.addEventListener('load', () => {
+      fitFrames();
+      try { f.contentDocument.fonts.ready.then(fitFrames); } catch (e) {}
+    });
+  });
   fitFrames();
 
   /* ---- Back to top ---- */

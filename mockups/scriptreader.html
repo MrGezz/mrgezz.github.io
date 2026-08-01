@@ -194,11 +194,6 @@ body{
 </head>
 <body>
 
-<div class="toolbar">
-  <span>Script Reader — restructure proposal (live theme tokens from theme.py)</span>
-  <button id="themeToggle">Toggle Light / Dark</button>
-</div>
-
 <div class="window" id="win" data-theme="dark">
 
   <!-- TITLE BAR -->
@@ -211,7 +206,7 @@ body{
       <span class="t">IFD_M4_HU_EPC.rvt</span>
     </div>
     <div class="rt">
-      <div class="iconbtn mdl2" title="Toggle theme">&#xE706;</div>
+      <div class="iconbtn mdl2" id="themeToggle" title="Toggle theme">&#xE706;</div>
       <div class="dot m mdl2"></div>
       <div class="dot x mdl2"></div>
       <div class="dot c mdl2"></div>
@@ -344,15 +339,10 @@ audit_walls(doc)</div>
 
 </div>
 
-<div class="legend">
-  <b>Layout:</b> the console leaves its old spot under the editor and becomes a <b>full-width bottom panel</b> (wide tracebacks &amp; REPL no longer squeezed into the right half) · the editor gains a <b>tab strip</b> for multiple open scripts · file actions consolidate onto the tab bar · library stays left, collapsible via the same GridSplitter · the console collapse chevron frees all height to the editor.<br/>
-  <b>Actions (one filled + one outline):</b> the console's old filled RUN is gone — the interactive line runs on <b>Enter</b> with a ghost send icon. That leaves the footer as the single action pair: <b>RUN SCRIPT</b> (filled accent = commit / run the editor, also F5) and <b>CHECK SYNTAX</b> (accent-outline ghost = read-only preview / dry compile). Exactly one filled accent button in view.<br/>
-  Every colour, radius, glyph and control style is taken 1:1 from <b>ui.xaml</b> + <b>theme.py</b> — this is a build target, not a lookalike.
-</div>
-
 <script>
   var win = document.getElementById('win');
-  document.getElementById('themeToggle').addEventListener('click', function(){
+  var tbtn = document.getElementById('themeToggle');
+  if (tbtn) tbtn.addEventListener('click', function(){
     win.setAttribute('data-theme', win.getAttribute('data-theme')==='dark'?'light':'dark');
   });
 </script>

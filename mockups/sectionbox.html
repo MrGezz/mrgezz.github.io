@@ -33,7 +33,7 @@
   .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
 
   /* ── ribbon panel with the pulldown ── */
-  .ribbonrow{width:620px;max-width:100%;display:flex;gap:16px;align-items:flex-start}
+  .ribbonrow{width:620px;display:flex;gap:16px;align-items:flex-start}
   .ribpanel{background:var(--ribbon);border:1px solid #000;border-radius:5px;padding:6px 4px 2px;min-width:120px;position:relative}
   .ribpanel .pl{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 14px;border-radius:4px;cursor:pointer;color:var(--ribbontext)}
   .ribpanel .pl:hover{background:#3a3a3a}
@@ -41,25 +41,26 @@
   .ribpanel .pl .nm{font-size:11px;display:flex;align-items:center;gap:3px}
   .ribpanel .pl .nm .car{font-family:"Segoe MDL2 Assets";font-size:8px}
   .ribtitle{text-align:center;font-size:10px;color:#999;border-top:1px solid #000;margin-top:3px;padding-top:2px}
-  .dropdown{position:absolute;top:100%;left:2px;margin-top:2px;background:#333;border:1px solid #000;border-radius:5px;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:10;min-width:210px;overflow:hidden}
+  .dropdown{display:none;position:absolute;top:100%;left:2px;margin-top:2px;background:#333;border:1px solid #000;border-radius:5px;box-shadow:0 10px 30px rgba(0,0,0,.6);z-index:10;width:330px;overflow:hidden}
+  .ribpanel:hover .dropdown,.dropdown.show{display:block}
   .di{display:flex;align-items:center;gap:9px;padding:8px 11px;color:#eee;font-size:12px;cursor:pointer;border-bottom:1px solid #2a2a2a}
   .di:last-child{border-bottom:none}
   .di:hover{background:var(--accent);color:#06222B}
   .di .ic{font-family:"Segoe MDL2 Assets";font-size:17px;color:#f2c14e;width:20px;text-align:center}
   .di:hover .ic{color:#06222B}
   .di .t{flex:1}
-  .di .t b{font-size:12px;font-weight:600}
+  .di .t b{font-size:12px;font-weight:600;white-space:nowrap}
   .di .t small{display:block;font-size:9.5px;opacity:.7}
   .di .kb{font:9px Consolas,monospace;background:rgba(255,255,255,.12);border-radius:3px;padding:1px 5px}
   .di:hover .kb{background:rgba(0,0,0,.15)}
   .di .xn{font:8.5px Consolas,monospace;color:var(--accent);background:rgba(0,188,212,.12);border-radius:3px;padding:0 4px}
   .di:hover .xn{color:#06222B;background:rgba(0,0,0,.12)}
   .sep{height:1px;background:#111;margin:2px 0}
-  .rnote{width:620px;max-width:100%;font-size:11px;color:#7f97a3;line-height:1.5}
+  .rnote{width:620px;font-size:11px;color:#7f97a3;line-height:1.5}
   .rnote b{color:#b9c9d1}.rnote code{color:var(--accent);font-family:Consolas,monospace}
 
   /* ── the compact window (smaller than rev1) ── */
-  .window{width:600px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:9px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.55)}
+  .window{width:600px;background:var(--window-bg);border:1px solid var(--border);border-radius:9px;overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.55)}
   .titlebar{height:36px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;padding:0 12px}
   .burger{color:var(--text-2);font-size:14px;cursor:pointer}
   .tb-ico{color:var(--accent);font-size:14px}
@@ -112,7 +113,7 @@
 </head>
 <body>
 
-<!-- ═══════ RIBBON: one .pulldown, expanded ═══════ -->
+<!-- ═══════ RIBBON: one .pulldown ═══════ -->
 <div class="ribbonrow">
   <div class="ribpanel">
     <div class="pl" id="plbtn">
@@ -120,7 +121,7 @@
       <span class="nm">Section Box <span class="car mdl2">&#xE70D;</span></span>
     </div>
     <div class="ribtitle">Tools</div>
-    <!-- the expanded dropdown -->
+    <!-- the dropdown — closed by default, opens on hover / click -->
     <div class="dropdown" id="dropdown">
       <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Section Box…</b><small>open the create window</small></span><span class="xn">SectionBox</span></div>
       <div class="sep"></div>
@@ -223,22 +224,15 @@
   </div>
 </div>
 
-<div class="caption">
-  <b>Rev 2 (from live-Revit feedback):</b> smaller window (no KPI strip, tighter cards, 600&#xD7;~430) · all buttons under one <code>.pulldown</code>
-  (<code>SectionBox.pulldown</code>) so the Tools panel isn't filled · Quick Box split into <b>Box: Active View</b> + <b>Box: New View</b> clones ·
-  Grow / Shrink / Toggle unchanged · each pulldown item keeps its own icon + shortcut · all share <code>lib/icz/viewbox</code>. The window stays
-  <b>Create + Settings</b> only (say the word if you'd rather it also carry Grow/Shrink/Toggle inline).
-</div>
-
 <script>
 (function(){
   "use strict";
   var $=function(s){return document.querySelector(s);};
   var $$=function(s){return Array.prototype.slice.call(document.querySelectorAll(s));};
-  // keep dropdown open on hover of panel; toggle on click
+  // pulldown starts CLOSED, like the real ribbon: hover the panel to open it,
+  // click to pin it open (CSS handles the hover, the class handles the pin)
   var open=false;
-  function show(v){ open=v; $("#dropdown").style.display=v?"block":"none"; }
-  show(true);
+  function show(v){ open=v; $("#dropdown").classList.toggle("show",v); }
   $("#plbtn").addEventListener("click",function(){ show(!open); });
   // window interactions
   $$(".nav").forEach(function(n){ n.addEventListener("click",function(){

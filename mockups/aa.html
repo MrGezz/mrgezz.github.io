@@ -1,504 +1,1154 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QAQC Suite — Full Restructure v2 (Round 10 mockup)</title>
-<!--
-  AA (IcZ QAQC Suite) — FROM-SCRATCH restructure v2, mining backlog round 10.
-  Modeled on the reference implementations FIT (flat rail of operation pages) and
-  CD (dense width-filling dashboard whose findings rows ARE the launchers —
-  "Quick Launch folded into findings rows"). CM2 palette per theme patching guidline.md.
-
-  Answers the v1 feedback:
-   • DON'T DUPLICATE  → dashboard findings-by-group rows deep-link to the group
-     pages; phase controls live in exactly ONE place (the group page). No second
-     "queue" list.
-   • AVOID EMPTY SPACE → KPI band = star columns filling the width; hero = 3
-     dense panels; group pages use the full width.
-   • LINK WHAT CAN BE LINKED → every dashboard group row + KPI is clickable and
-     navigates (click Cleanup → Cleanup page; click CMMN → CMMN page).
-   • FIT/CD reference → flat NavButtons rail; scan-health top-right; sub-selector
-     inside Audits (like FIT's Convert/Audit/Simplify op-selector).
--->
+<meta charset="utf-8">
+<title>AA — The Inspection Board (r37 gate mockup)</title>
 <style>
-  :root{
-    --bg:#0B1013; --bg2:#0F161A; --card:#141E24; --panel:#152026; --panel2:#1C2B33;
-    --line:#283B45; --text:#ECF4F7; --text2:#8FA6B2;
-    --accent:#00BCD4; --accent2:#4DD0E1; --accent-soft:rgba(0,188,212,.12); --accent-fg:#06222B;
-    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33;
-    --pass-bg:rgba(76,175,80,.14); --warn-bg:rgba(255,179,0,.14); --fail-bg:rgba(255,82,82,.14);
-    --r-hero:12px; --r-card:8px; --r-btn:6px;
-  }
-  [data-theme="light"]{
-    --bg:#ECEFF1; --bg2:#E7EDF0; --card:#FFFFFF; --panel:#FFFFFF; --panel2:#E7EDF0;
-    --line:#CFD8DC; --text:#263238; --text2:#546E7A;
-    --accent:#0097A7; --accent2:#00838F; --accent-soft:rgba(0,151,167,.12); --accent-fg:#FFFFFF;
-    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E7EDF0;
-    --pass-bg:rgba(46,125,50,.12); --warn-bg:rgba(245,127,23,.12); --fail-bg:rgba(211,47,47,.12);
-  }
-  *{box-sizing:border-box; margin:0; padding:0}
-  html,body{height:100%}
-  body{background:#05080a; color:var(--text); font-family:"Segoe UI",system-ui,sans-serif;
-    font-size:12px; display:flex; align-items:center; justify-content:center; padding:20px}
-  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif; font-style:normal}
+/* ===== CM2 palette — values 1:1 from lib/icz/theme.py ===== */
+:root{
+  --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+  --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-hover:#4DD0E1;
+  --accent-fg:#06222B; --accent-ink:#0B0E14;
+  --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+  --panel:#152026; --panel2:#1C2B33; --rule:#22333C;
+  --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --failbg:#3A1F22;
+  --track:#1C2B33; --hover:rgba(255,255,255,.045); --badge:#1C2B33;
+}
+html[data-theme="light"]{
+  --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+  --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-hover:#00838F;
+  --accent-fg:#FFFFFF; --accent-ink:#0B0E14;
+  --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+  --panel:#FFFFFF; --panel2:#E7EDF0; --rule:#DDE6EA;
+  --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --failbg:#F7DDDD;
+  --track:#E3EAEE; --hover:rgba(0,0,0,.05); --badge:#E3EAEE;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);
+     padding:20px;display:flex;flex-direction:column;align-items:center;gap:12px}
+html[data-theme="light"] body{background:#c9d3d8}
+.note{max-width:1300px;font-size:11.5px;color:#8FA6B2;line-height:1.6}
+.note b{color:#ECF4F7}
+html[data-theme="light"] .note{color:#37474F}html[data-theme="light"] .note b{color:#0B1013}
+.window{width:1300px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);
+        border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55);
+        display:flex;flex-direction:column;height:880px;position:relative}
 
-  .win{width:1200px; height:800px; background:var(--bg); border-radius:var(--r-hero);
-    overflow:hidden; display:flex; flex-direction:column; border:1px solid var(--line);
-    box-shadow:0 24px 70px rgba(0,0,0,.6)}
-  .titlebar{height:40px; background:var(--bg2); border-bottom:1px solid var(--line);
-    display:flex; align-items:center; gap:12px; padding:0 12px; flex:0 0 auto}
-  .tb-ico{color:var(--text2); font-size:15px; cursor:pointer}
-  .tb-name{font-weight:700; letter-spacing:.3px}
-  .docchip{margin:0 auto; display:flex; align-items:center; gap:7px; background:var(--panel2);
-    border:1px solid var(--line); border-radius:var(--r-btn); padding:4px 12px; color:var(--text2)}
-  .docchip .mdl2{color:var(--accent); font-size:12px}
-  .docchip .path{font-family:Consolas,monospace; font-size:11px; max-width:360px; overflow:hidden;
-    text-overflow:ellipsis; white-space:nowrap}
-  .tb-right{display:flex; align-items:center; gap:10px}
-  .theme-btn{color:var(--text2); font-size:14px; cursor:pointer; padding:4px}
-  .dots{display:flex; gap:8px}
-  .dot{width:13px; height:13px; border-radius:50%; display:flex; align-items:center; justify-content:center;
-    font-family:"Segoe MDL2 Assets"; font-size:8px}
-  .dot.c{background:#FF5F57; color:#7A1410}.dot.m{background:#FEBC2E; color:#7A5A0F}.dot.x{background:#28C840; color:#0E5A1E}
+/* ===== title bar ===== */
+.titlebar{position:relative;display:flex;align-items:center;gap:10px;background:var(--titlebar);
+          border-bottom:1px solid var(--border);padding:9px 14px;flex:0 0 auto}
+.hamb,.tbtn{background:none;border:none;color:var(--text-2);font-size:13px;cursor:pointer;padding:2px 6px}
+.title{font-size:12.5px;color:var(--text-2);display:flex;align-items:center;gap:7px}
+.title .ti{color:var(--accent)}.title b{color:var(--text-main);font-weight:600}
+.chip{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:7px;
+      background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);
+      font:11px Consolas,monospace;border-radius:6px;padding:3px 12px}
+.chip .ci{color:var(--accent);font-size:10px}
+.tbtn{margin-left:auto}
+.dots{display:flex;gap:7px;margin-left:6px}
+.dot{width:13px;height:13px;border-radius:50%}
+.dot.mn{background:#FFB300}.dot.mx{background:#4CAF50}.dot.cl{background:#FF5252}
 
-  .body{flex:1 1 auto; display:flex; min-height:0}
+/* ===== CERTIFICATE BAND — the AA identity element (cert_host) ===== */
+.cert{display:flex;align-items:center;background:var(--nav);border-bottom:1px solid var(--border);
+      padding:10px 16px;flex:0 0 auto;gap:0}
+/* AIDesigner pickup: a heavy coloured edge turns the verdict from a coloured
+   label into a stamped document margin. The rotated stamp stays — it is AA's
+   identity; the edge bar is what makes it read as authoritative. */
+.stampbox{min-width:190px;display:flex;flex-direction:column;align-items:center;
+          border-left:7px solid var(--text-2);background:var(--panel2);
+          border-radius:0 5px 5px 0;padding:8px 12px}
+.stampbox.hold{border-left-color:var(--fail)}
+.stampbox.fit{border-left-color:var(--pass)}
+.certline{font:700 8.5px Consolas,monospace;letter-spacing:.14em;text-transform:uppercase;
+          color:var(--text-2);margin-top:4px}
+/* the alarming gauge sits on a different surface (AIDesigner pickup) */
+.cseg.alarm{background:var(--panel2);border-radius:4px}
+.stamp{font:800 13px Consolas,monospace;letter-spacing:.16em;border:2.5px solid var(--fail);
+       color:var(--fail);border-radius:5px;padding:6px 14px;transform:rotate(-3deg);opacity:.94;white-space:nowrap}
+.stamp.pass{border-color:var(--pass);color:var(--pass)}
+.stamp.idle{border-color:var(--text-2);color:var(--text-2);border-style:dashed}
+.cnote{font-size:9px;color:var(--text-2);margin-top:5px;text-align:center}
+.cdonut{width:44px;height:44px;margin:0 6px 0 12px}
+.cseg{display:flex;flex-direction:column;gap:2px;padding:0 17px;border-left:1px dotted var(--rule)}
+.cseg .v{font:700 17px Consolas,monospace;font-variant-numeric:tabular-nums;
+         display:flex;align-items:baseline;gap:4px}
+.cseg .v small{font:400 10px "Segoe UI";color:var(--text-2)}
+.cseg .l{font-size:9px;letter-spacing:.12em;color:var(--text-2);text-transform:uppercase}
+.v.bad{color:var(--fail)}.v.warn{color:var(--warn)}.v.ok{color:var(--pass)}.v.acc{color:var(--accent)}
+.scanb{margin-left:auto;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;
+       font:700 11px "Segoe UI";letter-spacing:.05em;padding:9px 18px;cursor:pointer;
+       display:flex;gap:8px;align-items:center;box-shadow:0 0 16px rgba(0,188,212,.32)}
+.scanb:hover{background:var(--accent-hover)}
+.cancelb{margin-left:10px;background:transparent;border:1px solid var(--fail);color:var(--fail);
+         border-radius:6px;font:700 11px "Segoe UI";padding:9px 14px;cursor:pointer;display:none}
+.cancelb.on{display:block}
 
-  /* rail = flat pages (FIT pattern) */
-  .rail{width:198px; background:var(--bg2); border-right:1px solid var(--line); flex:0 0 auto;
-    padding:12px 9px; display:flex; flex-direction:column; gap:2px; overflow:auto}
-  .rail-sec{font-size:9px; font-weight:700; color:var(--text2); letter-spacing:.6px; margin:12px 6px 4px}
-  .rail-sec:first-child{margin-top:2px}
-  .nav{display:flex; align-items:center; gap:11px; padding:8px 10px; border-radius:var(--r-card);
-    cursor:pointer; border-left:3px solid transparent; color:var(--text)}
-  .nav:hover{background:var(--panel)}
-  .nav.on{background:var(--accent-soft); border-left-color:var(--accent)}
-  .nav .mdl2{font-size:16px; color:var(--accent); width:19px; text-align:center}
-  .nav .lbl{font-size:12.5px; font-weight:600}
-  .nav .badge{margin-left:auto; font-size:9px; font-weight:700; padding:1px 7px; border-radius:9px}
-  .nav .badge.warn{background:var(--warn-bg); color:var(--warn)}
-  .nav .badge.acc{background:var(--accent-soft); color:var(--accent)}
+/* ===== body ===== */
+.body{display:flex;flex:1 1 auto;min-height:0}
+.pipe{width:256px;flex:0 0 256px;background:var(--nav);border-right:1px solid var(--border);
+      display:flex;flex-direction:column;overflow-y:auto;transition:.15s}
+.pipe.collapsed{width:0;flex-basis:0;overflow:hidden;border-right:none}
+.psearch{margin:10px 10px 2px;display:flex;gap:7px;align-items:center;background:var(--card);
+         border:1px solid var(--border);border-radius:6px;padding:5px 8px}
+.psearch input{flex:1;background:none;border:none;outline:none;color:var(--text-main);font-size:11px}
+.psearch .gi{color:var(--text-2);font-size:11px}
+.psec{font-size:9px;font-weight:700;letter-spacing:.13em;color:var(--text-2);margin:14px 14px 4px}
+.prow{display:flex;align-items:center;gap:9px;margin:1px 8px;padding:8px;border-radius:6px;
+      cursor:pointer;border-left:3px solid transparent}
+.prow:hover{background:var(--hover)}
+.prow.sel{background:var(--nav-sel);border-left-color:var(--accent)}
+.prow .gi{color:var(--accent);font-size:14px;width:18px;text-align:center}
+.prow .nm{font-size:12px;font-weight:600}.prow .sb{font-size:9px;color:var(--text-2)}
 
-  .content{flex:1 1 auto; min-width:0; overflow:auto; padding:16px 20px}
-  .panel{display:none}.panel.on{display:block}
-  .phead{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; gap:12px}
-  .ptitle{font-size:19px; font-weight:800}
-  .psub{color:var(--text2); font-size:11px; margin-top:2px}
+/* gate nodes on a connector spine */
+.gate{position:relative;display:flex;align-items:center;gap:8px;margin:0 8px;
+      padding:7px 8px 7px 6px;border-radius:6px;cursor:pointer;border-left:3px solid transparent}
+.gate:hover{background:var(--hover)}
+.gate.sel{background:var(--nav-sel);border-left-color:var(--accent)}
+.gate .spine{position:absolute;left:21px;top:-8px;bottom:-8px;width:2px;background:var(--rule)}
+.gate.first .spine{top:50%}.gate.last .spine{bottom:50%}
+.lamp{position:relative;z-index:1;width:13px;height:13px;border-radius:50%;border:2px solid var(--rule);
+      background:var(--nav);flex:0 0 auto;margin-left:2px}
+.lamp.ok{background:var(--pass);border-color:var(--pass);box-shadow:0 0 7px rgba(76,175,80,.6)}
+.lamp.warn{background:var(--warn);border-color:var(--warn);box-shadow:0 0 7px rgba(255,179,0,.6)}
+.lamp.fail{background:var(--fail);border-color:var(--fail);box-shadow:0 0 7px rgba(255,82,82,.6)}
+.gate .gbox{flex:1;min-width:0}
+.gate .gname{font-size:12px;font-weight:600;display:flex;gap:6px;align-items:baseline}
+.gate .gcode{font:700 9px Consolas,monospace;color:var(--accent);letter-spacing:.08em}
+.gate .gsub{font-size:9px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gcnt{font:600 10px Consolas,monospace;color:var(--text-2);border-radius:99px;padding:1px 7px;
+      background:var(--panel2);font-variant-numeric:tabular-nums}
+.gcnt.warnc{background:rgba(255,179,0,.14);color:var(--warn)}
+.gcnt.failc{background:rgba(255,82,82,.14);color:var(--fail)}
+.gcnt.okc{background:rgba(76,175,80,.14);color:var(--pass)}
 
-  .btn{border:none; border-radius:var(--r-btn); font-family:inherit; font-size:12px; cursor:pointer;
-    display:inline-flex; align-items:center; gap:8px; padding:8px 15px; font-weight:600}
-  .btn .mdl2{font-size:13px}
-  .btn-accent{background:var(--accent); color:var(--accent-fg); box-shadow:0 0 16px -3px var(--accent-soft)}
-  .btn-ghost{background:transparent; color:var(--accent); border:1px solid var(--accent)}
-  .btn-soft{background:var(--panel2); color:var(--text)}
-  .btn-mini{padding:6px 11px; font-size:11px}
+/* ===== r37 improvement A: the spine carries a 3-segment stage track ===== */
+.gate{flex-wrap:wrap}
+.track3{display:flex;gap:2px;width:100%;margin:5px 0 0 23px;height:3px}
+.track3 i{flex:1;background:var(--rule);border-radius:2px}
+.track3 i.h{background:var(--text-2)}
+.track3 i.p{background:var(--accent)}
+.track3 i.a{background:var(--pass)}
+.track3 i.aw{background:var(--warn)}
+/* blocked gate — a prerequisite has not been applied */
+.gate.blocked{opacity:.62}
+.gate.blocked .lamp{border-style:dashed;background:var(--nav)!important;box-shadow:none!important}
+.blockmark{font:700 8px Consolas,monospace;letter-spacing:.08em;color:var(--warn);
+           border:1px dashed var(--warn);border-radius:3px;padding:0 4px;margin-left:23px;margin-top:4px}
 
-  .card{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); padding:15px}
-  .card-h{font-size:13px; font-weight:700; margin-bottom:11px; display:flex; align-items:center; justify-content:space-between}
-  .hint{font-size:10.5px; color:var(--text2)}
+/* ===== r37 improvement B: delta vs the last inspection ===== */
+.delta{font:600 9.5px Consolas,monospace;margin-left:5px}
+.delta.up{color:var(--fail)}.delta.down{color:var(--pass)}.delta.flat{color:var(--text-2)}
 
-  /* KPI band — star columns fill width */
-  .kpis{display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:12px}
-  .kpi{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); padding:12px 14px; cursor:pointer}
-  .kpi:hover{border-color:var(--accent)}
-  .kpi .l{font-size:9.5px; color:var(--text2); letter-spacing:.4px; text-transform:uppercase}
-  .kpi .v{font-size:25px; font-weight:800; margin:5px 0 1px}
-  .kpi .s{font-size:9.5px; color:var(--text2)}
-  .kpi .v.pass{color:var(--pass)}.kpi .v.warn{color:var(--warn)}.kpi .v.acc{color:var(--accent)}
+/* ===== r37 improvement C: the verdict is interrogable ===== */
+.stamp{cursor:pointer}
+.stamp:hover{opacity:1;filter:brightness(1.15)}
+.blockpanel{position:absolute;top:96px;left:16px;z-index:45;width:394px;background:var(--card);
+            border:1px solid var(--fail);border-radius:8px;padding:12px 14px;display:none;
+            box-shadow:0 12px 34px rgba(0,0,0,.55)}
+.blockpanel.on{display:block}
+.blockpanel h5{font:700 10px Consolas,monospace;letter-spacing:.12em;text-transform:uppercase;
+               color:var(--fail);margin-bottom:8px}
+.blockrow{display:flex;align-items:center;gap:9px;padding:5px 2px;border-bottom:1px dotted var(--rule);
+          font-size:11px;cursor:pointer;border-radius:3px}
+.blockrow:hover{background:var(--hover)}
+.blockrow .bc{font:700 9px Consolas,monospace;color:var(--accent);letter-spacing:.08em;width:20px}
+.blockrow .bn{flex:1}
+.blockrow .bv{font:700 11px Consolas,monospace;color:var(--fail);font-variant-numeric:tabular-nums}
+.issueb{background:transparent;border:1px solid var(--border);color:var(--text-2);border-radius:6px;
+        font:700 10px "Segoe UI";letter-spacing:.05em;padding:8px 12px;cursor:pointer;margin-left:10px}
+.issueb:hover{border-color:var(--accent);color:var(--accent)}
+.issueb.ready{border-color:var(--pass);color:var(--pass)}
 
-  /* hero: 3 dense panels fill width */
-  .hero{display:grid; grid-template-columns:326px 1fr 250px; gap:12px; margin-bottom:12px}
-  .donut{width:120px; height:120px; border-radius:50%;
-    background:conic-gradient(var(--pass) 0 78%, var(--warn) 78% 90%, var(--fail) 90% 100%);
-    display:flex; align-items:center; justify-content:center; flex:0 0 auto}
-  .donut .hole{width:82px; height:82px; border-radius:50%; background:var(--card);
-    display:flex; flex-direction:column; align-items:center; justify-content:center}
-  .donut .hv{font-size:24px; font-weight:800; color:var(--pass)}
-  .donut .hl{font-size:8.5px; color:var(--text2); text-transform:uppercase; letter-spacing:.5px}
-  .lg{display:flex; align-items:center; gap:8px; font-size:11.5px; margin:5px 0}
-  .sw{width:10px; height:10px; border-radius:3px}
-  .sw.pass{background:var(--pass)}.sw.warn{background:var(--warn)}.sw.fail{background:var(--fail)}
-  .lg .n{margin-left:auto; color:var(--text2)}
+/* ===== instrument readout — the board's typography, applied to each instrument ===== */
+.readout{display:flex;align-items:center;gap:18px;background:var(--panel2);border:1px solid var(--border);
+         border-radius:8px;padding:14px 16px;margin-top:12px}
+.readout .big{font:800 34px Consolas,monospace;font-variant-numeric:tabular-nums;line-height:1}
+.readout .unit{font:400 11px "Segoe UI";color:var(--text-2)}
+.readout .rlab{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2);margin-top:3px}
+.vchip{font:700 9px Consolas,monospace;letter-spacing:.11em;border:1.5px solid;border-radius:4px;
+       padding:3px 9px;text-transform:uppercase}
+.vchip.ok{color:var(--pass);border-color:var(--pass)}
+.vchip.warn{color:var(--warn);border-color:var(--warn)}
+.vchip.fail{color:var(--fail);border-color:var(--fail)}
+.mgrid{display:grid;grid-template-columns:62px 1fr 60px 52px 60px 74px;gap:10px;align-items:center;
+       padding:5px 2px;border-bottom:1px dotted var(--rule);font-size:11.5px}
+.mgrid.h{font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);
+         border-bottom:1px solid var(--rule)}
+.mgrid .n{font:700 12px Consolas,monospace;font-variant-numeric:tabular-nums;text-align:right}
+.mgrid .w{font:600 10px Consolas,monospace;color:var(--text-2);text-align:right}
+.sevdot{width:7px;height:7px;border-radius:4px;display:inline-block;margin-right:6px}
 
-  /* findings-by-group rows = the launchers (deep-link; NO separate quick-launch) */
-  .frow{display:flex; align-items:center; gap:11px; padding:9px 11px; border-radius:var(--r-btn);
-    cursor:pointer; border:1px solid transparent}
-  .frow:hover{background:var(--panel); border-color:var(--line)}
-  .frow .mdl2{color:var(--accent); font-size:15px; width:20px; text-align:center}
-  .frow .fn{font-weight:600}
-  .frow .fm{font-size:9.5px; color:var(--text2)}
-  .frow .bar{flex:1; height:7px; border-radius:4px; background:var(--track); overflow:hidden; max-width:180px}
-  .frow .bar>i{display:block; height:100%}
-  .frow .go{color:var(--text2); font-size:12px}
-  .chip{font-size:9px; font-weight:700; letter-spacing:.3px; padding:2px 8px; border-radius:9px; text-transform:uppercase; white-space:nowrap}
-  .chip.pass{background:var(--pass-bg); color:var(--pass)}
-  .chip.warn{background:var(--warn-bg); color:var(--warn)}
-  .chip.fail{background:var(--fail-bg); color:var(--fail)}
-  .chip.acc{background:var(--accent-soft); color:var(--accent)}
-  .chip.idle{background:var(--panel2); color:var(--text2)}
-  .scope-row{display:flex; align-items:center; gap:8px; padding:6px 0; font-size:11.5px; border-top:1px solid var(--line)}
-  .scope-row:first-of-type{border-top:none}
-  .scope-row .mdl2{color:var(--accent); font-size:13px; width:18px}
-  .scope-row .v{margin-left:auto; font-weight:600}
+/* LOI drill-down */
+.loih{display:flex;align-items:center;gap:10px;padding:8px 8px;border:1px solid var(--border);
+      border-radius:6px;background:var(--panel2);margin-top:8px;cursor:pointer}
+.loih .chv{color:var(--text-2);font-size:10px;width:12px;transition:transform .12s}
+.loih.open .chv{transform:rotate(90deg)}
+.loih .nm{flex:1;font-size:12px;font-weight:600}
+.loih .pct{font:700 12px Consolas,monospace}
+.loih .pf{font:600 10px Consolas,monospace;color:var(--text-2)}
+.loib{display:none;border-left:2px solid var(--rule);margin-left:13px;padding-left:12px}
+.loib.open{display:block}
+.lchk{display:flex;align-items:center;gap:9px;padding:4px 2px;font-size:11px;
+      border-bottom:1px dotted var(--rule);cursor:pointer}
+.lchk:hover{background:var(--hover)}
+.lchk .cn{flex:1;font-family:Consolas,monospace}
+.lchk .cb{width:120px;height:6px;background:var(--track);border-radius:3px;overflow:hidden}
+.lchk .cb i{display:block;height:100%;background:var(--fail)}
+.lchk .cf{width:84px;text-align:right;font:600 10.5px Consolas,monospace;color:var(--fail)}
+.litems{display:none;margin:3px 0 7px;border:1px solid var(--border);border-radius:5px;
+        background:var(--window-bg);padding:5px 8px}
+.litems.open{display:block}
+.lit{display:grid;grid-template-columns:104px 1fr 160px 84px;gap:8px;font-size:10.5px;padding:3px 2px;
+     border-bottom:1px dotted var(--rule)}
+.lit.h{color:var(--text-2);font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.lit .id{font:600 10.5px Consolas,monospace;color:var(--accent);cursor:pointer;text-decoration:underline dotted}
+/* colorize legend */
+.cbuckets{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.cbucket{display:flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:5px;
+    padding:4px 9px;font-size:11px;cursor:pointer}
+.cbucket:hover{background:var(--hover)}
+.cbucket .sw{width:12px;height:12px;border-radius:3px}
+.cbucket .cn{font-family:Consolas,monospace}
+.blockbanner{display:flex;align-items:center;gap:10px;background:rgba(255,179,0,.10);
+             border:1px dashed var(--warn);border-radius:6px;padding:9px 12px;margin-top:10px;font-size:11.5px}
+.blockbanner b{color:var(--warn);font-family:Consolas,monospace;letter-spacing:.06em}
 
-  /* pill toggle */
-  .pill{width:36px; height:19px; border-radius:10px; background:var(--panel2); border:1px solid var(--line);
-    position:relative; cursor:pointer; flex:0 0 auto; transition:.15s}
-  .pill::after{content:""; position:absolute; width:13px; height:13px; border-radius:50%; background:var(--text2);
-    top:2px; left:2px; transition:.15s}
-  .pill.on{background:var(--accent); border-color:var(--accent)}
-  .pill.on::after{left:19px; background:var(--accent-fg)}
-  .pill.part{background:var(--accent-soft); border-color:var(--accent)}          /* stage = some phases queued */
-  .pill.part::after{left:10px; background:var(--accent)}
-  .togrow{display:flex; align-items:center; gap:12px; padding:8px 0}
-  .togrow .col{flex:1}.togrow .t{font-weight:600}.togrow .d{font-size:10.5px; color:var(--text2); margin-top:1px}
+/* pill */
+.pill{width:30px;height:16px;border-radius:99px;background:var(--track);position:relative;
+      cursor:pointer;flex:0 0 auto;border:1px solid var(--border)}
+.pill::after{content:"";position:absolute;top:1px;left:2px;width:12px;height:12px;border-radius:50%;
+             background:var(--text-2);transition:left .12s,background .12s}
+.pill.on{background:var(--accent);border-color:var(--accent)}
+.pill.on::after{left:14px;background:var(--accent-fg)}
+.pill.mid{border-color:var(--accent)}
+.pill.mid::after{left:50%;transform:translateX(-50%);width:9px;background:var(--accent)}
+.pill.lg{width:38px;height:20px}.pill.lg::after{width:16px;height:16px;top:1px}
+.pill.lg.on::after{left:19px}
 
-  /* group page: phase cards + review */
-  .phase{background:var(--card); border:1px solid var(--line); border-radius:var(--r-card); margin-bottom:10px; overflow:hidden}
-  .phase-h{display:flex; align-items:center; gap:12px; padding:11px 14px; cursor:pointer}
-  .phase-h:hover{background:var(--panel)}
-  .phase-h .pn{font-weight:700}
-  .phase-h .pd{font-size:10.5px; color:var(--text2); margin-top:1px}
-  .phase-h .cnt{font-size:10px; color:var(--text2)}
-  .phase-b{border-top:1px solid var(--line); padding:0; display:none}
-  .phase.open .phase-b{display:block}
-  .rev-bar{display:flex; align-items:center; gap:8px; padding:8px 14px; font-size:11px; color:var(--text2); background:var(--panel)}
-  .rev-grp{padding:7px 14px; background:var(--panel2); font-size:10px; font-weight:700; color:var(--text2); display:flex; gap:8px; align-items:center}
-  .rev-row{display:flex; align-items:center; gap:12px; padding:9px 14px; border-top:1px solid var(--line)}
-  .rev-row .eid{font-family:Consolas,monospace; color:var(--accent); font-size:11px; cursor:pointer; width:74px}
-  .rev-row .why{flex:1; font-size:11px; color:var(--text2)}
+/* ===== content ===== */
+.content{flex:1;min-width:0;display:flex;flex-direction:column}
+.page{flex:1;overflow-y:auto;padding:18px 22px}
+h2.pg{font-size:19px;font-weight:700;display:flex;align-items:center;gap:10px}
+h2.pg .code{font:700 12px Consolas,monospace;color:var(--accent);letter-spacing:.1em}
+.sub{font-size:11px;color:var(--text-2)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px}
+.card h4{font-size:12px;font-weight:600;margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.card h4 .r{margin-left:auto;display:flex;gap:6px}
+.grid2{display:grid;grid-template-columns:1fr 356px;gap:12px;align-items:start}
+.btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:6px;
+     font-size:11px;padding:5px 12px;cursor:pointer}
+.btn:hover{background:var(--hover)}
+.btn.acc{background:var(--accent);color:var(--accent-ink);border:none;font-weight:700}
+.btn.out{background:transparent;color:var(--accent)}
+.btn.sm{font-size:10px;padding:3px 9px}
+.gearb{background:transparent;border:1px solid var(--border);color:var(--text-2);border-radius:6px;
+       width:28px;height:26px;cursor:pointer}
+.hold{display:inline-flex;align-items:center;gap:6px;font:700 9px Consolas,monospace;letter-spacing:.1em;
+      color:var(--fail);border:1px dashed var(--fail);border-radius:4px;padding:2px 8px}
+.hold.ok{color:var(--pass);border-color:var(--pass)}
 
-  /* audits sub-selector (FIT op-selector) */
-  .subsel{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap}
-  .subtab{padding:7px 13px; border-radius:var(--r-btn); background:var(--panel); border:1px solid var(--line);
-    cursor:pointer; font-weight:600; font-size:11.5px; display:flex; align-items:center; gap:7px}
-  .subtab .mdl2{color:var(--accent); font-size:13px}
-  .subtab.on{background:var(--accent-soft); border-color:var(--accent); color:var(--accent)}
-  .subpanel{display:none}.subpanel.on{display:block}
-  .cover{height:8px; border-radius:4px; background:var(--track); overflow:hidden; flex:1; max-width:280px}
-  .cover>i{display:block; height:100%; background:var(--pass)}
-  .lrow{display:flex; align-items:center; gap:12px; padding:9px 0; border-top:1px solid var(--line)}
-  .lrow:first-of-type{border-top:none}
-  .lrow .nm{width:180px; font-weight:600}.lrow .sc{width:48px; text-align:right; font-weight:700}
+/* radar */
+.radarwrap{display:flex;gap:14px;align-items:center}
+.axleg{flex:1;min-width:0}
+.axrow{display:flex;align-items:center;gap:9px;padding:3.5px 4px;border-radius:4px;cursor:pointer;
+       border-bottom:1px dotted var(--rule)}
+.axrow:hover{background:var(--hover)}
+.axrow .sw{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.axrow .an{flex:1;font-size:11px}
+.axrow .av{font:700 11px Consolas,monospace;font-variant-numeric:tabular-nums}
 
-  .tblrow{display:grid; grid-template-columns:1fr 1fr 26px; gap:8px; padding:4px 0}
-  .tin{background:var(--bg); border:1px solid var(--line); border-radius:4px; color:var(--text); padding:5px 7px;
-    font-family:inherit; font-size:11px}
-  .note{font-size:10px; color:var(--text2); background:var(--accent-soft); border:1px solid var(--line);
-    border-radius:var(--r-btn); padding:8px 11px; margin-top:10px}
+/* findings bars */
+.frow{display:flex;align-items:center;gap:10px;padding:7px 4px;border-bottom:1px dotted var(--rule);
+      cursor:pointer;border-radius:4px}
+.frow:hover{background:var(--hover)}
+.frow .nm{width:126px;font-size:12px;font-weight:600;display:flex;gap:7px;align-items:baseline}
+.frow .bar{flex:1;height:8px;background:var(--track);border-radius:4px;overflow:hidden}
+.frow .bar i{display:block;height:100%;border-radius:4px}
+.frow .c{width:46px;text-align:right;font:600 11px Consolas,monospace;font-variant-numeric:tabular-nums}
 
-  .foot{height:52px; background:var(--bg2); border-top:1px solid var(--line); flex:0 0 auto;
-    display:flex; align-items:center; gap:12px; padding:0 16px}
-  .hall{display:flex; align-items:center; gap:6px}
-  .hall .mdl2{color:var(--accent); font-size:11px}
-  .hall .b{font-weight:800; opacity:.85}.hall .w{font-weight:300; color:var(--text2)}
-  .fdiv{width:1px; height:14px; background:var(--line)}
-  .fstat{color:var(--text2); display:flex; align-items:center; gap:8px}
-  .fstat .mdl2{color:var(--accent)}
-  .foot-right{margin-left:auto; display:flex; gap:10px}
+/* phase cards */
+.ph{border:1px solid var(--border);border-radius:8px;background:var(--card);margin-top:10px;overflow:hidden}
+.ph .hd{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;cursor:pointer}
+.ph .hd:hover{background:var(--hover)}
+.ph .tt{font-size:12.5px;font-weight:600}
+.ph .dd{font-size:10.5px;color:var(--text-2);margin-top:2px}
+.ph .brief{font-size:10.5px;color:var(--text-2);margin-top:6px;display:none;
+           border-left:2px solid var(--rule);padding-left:9px}
+.ph.open .brief{display:block}
+.ph .chev{margin-left:auto;color:var(--text-2);font-size:11px;transition:transform .12s}
+.ph.open .chev{transform:rotate(180deg)}
+.ph .bd{display:none;padding:0 14px 12px}.ph.open .bd{display:block}
+.gridbox{border:1px solid var(--border);border-radius:6px;background:var(--window-bg);padding:8px;margin-top:6px}
+.gh,.gr{display:grid;grid-template-columns:26px 92px 1fr 132px;gap:8px;align-items:center;
+        font-size:11px;padding:4px 6px}
+.gh{color:var(--text-2);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+    border-bottom:1px solid var(--rule)}
+.gr{border-bottom:1px dotted var(--rule)}
+.gr .id{font:600 11px Consolas,monospace;color:var(--accent);cursor:pointer;text-decoration:underline dotted}
+.gr .nt{color:var(--text-2)}
+.gtb{display:flex;gap:6px;align-items:center;margin-top:8px}
+.gtb .cnt{font-size:10.5px;color:var(--text-2);margin-right:auto}
+
+/* stage matrix (r28.2 — preserved) */
+.mx,.mxr{display:grid;grid-template-columns:24px 1fr 96px 96px 118px;align-items:center;gap:6px}
+.mx{font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-2);
+    border-bottom:1px solid var(--rule);padding:0 4px 5px}
+.mxr{padding:4px;border-radius:4px;border-bottom:1px dotted var(--rule)}
+.mxr:hover{background:var(--hover)}
+.cell{display:flex;align-items:center;gap:6px;font:600 11px Consolas,monospace}
+.stale{opacity:.45}
+.chevb{cursor:pointer;color:var(--text-2);font-size:10px;text-align:center}
+.det{display:none;margin:0 4px 8px 30px}.det.on{display:block}
+.dl{display:grid;grid-template-columns:1fr 96px;font-size:10.5px;padding:1.5px 0;color:var(--text-2)}
+.dl b{text-align:right;color:var(--text-main);font-weight:400;font-family:Consolas,monospace}
+.alertband{background:var(--failbg);border-radius:5px;padding:8px 10px;margin-bottom:8px;
+           border-left:3px solid var(--fail)}
+
+/* instruments */
+.aud{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border);border-radius:8px;
+     background:var(--card);padding:14px;margin-top:10px}
+.aud .ai{font-size:20px;color:var(--accent);width:26px;text-align:center}
+.aud .at{font-size:12.5px;font-weight:600}
+.aud .ad{font-size:10.5px;color:var(--text-2);margin-top:3px;max-width:760px}
+.aud .btn{margin-left:auto;flex:0 0 auto}
+.mrow{display:grid;grid-template-columns:66px 1fr auto;gap:10px;align-items:center;
+      padding:4px 2px;border-bottom:1px dotted var(--rule);font-size:11.5px}
+.mrow .n{font:700 12px Consolas,monospace;font-variant-numeric:tabular-nums;text-align:right}
+.togrow{display:flex;gap:12px;align-items:flex-start;padding:9px 0;border-bottom:1px dotted var(--rule)}
+.togrow .tt{font-size:12px;font-weight:600}
+.togrow .dd{font-size:10.5px;color:var(--text-2);margin-top:2px;max-width:680px}
+.edh,.edr{display:grid;gap:8px;align-items:center;font-size:11px;padding:4px 6px}
+.edh{color:var(--text-2);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;
+     border-bottom:1px solid var(--rule)}
+.edr{border-bottom:1px dotted var(--rule)}
+.edr input{background:var(--input-bg);border:1px solid var(--border);border-radius:4px;
+           color:var(--text-main);font-size:11px;padding:3px 7px;width:100%}
+.rednote{font-size:10.5px;color:var(--text-2);border-left:2px solid var(--accent);
+         padding:6px 10px;margin-top:10px;background:var(--panel2);border-radius:0 4px 4px 0}
+.rednote b{color:var(--text-main)}
+
+/* footer */
+.footer{display:flex;align-items:center;gap:12px;background:var(--titlebar);
+        border-top:1px solid var(--border);padding:10px 16px;flex:0 0 auto;position:relative}
+.runbar{position:absolute;top:-1px;left:0;height:2px;background:var(--accent);width:0;transition:.15s}
+.hallmark{display:flex;gap:6px;align-items:center;font-size:12px}
+.hallmark .hi{color:var(--accent);font-size:11px}
+.hallmark b{font-weight:800}.hallmark span{font-weight:300;color:var(--text-2)}
+.fsep{width:1px;height:14px;background:var(--border)}
+.fdot{width:7px;height:7px;border-radius:4px;background:var(--pass)}
+.fmodel,.fstatus,.fpage{font-size:11px;color:var(--text-2)}
+.fstatus{display:flex;gap:8px;align-items:center}.fstatus .si{color:var(--accent)}
+.fright{margin-left:auto;display:flex;gap:10px;align-items:center}
+.fbtn{border-radius:6px;font:700 12px "Segoe UI";padding:11px 20px;cursor:pointer;
+      border:1px solid var(--border);background:var(--panel2);color:var(--text-main);
+      display:flex;gap:8px;align-items:center}
+.fbtn.acc{background:var(--accent);border:none;color:var(--accent-ink);
+          box-shadow:0 0 18px rgba(0,188,212,.32);min-width:196px;justify-content:center}
+.fbtn.hide{display:none}
+.fbtn[disabled]{opacity:.45;cursor:default;box-shadow:none}
+
+/* console + banner */
+.console{border-top:1px solid var(--border);background:var(--panel);display:none;flex:0 0 auto}
+.console.on{display:block}
+.console pre{margin:0;padding:8px 16px;max-height:104px;overflow:auto;
+             font:10px Consolas,monospace;color:var(--text-2)}
+.banner{position:absolute;top:58px;left:50%;transform:translateX(-50%);z-index:40;background:var(--card);
+        border:1px solid var(--accent);border-radius:6px;padding:8px 18px;font-size:11px;
+        box-shadow:0 8px 26px rgba(0,0,0,.5);display:none}
+.banner.on{display:block}
+
+/* x:Name inspector */
+body.xn [data-xname]{outline:1px dashed rgba(0,188,212,.55);outline-offset:1px;position:relative}
+body.xn [data-xname]::after{content:attr(data-xname);position:absolute;top:-1px;left:-1px;
+  background:var(--accent);color:var(--accent-ink);font:9px Consolas,monospace;padding:0 3px;
+  border-radius:0 0 3px 0;z-index:30;pointer-events:none;white-space:nowrap}
+.bindings{max-width:1300px;width:100%}
+.bindings summary{cursor:pointer;font-size:12px;color:#8FA6B2}
+.bindings pre{font:10.5px Consolas,monospace;color:#8FA6B2;background:#0B1013;border:1px solid #283B45;
+              border-radius:8px;padding:12px;margin-top:8px;white-space:pre-wrap}
+.kbd{font:600 10px Consolas,monospace;background:var(--panel2);border:1px solid var(--border);
+     border-radius:4px;padding:1px 6px}
+.tools{display:flex;gap:8px;max-width:1300px;width:100%}
 </style>
 </head>
 <body>
-<div class="win">
+<div class="window">
+  <div class="banner" id="banner" data-xname="banner"><span id="bannerText" data-xname="banner_text"></span></div>
+
   <!-- TITLE BAR -->
   <div class="titlebar">
-    <span class="mdl2 tb-ico">&#xE700;</span>
-    <span class="tb-name">QAQC Suite</span>
-    <div class="docchip"><span class="mdl2">&#xE8A5;</span><span class="path">DX-PRJ-4471_MEP_Level3.rvt</span></div>
-    <div class="tb-right">
-      <span class="mdl2 theme-btn" onclick="tgl()">&#xE706;</span>
-      <div class="dots"><span class="dot c mdl2">&#xE8BB;</span><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span></div>
+    <button class="hamb" data-xname="btn_burger" onclick="pipeTog()">&#9776;</button>
+    <div class="title"><span class="ti">&#9672;</span><b>QAQC Suite</b></div>
+    <div class="chip"><span class="ci">&#9636;</span><span data-xname="lbl_file">IMPP11-04_BIM_MO_Part_001_DX.rvt</span></div>
+    <button class="tbtn" data-xname="btn_theme" onclick="theme()">&#9680;</button>
+    <div class="dots"><span class="dot mn" data-xname="btn_min"></span><span class="dot mx" data-xname="btn_max"></span><span class="dot cl" data-xname="btn_close"></span></div>
+  </div>
+
+  <!-- CERTIFICATE BAND -->
+  <div class="cert" data-xname="cert_host">
+    <div class="stampbox" id="stampBox" data-xname="host_verdict">
+      <div class="stamp idle" id="stamp" data-xname="lbl_verdict" onclick="blockTog()"
+           title="Click to see what blocks issue">NOT INSPECTED</div>
+      <div class="certline" id="certLine" data-xname="lbl_cert_state">certificate not raised</div>
+      <div class="cnote" id="stampNote">run SCAN HEALTH to inspect</div>
     </div>
+    <svg class="cdonut" viewBox="0 0 42 42" id="certDonut" data-xname="cert_donut"></svg>
+    <div class="cseg"><div class="v" id="cHealth">&mdash;</div><div class="l">Health score</div></div>
+    <div class="cseg"><div class="v" id="cFind">&mdash;</div><div class="l">Open findings</div></div>
+    <div class="cseg"><div class="v" id="cCrit">&mdash;</div><div class="l">Critical</div></div>
+    <div class="cseg"><div class="v acc" id="cLoi">72%</div><div class="l">LOI compliance</div></div>
+    <div class="cseg"><div class="v" id="cQueued">0</div><div class="l">Queued</div></div>
+    <div class="cseg"><div class="v" style="font-size:12px" id="cStamp">&mdash;</div><div class="l">Last inspection</div></div>
+    <button class="scanb" data-xname="btn_scan_health" onclick="sweep()">&#9906; SCAN HEALTH</button>
+    <button class="issueb" id="btnIssue" data-xname="btn_issue_cert" onclick="issueCert()"
+            title="Write the inspection certificate (icz.reporthtml + icz.xlsxlite)">&#9878; ISSUE CERTIFICATE</button>
+    <button class="cancelb" id="btnCancel" data-xname="btn_cancel" onclick="S.cancel=true">&#10005; CANCEL</button>
+  </div>
+
+  <!-- r37 improvement C: the verdict explains itself -->
+  <div class="blockpanel" id="blockPanel" data-xname="host_blocking">
+    <h5>What blocks issue</h5>
+    <div id="blockList"></div>
   </div>
 
   <div class="body">
-    <!-- RAIL -->
-    <div class="rail">
-      <div class="rail-sec">WORKSPACE</div>
-      <div class="nav on" data-p="dash" onclick="nav('dash')"><span class="mdl2">&#xE80F;</span><span class="lbl">Dashboard</span></div>
-      <div class="rail-sec">REMEDIATION · PREVIEW → APPLY</div>
-      <div class="nav" data-p="cleanup" onclick="nav('cleanup')"><span class="mdl2">&#xE894;</span><span class="lbl">Cleanup</span><span class="badge warn">3</span></div>
-      <div class="nav" data-p="cmmn" onclick="nav('cmmn')"><span class="mdl2">&#xE9D5;</span><span class="lbl">CMMN</span></div>
-      <div class="nav" data-p="spec" onclick="nav('spec')"><span class="mdl2">&#xE71C;</span><span class="lbl">SPEC</span><span class="badge warn">112</span></div>
-      <div class="nav" data-p="flags" onclick="nav('flags')"><span class="mdl2">&#xE7BA;</span><span class="lbl">Flags</span></div>
-      <div class="nav" data-p="classification" onclick="nav('classification')"><span class="mdl2">&#xE8EC;</span><span class="lbl">Classification</span></div>
-      <div class="nav" data-p="worksets" onclick="nav('worksets')"><span class="mdl2">&#xE902;</span><span class="lbl">Worksets</span></div>
-      <div class="rail-sec">AUDIT · READ-ONLY</div>
-      <div class="nav" data-p="aud" onclick="nav('aud')"><span class="mdl2">&#xE9D9;</span><span class="lbl">Audits</span><span class="badge acc">5</span></div>
-      <div class="rail-sec">CONFIGURE</div>
-      <div class="nav" data-p="set" onclick="nav('set')"><span class="mdl2">&#xE713;</span><span class="lbl">Settings</span></div>
+    <!-- GATE LINE -->
+    <div class="pipe" id="pipe" data-xname="rail_col">
+      <div class="psearch"><span class="gi">&#9906;</span>
+        <input id="navSearch" data-xname="tb_nav_search" placeholder="Filter gates…" oninput="filt(this.value)"></div>
+      <div class="psec">BOARD</div>
+      <div class="prow sel" data-page="dash" data-xname="nav_dash">
+        <span class="gi">&#9638;</span><div><div class="nm">Dashboard</div><div class="sb">inspection board</div></div></div>
+      <div class="psec">THE GATE LINE &middot; PREVIEW &rarr; APPLY</div>
+      <div id="gateList" data-xname="host_gates"></div>
+      <div class="psec">INSTRUMENTS &middot; READ-ONLY</div>
+      <div class="prow" data-page="audits" data-xname="nav_audits">
+        <span class="gi">&#9678;</span><div><div class="nm">Instruments</div><div class="sb">6 read-only scorecards</div></div></div>
+      <div class="psec">CONFIGURE</div>
+      <div class="prow" data-page="settings" data-xname="nav_settings">
+        <span class="gi">&#9881;</span><div><div class="nm">Settings</div><div class="sb">mapping tables</div></div></div>
+      <div style="height:14px"></div>
     </div>
 
-    <!-- CONTENT -->
-    <div class="content">
+    <div class="content"><div class="page" id="page" data-xname="content_host"></div></div>
+  </div>
 
-      <!-- DASHBOARD -->
-      <div class="panel on" id="p-dash">
-        <div class="phead">
-          <div><div class="ptitle">Dashboard</div><div class="psub">Model QA/QC readiness — read the health, then pick a stage</div></div>
-          <button class="btn btn-accent" onclick="pulse(this,'Scanning model health…')"><span class="mdl2">&#xEA18;</span> SCAN HEALTH</button>
-        </div>
+  <!-- CONSOLE -->
+  <div class="console" id="console" data-xname="row_log"><pre id="txtLog" data-xname="txt_log"></pre></div>
 
-        <!-- KPI band — star columns fill width; every tile deep-links; health is
-             NOT repeated here (the donut owns it) -->
-        <div class="kpis">
-          <div class="kpi" onclick="nav('aud')"><div class="l">Model elements</div><div class="v">18 402</div><div class="s">non-type · Model Health ›</div></div>
-          <div class="kpi" onclick="nav('spec')"><div class="l">Open findings</div><div class="v warn">146</div><div class="s">6 stages · worst SPEC ›</div></div>
-          <div class="kpi" onclick="nav('cleanup')"><div class="l">Critical</div><div class="v" style="color:var(--fail)">7</div><div class="s">removable · Cleanup ›</div></div>
-          <div class="kpi" onclick="nav('aud')"><div class="l">LOI score</div><div class="v acc">92%</div><div class="s">702 / 709 checks ›</div></div>
-          <div class="kpi" onclick="nav('spec')"><div class="l">Queued</div><div class="v">5</div><div class="s">Preview → Apply ›</div></div>
-        </div>
-
-        <!-- ROW 1: model health (donut + hygiene, no empty space) | findings launchers -->
-        <div style="display:grid; grid-template-columns:352px 1fr; gap:12px; margin-bottom:12px">
-          <div class="card" style="cursor:pointer" onclick="nav('aud')">
-            <div class="card-h">Model health <span class="hint">open Model Health ›</span></div>
-            <div style="display:flex; gap:16px; align-items:center; margin-bottom:8px">
-              <div class="donut"><div class="hole"><div class="hv">78</div><div class="hl">score</div></div></div>
-              <div style="flex:1">
-                <div class="lg"><span class="sw pass"></span>Clean<span class="n">61</span></div>
-                <div class="lg"><span class="sw warn"></span>Advisory<span class="n">18</span></div>
-                <div class="lg"><span class="sw fail"></span>Critical<span class="n">7</span></div>
-              </div>
-            </div>
-            <div class="scope-row"><span class="mdl2">&#xE7BA;</span>Open warnings<span class="v" style="color:var(--warn)">41</span></div>
-            <div class="scope-row"><span class="mdl2">&#xE71B;</span>Unpinned links<span class="v" style="color:var(--fail)">2</span></div>
-            <div class="scope-row"><span class="mdl2">&#xE8B7;</span>In-place families<span class="v" style="color:var(--warn)">13</span></div>
-          </div>
-
-          <!-- findings by stage = launchers (row = open) + a stage pill that queues
-               the whole stage, two-way SYNCED with the group-page phase pills -->
-          <div class="card">
-            <div class="card-h">Findings by stage <span class="hint">pill = queue stage · row = open</span></div>
-            <div class="frow" onclick="nav('cleanup')"><span class="pill" data-g="cleanup" title="Queue whole stage" onclick="event.stopPropagation();togStage('cleanup',this)"></span><span class="mdl2">&#xE894;</span><div style="flex:1"><div class="fn">Cleanup</div><div class="fm">connectors · duplicates · slope</div></div><div class="bar"><i style="width:22%; background:var(--warn)"></i></div><span class="chip warn">3</span><span class="mdl2 go">&#xE76C;</span></div>
-            <div class="frow" onclick="nav('cmmn')"><span class="pill" data-g="cmmn" title="Queue whole stage" onclick="event.stopPropagation();togStage('cmmn',this)"></span><span class="mdl2">&#xE9D5;</span><div style="flex:1"><div class="fn">CMMN</div><div class="fm">case-model identity</div></div><div class="bar"></div><span class="chip idle">settings</span><span class="mdl2 go">&#xE76C;</span></div>
-            <div class="frow" onclick="nav('spec')"><span class="pill" data-g="spec" title="Queue whole stage" onclick="event.stopPropagation();togStage('spec',this)"></span><span class="mdl2">&#xE71C;</span><div style="flex:1"><div class="fn">SPEC</div><div class="fm">system · size · article</div></div><div class="bar"><i style="width:74%; background:var(--warn)"></i></div><span class="chip warn">112</span><span class="mdl2 go">&#xE76C;</span></div>
-            <div class="frow" onclick="nav('flags')"><span class="pill" data-g="flags" title="Queue whole stage" onclick="event.stopPropagation();togStage('flags',this)"></span><span class="mdl2">&#xE7BA;</span><div style="flex:1"><div class="fn">Flags</div><div class="fm">insulation · POC</div></div><div class="bar"></div><span class="chip idle">not scanned</span><span class="mdl2 go">&#xE76C;</span></div>
-            <div class="frow" onclick="nav('classification')"><span class="pill" data-g="classification" title="Queue whole stage" onclick="event.stopPropagation();togStage('classification',this)"></span><span class="mdl2">&#xE8EC;</span><div style="flex:1"><div class="fn">Classification</div><div class="fm">IFC typing</div></div><div class="bar"></div><span class="chip idle">not scanned</span><span class="mdl2 go">&#xE76C;</span></div>
-            <div class="frow" onclick="nav('worksets')"><span class="pill" data-g="worksets" title="Queue whole stage" onclick="event.stopPropagation();togStage('worksets',this)"></span><span class="mdl2">&#xE902;</span><div style="flex:1"><div class="fn">Worksets</div><div class="fm">depends on SPEC 4a</div></div><div class="bar"></div><span class="chip idle">blocked</span><span class="mdl2 go">&#xE76C;</span></div>
-          </div>
-        </div>
-
-        <!-- ROW 2: LOI Scorecard (AA signature, elevated to the dashboard) | scope & apply + recent -->
-        <div style="display:grid; grid-template-columns:1fr 340px; gap:12px">
-          <div class="card" style="cursor:pointer" onclick="nav('aud')">
-            <div class="card-h">LOI Scorecard <span class="hint">92% · 58 elements fail ≥1 rule · open Audits ›</span></div>
-            <div class="lrow"><span class="nm">SPEC_SYSTEM</span><div class="cover" style="max-width:none"><i style="width:96%"></i></div><span class="sc" style="color:var(--pass)">96%</span></div>
-            <div class="lrow"><span class="nm">SPEC_SIZE</span><div class="cover" style="max-width:none"><i style="width:88%; background:var(--warn)"></i></div><span class="sc" style="color:var(--warn)">88%</span></div>
-            <div class="lrow"><span class="nm">IFX_INSULATION</span><div class="cover" style="max-width:none"><i style="width:71%; background:var(--fail)"></i></div><span class="sc" style="color:var(--fail)">71%</span></div>
-            <div class="lrow"><span class="nm">SPEC_ARTICLE_DE</span><div class="cover" style="max-width:none"><i style="width:83%; background:var(--warn)"></i></div><span class="sc" style="color:var(--warn)">83%</span></div>
-          </div>
-          <div class="card">
-            <div class="card-h">Scope &amp; recent</div>
-            <div class="scope-row"><span class="mdl2">&#xE7C3;</span>Checker XML<span class="v">709 checks</span></div>
-            <div class="scope-row" onclick="event.stopPropagation();nav('set')" style="cursor:pointer"><span class="mdl2">&#xE73E;</span>Apply gate<span class="v" style="color:var(--text2)">off · confirm ›</span></div>
-            <div class="frow" style="padding:7px 0; cursor:default"><span class="chip pass">applied</span><span class="why" style="flex:1; color:var(--text); font-size:11px">4a SPEC_SYSTEM · 84</span><span class="hint">2m</span></div>
-            <div class="frow" onclick="nav('spec')" style="padding:7px 0"><span class="chip warn">preview</span><span class="why" style="flex:1; color:var(--text); font-size:11px">4d SPEC_SIZE · 28</span><span class="hint">6m</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- GROUP PAGE (rendered from data) -->
-      <div class="panel" id="p-group">
-        <div class="phead">
-          <div><div class="ptitle" id="g-title">Cleanup</div><div class="psub" id="g-sub"></div></div>
-          <div style="display:flex; gap:8px">
-            <button class="btn btn-soft btn-mini" onclick="groupAll(true)">Check all</button>
-            <button class="btn btn-soft btn-mini" onclick="groupAll(false)">None</button>
-            <button class="btn btn-ghost btn-mini" onclick="pulse(this,'Scanning stage…')"><span class="mdl2">&#xE890;</span> SCAN STAGE</button>
-          </div>
-        </div>
-        <div id="g-body"></div>
-      </div>
-
-      <!-- AUDITS -->
-      <div class="panel" id="p-aud">
-        <div class="phead"><div><div class="ptitle">Audits</div><div class="psub">Read-only — nothing is written to the model</div></div></div>
-        <div class="subsel">
-          <div class="subtab on" data-s="loi" onclick="subtab(this)"><span class="mdl2">&#xE9D9;</span>LOI Scorecard</div>
-          <div class="subtab" data-s="tag" onclick="subtab(this)"><span class="mdl2">&#xE8EC;</span>Tag Audit</div>
-          <div class="subtab" data-s="mh" onclick="subtab(this)"><span class="mdl2">&#xEB51;</span>Model Health</div>
-          <div class="subtab" data-s="vf" onclick="subtab(this)"><span class="mdl2">&#xE71C;</span>View Filters</div>
-          <div class="subtab" data-s="cz" onclick="subtab(this)"><span class="mdl2">&#xE790;</span>Colorize</div>
-        </div>
-        <div class="subpanel on" id="s-loi">
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px">
-            <div class="card">
-              <div class="card-h">Ruleset scope <span class="hint">702 / 709 · 68 / 69 sections</span></div>
-              <div class="hint" style="margin-bottom:6px">Pick a subset — the source .xml is never edited.</div>
-              <div class="togrow" style="border-top:1px solid var(--line)"><span class="pill on" onclick="pillTog(this)"></span><div class="col"><div class="t">As-Built (410)</div><div class="d">geometry · host · room-bounding</div></div></div>
-              <div class="togrow"><span class="pill on" onclick="pillTog(this)"></span><div class="col"><div class="t">LOI parameters (231)</div><div class="d">SPEC_* · CMMN_* · IFX_*</div></div></div>
-              <div class="togrow"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Count &amp; List (61)</div><div class="d">excluded from this run</div></div></div>
-            </div>
-            <div class="card">
-              <div class="card-h">Scorecard <button class="btn btn-accent btn-mini" onclick="pulse(this,'Running selected…')"><span class="mdl2">&#xE768;</span> RUN SELECTED</button></div>
-              <div class="lrow"><span class="nm">SPEC_SYSTEM</span><div class="cover"><i style="width:96%"></i></div><span class="sc" style="color:var(--pass)">96%</span></div>
-              <div class="lrow"><span class="nm">SPEC_SIZE</span><div class="cover"><i style="width:88%; background:var(--warn)"></i></div><span class="sc" style="color:var(--warn)">88%</span></div>
-              <div class="lrow"><span class="nm">CMMN_STATUS_CODE</span><div class="cover"><i style="width:100%"></i></div><span class="sc" style="color:var(--pass)">100%</span></div>
-              <div class="lrow"><span class="nm">IFX_INSULATION</span><div class="cover"><i style="width:71%; background:var(--fail)"></i></div><span class="sc" style="color:var(--fail)">71%</span></div>
-            </div>
-          </div>
-        </div>
-        <div class="subpanel" id="s-tag"><div class="card"><div class="card-h">Tag Audit — active view <button class="btn btn-ghost btn-mini"><span class="mdl2">&#xE890;</span> SCAN</button></div>
-          <div class="hint" style="margin-bottom:8px">Missing (no tag) or duplicate (&gt;1) per category. View-owned — run per sheet.</div>
-          <div class="lrow"><span class="nm">Pipes ↔ Pipe Tags</span><span class="why" style="flex:1"></span><span class="chip warn">12 missing</span></div>
-          <div class="lrow"><span class="nm">Ducts ↔ Duct Tags</span><span class="why" style="flex:1"></span><span class="chip pass">complete</span></div>
-          <div class="lrow"><span class="nm">Mechanical Equipment</span><span class="why" style="flex:1"></span><span class="chip fail">3 duplicate</span></div></div></div>
-        <div class="subpanel" id="s-mh"><div class="card"><div class="card-h">Model Health — hygiene <button class="btn btn-ghost btn-mini"><span class="mdl2">&#xE890;</span> SCAN</button></div>
-          <div class="hint" style="margin-bottom:8px">18 indicators folded into a weighted 0–100 score.</div>
-          <div class="lrow"><span class="nm">Open warnings</span><span class="why" style="flex:1"></span><span class="chip warn">41</span></div>
-          <div class="lrow"><span class="nm">Unpinned links</span><span class="why" style="flex:1"></span><span class="chip fail">2</span></div>
-          <div class="lrow"><span class="nm">In-place families</span><span class="why" style="flex:1"></span><span class="chip warn">13</span></div></div></div>
-        <div class="subpanel" id="s-vf"><div class="card"><div class="card-h">View Filter Audit</div>
-          <div class="hint" style="margin-bottom:8px">Rules decoded + used/unused across all views &amp; templates.</div>
-          <div class="lrow"><span class="nm">M_Supply Air</span><span class="why" style="flex:1">System = Supply Air</span><span class="chip pass">used ×14</span></div>
-          <div class="lrow"><span class="nm">Z_TEMP_hide</span><span class="why" style="flex:1">Comments contains "temp"</span><span class="chip fail">unused</span></div></div></div>
-        <div class="subpanel" id="s-cz"><div class="card"><div class="card-h">Colorize by Value — active view</div>
-          <div class="hint" style="margin-bottom:8px">Buckets active-view elements by a parameter. Reversible overrides only.</div>
-          <div style="display:flex; gap:10px; align-items:center"><span class="chip acc">SPEC_SYSTEM</span><span class="chip pass">12 buckets</span><button class="btn btn-ghost btn-mini" style="margin-left:auto"><span class="mdl2">&#xE72C;</span> Reset</button></div></div></div>
-      </div>
-
-      <!-- SETTINGS -->
-      <div class="panel" id="p-set">
-        <div class="phead"><div><div class="ptitle">Settings</div><div class="psub">Apply behaviour + firm-standard mapping tables</div></div>
-          <button class="btn btn-accent"><span class="mdl2">&#xE74E;</span> SAVE</button></div>
-        <div style="display:grid; grid-template-columns:300px 1fr; gap:12px">
-          <div class="card" style="align-self:start">
-            <div class="card-h">Apply behaviour</div>
-            <div class="togrow" style="border-top:1px solid var(--line)"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Require preview before Apply</div><div class="d">greys Apply until previewed</div></div></div>
-            <div class="togrow"><span class="pill on" onclick="pillTog(this)"></span><div class="col"><div class="t">Confirm before Apply</div><div class="d">"commit N fixes?" guard</div></div></div>
-            <div class="togrow"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Isolate on row click</div><div class="d">was a dashboard checkbox</div></div></div>
-            <div class="togrow"><span class="pill" onclick="pillTog(this)"></span><div class="col"><div class="t">Overwrite SPEC / CMMN</div><div class="d">off = fill blanks only</div></div></div>
-          </div>
-          <div class="card">
-            <div class="card-h">Mapping tables</div>
-            <div class="subsel" style="margin-bottom:10px">
-              <div class="subtab on" data-s="m1" onclick="mtab(this)">SPEC rules</div>
-              <div class="subtab" data-s="m2" onclick="mtab(this)">IFC</div>
-              <div class="subtab" data-s="m3" onclick="mtab(this)">Families</div>
-              <div class="subtab" data-s="m4" onclick="mtab(this)">CMMN</div>
-              <div class="subtab" data-s="m5" onclick="mtab(this)">LOI ruleset</div>
-            </div>
-            <div class="subpanel on" id="m-m1">
-              <div class="tblrow" style="color:var(--text2); font-weight:700; font-size:10px"><span>PREFIX</span><span>SYSTEM → DX WORKSET</span><span></span></div>
-              <div class="tblrow"><input class="tin" value="SUP"><input class="tin" value="DX_SUPPLY"><span class="mdl2" style="color:var(--fail); cursor:pointer; text-align:center">&#xE711;</span></div>
-              <div class="tblrow"><input class="tin" value="EXH"><input class="tin" value="DX_EXHAUST"><span class="mdl2" style="color:var(--fail); cursor:pointer; text-align:center">&#xE711;</span></div>
-              <div class="tblrow"><input class="tin" value="CHW"><input class="tin" value="DX_CHILLED"><span class="mdl2" style="color:var(--fail); cursor:pointer; text-align:center">&#xE711;</span></div>
-              <button class="btn btn-soft btn-mini" style="margin-top:8px; color:var(--accent)">+ Add row</button>
-            </div>
-            <div class="subpanel" id="m-m2"><div class="hint">IFC classification mapping + category overrides (SPEC label → IFC class).</div></div>
-            <div class="subpanel" id="m-m3"><div class="hint">ChemicalBox / DX_RR family names + surface-mounted accessory keywords.</div></div>
-            <div class="subpanel" id="m-m4"><div class="hint">Phase 3 params, default status/building, TOOL_ID filename rule.</div></div>
-            <div class="subpanel" id="m-m5"><div class="hint">Model Checker .xml ruleset picker (Browse / Clear) — feeds LOI Scorecard.</div></div>
-          </div>
-        </div>
-        <div class="note"><b>Removed from Settings:</b> the 3-line intro paragraph, the "Source: …\spec_mappings.json" line, and every per-card blurb — folded into these tabs.</div>
-      </div>
-
-    </div><!-- /content -->
-  </div><!-- /body -->
-
-  <!-- FOOTER: global Preview → Apply for the queued set -->
-  <div class="foot">
-    <div class="hall"><span class="mdl2">&#xE8FD;</span><span class="b">IcZ</span><span class="w">&nbsp;Workspace</span></div>
-    <div class="fdiv"></div>
-    <div class="fstat"><span class="mdl2">&#xE9F5;</span><span id="foot">Ready · workshared · 5 phases queued</span></div>
-    <div class="foot-right">
-      <button class="btn btn-ghost btn-mini"><span class="mdl2">&#xE890;</span> PREVIEW</button>
-      <button class="btn btn-accent btn-mini"><span class="mdl2">&#xE768;</span> APPLY QUEUED</button>
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="runbar" id="runbar" data-xname="run_progress"></div>
+    <div class="hallmark"><span class="hi">&#11040;</span><b>IcZ</b><span>&nbsp;Workspace</span></div>
+    <div class="fsep"></div><div class="fdot" data-xname="foot_dot"></div>
+    <div class="fmodel" data-xname="foot_model">Model loaded &middot; workshared</div>
+    <div class="fsep"></div>
+    <div class="fstatus"><span class="si">&#10022;</span>
+      <span id="fstatus" data-xname="footer_status">Ready — scan health, then walk the gate line.</span></div>
+    <div class="fright">
+      <button class="btn sm" data-xname="btn_console_chev" onclick="conTog()">&#9650; Log</button>
+      <button class="btn sm" data-xname="btn_reset_view" onclick="flash('Temporary view mode reset.')">Reset view</button>
+      <div class="fpage" id="fpage" data-xname="foot_page">Dashboard</div>
+      <button class="fbtn" id="btnPrev" data-xname="btn_dry_foot" onclick="preview()">&#128065; PREVIEW</button>
+      <button class="fbtn acc" id="btnRun" data-xname="btn_run" onclick="primary()">
+        <span id="runLbl" data-xname="lbl_run">APPLY QUEUED (0)</span></button>
     </div>
   </div>
 </div>
 
 <script>
-  // real AA phases, per group (no duplication — the single source for group pages)
-  var GROUPS = {
-    cleanup:{title:"Cleanup", sub:"connectors · duplicates · slope", phases:[
-      {n:"Phase 0", t:"MEP Connector Reconciliation", d:"Rejoins adjacent open MEP connectors within a 20 mm tolerance.", on:true, chip:["pass","clean"], rows:[]},
-      {n:"Phase 1", t:"Duplicate Element Removal", d:"Detects coincident structural elements and removes redundant copies.", on:true, chip:["warn","3 found"], open:true, grp:"coincident duplicate — pooled by geometry (3)", rows:[
-        ["#4 812 331","Pipe Fitting — exact copy of #4 812 330 (Δ 0.0 mm)",false],
-        ["#4 812 356","Pipe Fitting — exact copy of #4 812 355 (Δ 0.0 mm)",false],
-        ["#4 813 004","Duct Fitting — near-exact (Δ 0.4 mm) — review before delete",true]]},
-      {n:"Phase 1b", t:"Zero-Length Duct Cleanup", d:"Removes degenerate straight ducts ≤ 20 mm and heals connections.", on:false, chip:["idle","off"], rows:[]},
-      {n:"Phase 2", t:"Vertical Alignment Correction", d:"Realigns runs whose slope exceeds 400% back to true vertical.", on:true, chip:["idle","ready"], rows:[]}]},
-    cmmn:{title:"CMMN", sub:"case-model identity", phases:[
-      {n:"Phase 3", t:"CMMN Parameter Population", d:"Writes status code + building; derives TOOL_ID from the file name (rules in Settings).", on:false, chip:["idle","settings"], rows:[]}]},
-    spec:{title:"SPEC", sub:"system · size · article", phases:[
-      {n:"Phase 4a", t:"SPEC_SYSTEM Assignment", d:"Sets/corrects SPEC_SYSTEM from each element's resolved system source.", on:true, chip:["warn","42"], open:true, grp:"no system — trace failed (12) · set/corrected (30)", rows:[
-        ["#5 001 233","Pipe — no system (unrouted); apply Phase 0 then rescan",false],
-        ["#5 001 240","Pipe Accessory — inherit from nearest run (clamp)",false]]},
-      {n:"Phase 4b", t:"SPEC_SYSTEM — Chemical Boxes", d:"Inherits SPEC_SYSTEM for chemical-box families from the nearest pipe.", on:true, chip:["idle","ready"], rows:[]},
-      {n:"Phase 4c", t:"SPEC_SYSTEM — Clamps & Accessories", d:"Inherits SPEC_SYSTEM for surface-mounted accessories from the nearest run.", on:true, chip:["warn","8"], rows:[]},
-      {n:"Phase 4d", t:"SPEC_SIZE Population", d:"Writes standardized SPEC_SIZE (DN / imperial / W×H) per element type.", on:false, chip:["warn","28"], rows:[]},
-      {n:"Phase 4e", t:"SPEC_QUANTITY Population", d:"Writes length/area into SPEC_QUANTITY where a length source exists.", on:false, chip:["idle","off"], rows:[]},
-      {n:"Phase 4f", t:"SPEC_ARTICLE Classification", d:"Assigns SPEC_ARTICLE_EN / _DE article classes.", on:false, chip:["idle","off"], rows:[]}]},
-    flags:{title:"Flags", sub:"insulation · POC", phases:[
-      {n:"Phase 5", t:"Insulation Flagging", d:"Sets IFX_INSULATION on pipes and ducts that carry insulation.", on:false, chip:["idle","not scanned"], rows:[]},
-      {n:"Phase 6", t:"POC Element Flagging", d:"Marks IFX_POC_Element once IFX_POC_Tag is finalized.", on:false, chip:["idle","not scanned"], rows:[]}]},
-    classification:{title:"Classification", sub:"IFC typing", phases:[
-      {n:"Phase 7", t:"IFC Type Classification", d:"Assigns IFC export categories from the classification mapping (Settings).", on:false, chip:["idle","not scanned"], rows:[]}]},
-    worksets:{title:"Worksets", sub:"workset orchestration", phases:[
-      {n:"Phase 8", t:"Workset Orchestration", d:"Distributes elements to worksets derived from SPEC_SYSTEM. Requires 4a first.", on:false, chip:["idle","blocked — run 4a"], rows:[]}]}
-  };
+/* ================= DATA — real PHASES / AUDITS tables ================= */
+const GATES=[
+ {g:'Cleanup',code:'G1',sub:'connectors · duplicates · slope',phases:[
+   {k:'mep',s:'Phase 0',t:'Phase 0: MEP Connector Reconciliation',d:'Rejoins adjacent open MEP connectors within a 20 mm tolerance to restore network continuity.',brief:'Run first — the system-tracing SPEC phases depend on a continuous network. Connector state only; no parameters written.',n:38,sev:'warn'},
+   {k:'dups',s:'Phase 1',t:'Phase 1: Duplicate Element Removal',d:'Detects coincident structural elements and removes redundant copies.',brief:'Deletions are transacted and reversible via Revit undo. r37 note: the 70% bbox-overlap heuristic is being tightened — a short member fully inside a long one could be nominated.',n:104,sev:'fail'},
+   {k:'short',s:'Phase 1b',t:'Phase 1b: Zero-Length Duct Cleanup',d:'Removes degenerate straight ducts ≤ 20 mm and heals the broken connections.',brief:'Finds routing artifacts, deletes them and reconnects neighbouring fittings so the run stays continuous.',n:7,sev:'warn'},
+   {k:'slope',s:'Phase 2',t:'Phase 2: Vertical Alignment Correction',d:'Realigns pipe/duct runs whose slope exceeds 400% back to true vertical.',brief:'Snaps unintended slopes to plumb, correcting geometry that would otherwise fail coordination and take-off.',n:12,sev:'warn'}]},
+ {g:'CMMN',code:'G2',sub:'case-model identity',phases:[
+   {k:'cmmn',s:'Phase 3',t:'Phase 3: CMMN Parameter Population',d:'Writes the configured status code and building, and derives TOOL_ID from the model file name.',brief:'Settings-only phase — configure the source tokens on this gate’s gear, then Apply.',n:0,sev:'ok',settingsOnly:true}]},
+ {g:'SPEC',code:'G3',sub:'system · size · article',phases:[
+   {k:'sys',s:'Phase 4a',t:'Phase 4a: SPEC_SYSTEM Assignment',d:'Sets or corrects SPEC_SYSTEM from each element’s resolved system source.',brief:'Foundation for every downstream SPEC and Workset phase. Prefix-routing table editable on the gear.',n:216,sev:'fail'},
+   {k:'chembox',s:'Phase 4b',t:'Phase 4b: SPEC_SYSTEM — Chemical Boxes',d:'Inherits SPEC_SYSTEM for chemical-box families from the nearest connected pipe.',brief:'Chemical-box accessories carry no system of their own. Family set editable on the gear.',n:14,sev:'warn'},
+   {k:'clamp',s:'Phase 4c',t:'Phase 4c: SPEC_SYSTEM — Clamps & Accessories',d:'Inherits SPEC_SYSTEM for clamps and surface-mounted accessories from the nearest run.',brief:'Keyword set that identifies these accessories is editable on the gear.',n:63,sev:'warn'},
+   {k:'size',s:'Phase 4d',t:'Phase 4d: SPEC_SIZE Population',d:'Writes standardized SPEC_SIZE (DN / imperial / W x H) per element type.',brief:'Round elements resolve to DN or imperial via the protected size table; rectangular to width × height.',n:31,sev:'warn'},
+   {k:'qty',s:'Phase 4e',t:'Phase 4e: SPEC_QUANTITY Population',d:'Writes length or area into SPEC_QUANTITY where a length source exists.',brief:'If a TYPE already declares SPEC_QUANTITY (family-locked count) the family wins and the element is left alone.',n:9,sev:'warn'},
+   {k:'art',s:'Phase 4f',t:'Phase 4f: SPEC_ARTICLE Classification',d:'Assigns SPEC_ARTICLE_EN / _DE article classes.',brief:'r37 note: 4f is moving to the instance-only lookup — it currently writes through a TYPE fallback (the type-bound ping-pong class closed for 4a/4c/4e in 2026-07-15).',n:44,sev:'warn'}]},
+ {g:'Flags',code:'G4',sub:'insulation · POC',phases:[
+   {k:'insul',s:'Phase 5',t:'Phase 5: Insulation Flagging',d:'Sets IFX_INSULATION on pipes and ducts that carry insulation.',brief:'Drives insulation schedules and downstream filters.',n:57,sev:'warn'},
+   {k:'poc',s:'Phase 6',t:'Phase 6: POC Element Flagging',d:'Marks IFX_POC_Element once IFX_POC_Tag is finalized.',brief:'Run only after POC tagging is complete — premature runs propagate incomplete tags.',n:0,sev:'ok'}]},
+ {g:'Classification',code:'G5',sub:'IFC typing',phases:[
+   {k:'ifc',s:'Phase 7',t:'Phase 7: IFC Type Classification',d:'Assigns IFC export categories from the predetermined classification mapping.',brief:'Guarded for Revit 2022 (IFC BuiltInParameters absent there — resolved by name at import). Apply also rewrites the element TYPE.',n:210,sev:'fail'}]},
+ {g:'Worksets',code:'G6',sub:'workset orchestration',phases:[
+   {k:'ws',s:'Phase 8',t:'Phase 8: Workset Orchestration',d:'Distributes elements to worksets derived from SPEC_SYSTEM.',brief:'Requires SPEC_SYSTEM populated first (Phase 4a). The last gate before issue.',n:88,sev:'warn'}]}];
 
-  function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;');}
-  function renderGroup(key){
-    var g = GROUPS[key]; if(!g) return; CUR=key;
-    document.getElementById('g-title').textContent = g.title;
-    document.getElementById('g-sub').textContent = g.sub;
-    var html = '';
-    g.phases.forEach(function(p,i){
-      html += '<div class="phase'+(p.open?' open':'')+'">'
-        + '<div class="phase-h" onclick="this.parentNode.classList.toggle(\'open\')">'
-        + '<span class="pill'+(p.on?' on':'')+'" onclick="event.stopPropagation();togPhase(\''+key+'\','+i+',this)"></span>'
-        + '<div style="flex:1"><div class="pn">'+p.n+' · '+esc(p.t)+'</div><div class="pd">'+esc(p.d)+'</div></div>'
-        + '<span class="chip '+p.chip[0]+'">'+p.chip[1]+'</span>'
-        + '<span class="mdl2 go" style="color:var(--text2); font-size:12px">&#xE70D;</span></div>';
-      if(p.rows && p.rows.length){
-        html += '<div class="phase-b"><div class="rev-bar"><span class="pill" style="transform:scale(.8)"></span> Exclude <span style="margin-left:auto">'+p.rows.length+' candidates · 0 excluded</span></div>';
-        if(p.grp) html += '<div class="rev-grp"><span class="mdl2" style="color:var(--warn)">&#xE7BA;</span> '+esc(p.grp)+'</div>';
-        p.rows.forEach(function(r){
-          html += '<div class="rev-row"><span class="eid">'+r[0]+'</span><span class="why">'+esc(r[1])+'</span><span class="pill'+(r[2]?' on':'')+'" onclick="this.classList.toggle(\'on\')"></span></div>';
-        });
-        html += '</div>';
-      } else {
-        html += '<div class="phase-b"><div class="rev-bar" style="justify-content:center; color:var(--text2)">Not scanned — Scan Stage to list findings for review.</div></div>';
-      }
-      html += '</div>';
-    });
-    document.getElementById('g-body').innerHTML = html;
-  }
+const AUDITS=[
+ {k:'tags',i:'&#9873;',t:'Tag Audit',d:'Flags active-view elements carrying no tag or more than one, per category.',
+  metrics:[['Pipes untagged',88],['Ducts untagged',41],['Duplicate tags',6]]},
+ {k:'loi',i:'&#9642;',t:'LOI Scorecard',d:'Scores the model against the firm’s Model Checker LOI ruleset.',
+  metrics:[['Checks total',709],['Pass',511],['Fail',198]]},
+ {k:'mhealth',i:'&#9825;',t:'Model Health',d:'Hygiene indicators, weighted 0–100.',
+  metrics:[['Open warnings',412],['Unpinned links',7],['Copied views',23],['Imported DWGs',37],
+           ['In-place families',14],['Analytical elements',0],['Unused templates',9],['Off-standard wall types',6]]},
+ {k:'vfilters',i:'&#9645;',t:'View Filters',d:'Decoded rules + used / unused partition across all views and templates.',
+  metrics:[['Filters total',48],['In use',31],['Unused',17]]},
+ {k:'dims',i:'&#10530;',t:'Dim Coverage',d:'Elements on the active view no dimension touches.',
+  metrics:[['Walls',62],['Structural framing',18],['Ducts',5]]},
+ {k:'colorize',i:'&#9639;',t:'Colorize',d:'Colours the active view by a parameter value (Auto HSV / AWS palette).',metrics:[]}];
 
-  function nav(p){
-    document.querySelectorAll('.rail .nav').forEach(n=>n.classList.toggle('on', n.dataset.p===p || (GROUPS[p] && n.dataset.p===p)));
-    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
-    if(GROUPS[p]){ renderGroup(p); document.getElementById('p-group').classList.add('on');
-      document.querySelectorAll('.rail .nav').forEach(n=>n.classList.toggle('on', n.dataset.p===p)); }
-    else { document.getElementById('p-'+p).classList.add('on');
-      document.querySelectorAll('.rail .nav').forEach(n=>n.classList.toggle('on', n.dataset.p===p)); }
-    if(p==='dash') refreshDashPills();   // reflect any phase-pill changes made on a group page
+const AXES=[['Parameters',72,'audit:loi'],['Hygiene',61,'audit:mhealth'],['Remediation',68,'dash'],
+            ['Tagging',44,'audit:tags'],['Dimensions',80,'audit:dims'],['Filters',90,'audit:vfilters']];
+
+/* === instrument readouts. rows = [indicator, count, weight, previous, target] ;
+   previous === null means the indicator is NEW this round (no baseline).
+   AIDesigner pickup: TARGET beside VALUE is what makes a readout read as
+   calibrated rather than merely counted. target === null means "no threshold —
+   this row is context, not a finding". === */
+const INSTR={
+ mhealth:{score:61,unit:'/100',lab:'Hygiene score',what:'Indicator',
+   rows:[['Open warnings',412,8,486,0],['Unpinned links',7,6,9,0],['Copied views',23,3,31,0],
+         ['Imported DWGs',37,7,44,0],['In-place families',14,5,12,0],['Analytical elements',0,4,0,0],
+         ['Unused view templates',9,2,14,0],['Off-standard wall types',6,6,null,0]]},
+ vfilters:{score:90,unit:'/100',lab:'Filter cleanliness',what:'Partition',
+   rows:[['Filters total',48,0,45,null],['Applied to a view',31,0,29,null],['Unused (cleanup)',17,6,16,0]]},
+ dims:{score:80,unit:'/100',lab:'Dimension coverage',what:'Category',
+   rows:[['Walls',62,5,71,0],['Structural framing',18,4,18,0],['Ducts',5,3,9,0]]},
+ tags:{score:44,unit:'/100',lab:'Tag coverage',what:'Category',
+   rows:[['Pipes untagged',88,7,102,0],['Ducts untagged',41,7,38,0],['Duplicate tags',6,5,11,0]]},
+ loi:{score:72,unit:'%',lab:'Weighted compliance',what:'Heading',rows:[]}};
+
+/* === LOI drill-down. r25's redline: "the page IS the report" — one report_data()
+   pass renders heading → section → failing check → element table, in-tool. === */
+const LOI_TREE=[
+ {h:'Identity Data',pct:88,pass:112,fail:15,secs:[{s:'Mandatory identity',checks:[
+   {c:'CMMN_STATUS_CODE not empty',fails:63,appl:29927},
+   {c:'CMMN_TOOL_ID matches convention',fails:41,appl:29927}]}]},
+ {h:'MEP Parameters',pct:54,pass:186,fail:158,secs:[{s:'SPEC completeness',checks:[
+   {c:'SPEC_SYSTEM not empty',fails:216,appl:18442},
+   {c:'SPEC_SIZE not empty',fails:31,appl:18442},
+   {c:'SPEC_ARTICLE_EN not empty',fails:44,appl:18442}]}]},
+ {h:'Classification',pct:71,pass:213,fail:25,secs:[{s:'IFC typing',checks:[
+   {c:'Export to IFC As populated',fails:210,appl:22014}]}]}];
+const LOI_ITEMS=[['883921','Pipes','PV-EXH-200 — DN200','SPEC_SYSTEM empty'],
+ ['884016','Pipe Fittings','Elbow DN100','SPEC_SYSTEM empty'],
+ ['901447','Ducts','Rect 400x200','SPEC_SYSTEM empty']];
+const CBUCKETS=[['DX_PV','#00BCD4'],['DX_EA','#4CAF50'],['DX_STB','#FFB300'],
+                ['DX_RR','#FF5252'],['(none)','#8FA6B2']];
+
+const ROWS={
+ dups:[['1204518','Structural Framing','UB 305x165x40 — duplicate of 1204517 (Δ 0 mm)'],
+       ['1207731','Structural Framing','UC 203x203x46 — duplicate of 1207730 (Δ 2 mm)'],
+       ['1199056','Generic Models','Vibration isolation — coincident pair']],
+ sys:[['883921','Pipes','SPEC_SYSTEM empty — resolved PV-EXH via connected system'],
+      ['884016','Pipe Fittings','SPEC_SYSTEM "PV" → prefix rule PV- → DX_PV'],
+      ['901447','Ducts','no system source — NEED ATTENTION (no write)']],
+ ifc:[['771203','Generic Models','media column → IfcElectricApplianceType'],
+      ['771390','Pipe Accessory','shut-off valve → IfcValveType'],
+      ['802114','Ducts','duct segment → IfcDuctSegmentType']],
+ generic:[['611208','Pipes','flagged by scan'],['611345','Ducts','flagged by scan'],
+          ['613020','Pipe Fittings','flagged by scan']]};
+
+/* === r37 improvement A: AA's phases have REAL prerequisites. r25's gate line was a
+   flat list; the spine now shows a gate that cannot legitimately run yet. === */
+const DEPS={SPEC:'Cleanup',Worksets:'SPEC'};
+const DEPNOTE={SPEC:'needs a continuous network — apply G1 Cleanup (Phase 0) first',
+               Worksets:'needs SPEC_SYSTEM populated — apply G3 SPEC (Phase 4a) first'};
+
+/* === r37 improvement B: the previous inspection, so every gauge carries a delta.
+   The engine has no baseline today ("what changed since the last QAQC run?" is
+   unanswerable) — this is the surface that makes persisting one worthwhile. === */
+const BASE={find:1043,crit:314,health:41,loi:64,stamp:'yesterday 17:02'};
+
+/* ================= STATE ================= */
+const S={page:'dash',queued:{},scanned:false,loi:72,lastScan:null,applied:{},
+         reports:{},alerts:[],open:{},busy:false,cancel:false,flip:{},blockOpen:false};
+GATES.forEach(G=>G.phases.forEach(p=>S.queued[p.k]=false));
+const $=s=>document.querySelector(s),$$=s=>Array.from(document.querySelectorAll(s));
+const allPh=()=>GATES.flatMap(G=>G.phases);
+const live=r=>r&&r.preview&&!r.preview.stale?r.preview:(r&&r.health&&!r.health.stale?r.health:null);
+const phFind=p=>{const c=live(S.reports[p.k]);return c?c.count:0;};
+const gateFind=G=>G.phases.reduce((a,p)=>a+phFind(p),0);
+const gateSev=G=>{if(!S.scanned)return 'off';
+  const ph=G.phases.filter(p=>phFind(p)>0);
+  if(ph.some(p=>p.sev==='fail'))return 'fail';
+  if(ph.length)return 'warn';return 'ok';};
+const totFind=()=>GATES.reduce((a,G)=>a+gateFind(G),0);
+const totCrit=()=>allPh().reduce((a,p)=>a+(p.sev==='fail'?phFind(p):0),0);
+const queuedN=()=>Object.values(S.queued).filter(Boolean).length;
+const rep=k=>S.reports[k]||(S.reports[k]={health:null,preview:null,applied:null});
+const gateApplied=G=>G.phases.every(p=>S.applied[p.k]);
+const blockedBy=G=>{const d=DEPS[G.g];if(!d)return null;
+  const D=GATES.find(x=>x.g===d);return gateApplied(D)?null:D;};
+/* delta chip: lower is better for findings/critical, higher for scores */
+function dchip(now,was,lowerBetter){
+  if(!S.scanned)return '';
+  const d=now-was;if(d===0)return `<span class="delta flat">±0</span>`;
+  const good=lowerBetter?d<0:d>0;
+  return `<span class="delta ${good?'down':'up'}">${d>0?'▲':'▼'}${Math.abs(d)}</span>`;}
+
+/* ================= CERTIFICATE BAND ================= */
+function donut(el,pct){const r=15.9,c=2*Math.PI*r,on=c*pct/100;
+  el.innerHTML=`<circle cx="21" cy="21" r="${r}" fill="none" stroke="var(--track)" stroke-width="5"/>
+   <circle cx="21" cy="21" r="${r}" fill="none" stroke="${pct>=85?'var(--pass)':pct>=60?'var(--warn)':'var(--fail)'}"
+     stroke-width="5" stroke-dasharray="${on} ${c-on}" stroke-dashoffset="${c/4}" stroke-linecap="round"
+     transform="rotate(-90 21 21)"/>
+   <text x="21" y="24.5" text-anchor="middle" font-size="10" font-weight="700"
+     fill="var(--text-main)" font-family="Consolas">${S.scanned?pct:'–'}</text>`;}
+function health(){if(!S.scanned)return 0;
+  const graded=GATES.filter(G=>gateSev(G)!=='off');
+  const clean=graded.filter(G=>gateSev(G)==='ok').length;
+  return graded.length?Math.round(100*clean/graded.length):0;}
+function refreshCert(){
+  const f=totFind(),cr=totCrit(),q=queuedN(),h=health();
+  const holdN=GATES.filter(G=>gateSev(G)==='fail').length;
+  const fit=S.scanned&&cr===0&&S.loi>=90;
+  const st=$('#stamp');
+  st.textContent=!S.scanned?'NOT INSPECTED':(fit?'FIT FOR ISSUE':`HOLD · ${holdN||1} GATE${(holdN||1)===1?'':'S'}`);
+  st.className='stamp'+(!S.scanned?' idle':fit?' pass':'');
+  $('#stampNote').textContent=!S.scanned?'run SCAN HEALTH to inspect'
+    :fit?'all gates clear · LOI ≥ 90':`${cr} critical finding${cr===1?'':'s'} block issue`;
+  $('#stampBox').className='stampbox'+(!S.scanned?'':fit?' fit':' hold');
+  $('#certLine').textContent=!S.scanned?'certificate not raised'
+    :fit?'certificate grantable':'certificate withheld';
+  $('#cCrit').closest('.cseg').classList.toggle('alarm',S.scanned&&cr>0);
+  donut($('#certDonut'),h);
+  $('#cHealth').innerHTML=S.scanned?`${h}<small>/100</small>${dchip(h,BASE.health,false)}`:'&mdash;';
+  $('#cFind').innerHTML=S.scanned?`${f}${dchip(f,BASE.find,true)}`:'&mdash;';
+  $('#cFind').className='v '+(S.scanned&&f?'warn':S.scanned?'ok':'');
+  $('#cCrit').innerHTML=S.scanned?`${cr}${dchip(cr,BASE.crit,true)}`:'&mdash;';
+  $('#cCrit').className='v '+(S.scanned&&cr?'bad':S.scanned?'ok':'');
+  $('#cLoi').innerHTML=`${S.loi}%${dchip(S.loi,BASE.loi,false)}`;
+  $('#cQueued').textContent=q;$('#cQueued').className='v '+(q?'acc':'');
+  $('#cStamp').innerHTML=S.lastScan?`${S.lastScan}<small>was ${BASE.stamp}</small>`:'&mdash;';
+  const ib=$('#btnIssue');ib.classList.toggle('ready',fit);
+  ib.textContent=fit?'⚖ ISSUE CERTIFICATE':'⚖ ISSUE (HELD)';
+  renderBlocking(holdN,cr);
+}
+
+/* r37 improvement C: a verdict you cannot interrogate is decoration.
+   Clicking the stamp lists exactly what holds the model back, worst first. */
+function renderBlocking(holdN,cr){
+  const rows=[];
+  GATES.forEach(G=>{const f=gateFind(G),sev=gateSev(G);
+    if(sev==='fail'||(sev==='warn'&&f))rows.push({code:G.code,name:G.g,v:f,g:G.g,
+      why:sev==='fail'?'critical findings':'open findings'});});
+  if(S.loi<90)rows.push({code:'—',name:'LOI compliance below 90%',v:S.loi+'%',g:null,why:'parameter completeness'});
+  rows.sort((a,b)=>(typeof b.v==='number'?b.v:0)-(typeof a.v==='number'?a.v:0));
+  $('#blockList').innerHTML=!S.scanned
+    ?'<div class="sub">Not inspected yet — run SCAN HEALTH.</div>'
+    :rows.length?rows.map(r=>`<div class="blockrow" ${r.g?`onclick="blockTog();go('gate:${r.g}')"`:''}>
+        <span class="bc">${r.code}</span><span class="bn">${r.name}
+        <span class="sub">· ${r.why}</span></span><span class="bv">${r.v}</span></div>`).join('')
+      :'<div class="sub" style="color:var(--pass)">Nothing blocks issue — all gates clear and LOI ≥ 90.</div>';
+}
+function blockTog(){S.blockOpen=!S.blockOpen;$('#blockPanel').classList.toggle('on',S.blockOpen);}
+
+/* r37 improvement D: the board produces a deliverable. icz.reporthtml and
+   icz.xlsxlite already ship and the engine has no export path at all today. */
+function issueCert(){
+  if(!S.scanned){flash('Nothing to certify — run SCAN HEALTH first.');return;}
+  const cr=totCrit(),fit=cr===0&&S.loi>=90;
+  flash(fit?'Inspection certificate written — FIT FOR ISSUE (icz.reporthtml + icz.xlsxlite).'
+           :`Certificate written and stamped HELD — ${cr} critical finding(s) recorded against issue.`);
+  log(`ISSUE CERTIFICATE: verdict=${fit?'FIT FOR ISSUE':'HOLD'} · findings=${totFind()} · critical=${cr} · LOI=${S.loi}%`);
+}
+
+/* ================= GATE LINE ================= */
+function mkPill(on,cb,lg){const d=document.createElement('div');
+  d.className='pill'+(lg?' lg':'')+(on?' on':'');
+  d.onclick=e=>{e.stopPropagation();cb(!d.classList.contains('on'));};return d;}
+/* AIDesigner pickup: spine segment i carries the verdict of gate i-1, so a reader
+   traces the sequence's health downward. A dashed grey run means "the flow stopped
+   here" — which is the visual half of the BLOCKED chip. */
+function spineStyle(i){
+  if(i===0)return '';
+  const prev=GATES[i-1],sev=gateSev(prev);
+  if(!S.scanned)return '';
+  if(sev==='ok'&&gateApplied(prev))return 'background:var(--pass)';
+  if(sev==='ok')return 'background:var(--accent)';
+  if(sev==='warn')return 'background:var(--warn);opacity:.75';
+  if(sev==='fail')return 'background:transparent;border-left:2px dashed var(--fail);width:0';
+  return '';
+}
+function buildPipe(){
+  const host=$('#gateList');host.innerHTML='';
+  GATES.forEach((G,i)=>{
+    const row=document.createElement('div');
+    row.className='gate'+(i===0?' first':'')+(i===GATES.length-1?' last':'')
+      +(S.page==='gate:'+G.g?' sel':'');
+    row.dataset.hay=(G.g+' '+G.sub+' '+G.phases.map(p=>p.t+' '+p.d).join(' ')).toLowerCase();
+    row.setAttribute('data-xname','nav_gate_'+G.code);
+    const f=gateFind(G),sev=gateSev(G),blk=blockedBy(G);
+    if(blk)row.classList.add('blocked');
+    const qOn=G.phases.every(p=>S.queued[p.k]),qSome=G.phases.some(p=>S.queued[p.k]);
+    /* r37 improvement A: the spine reports HOW FAR through commissioning this gate is */
+    const anyH=G.phases.some(p=>S.reports[p.k]&&S.reports[p.k].health);
+    const anyP=G.phases.some(p=>S.reports[p.k]&&S.reports[p.k].preview);
+    const appl=G.phases.filter(p=>S.reports[p.k]&&S.reports[p.k].applied);
+    const anyA=appl.length>0;
+    const warnA=appl.some(p=>S.reports[p.k].applied.status!=='Passed');
+    /* AIDesigner pickup: the connector segment is coloured by the UPSTREAM gate's
+       verdict, so the dependency reads as a flow rather than a uniform rail. */
+    row.innerHTML=`<span class="spine" style="${spineStyle(i)}"></span><span class="lamp ${sev}"></span>
+      <div class="gbox"><div class="gname"><span class="gcode">${G.code}</span>${G.g}</div>
+      <div class="gsub">${blk?DEPNOTE[G.g]:G.sub}</div></div>
+      <span class="gcnt ${blk?'':sev==='fail'?'failc':(sev==='warn'&&f)?'warnc':S.scanned?'okc':''}"
+        >${blk?'BLOCKED ('+blk.code+')':S.scanned?(f||'&#10003;'):'·'}</span>`;
+    const pl=mkPill(qOn,on=>{G.phases.forEach(p=>S.queued[p.k]=on);refreshAll();});
+    if(qSome&&!qOn)pl.classList.add('mid');
+    row.appendChild(pl);
+    const tr=document.createElement('div');tr.className='track3';
+    tr.title='Commissioning progress: Health → Preview → Applied';
+    tr.innerHTML=`<i class="${anyH?'h':''}"></i><i class="${anyP?'p':''}"></i>`
+      +`<i class="${anyA?(warnA?'aw':'a'):''}"></i>`;
+    row.appendChild(tr);   /* blocker is named in the chip above — no second marker */
+    row.onclick=()=>go('gate:'+G.g);
+    host.appendChild(row);});
+}
+function filt(q){q=(q||'').toLowerCase();
+  $$('.gate').forEach(r=>r.style.display=!q||r.dataset.hay.includes(q)?'':'none');
+  $$('.prow').forEach(r=>r.style.display=!q||r.textContent.toLowerCase().includes(q)?'':'none');}
+
+/* ================= FOOTER CONTEXT ================= */
+function setFooter(){
+  const p=S.page,prev=$('#btnPrev'),run=$('#btnRun'),lbl=$('#runLbl');
+  prev.classList.remove('hide');run.classList.remove('hide');run.disabled=false;
+  if(p==='dash'){lbl.textContent=`APPLY QUEUED (${queuedN()})`;run.disabled=queuedN()===0;$('#fpage').textContent='Dashboard';}
+  else if(p.startsWith('gate:')){const g=p.slice(5),G=GATES.find(x=>x.g===g);
+    const n=G.phases.filter(x=>S.queued[x.k]).length;
+    lbl.textContent=`APPLY ${g.toUpperCase()} (${n})`;run.disabled=n===0;$('#fpage').textContent=g;}
+  else if(p==='audits'){prev.classList.add('hide');run.classList.add('hide');$('#fpage').textContent='Instruments';}
+  else if(p.startsWith('audit:')){const a=AUDITS.find(x=>x.k===p.slice(6));
+    prev.classList.add('hide');
+    lbl.textContent=a.k==='loi'?'RUN SCORECARD':a.k==='colorize'?'APPLY COLOURS':`RUN ${a.t.toUpperCase()}`;
+    $('#fpage').textContent=a.t;}
+  else if(p==='settings'){prev.classList.add('hide');lbl.textContent='SAVE MAPPINGS';$('#fpage').textContent='Settings';}
+}
+function primary(){
+  const p=S.page;
+  if(p==='dash'||p.startsWith('gate:'))return apply();
+  if(p.startsWith('audit:'))return runAudit(p.slice(6));
+  if(p==='settings')return flash('Mapping tables saved to spec_mappings.json.');
+}
+
+/* ================= NAV ================= */
+function go(page){S.page=page;render();}
+function refreshAll(){buildPipe();refreshCert();setFooter();
+  $$('.prow').forEach(r=>r.classList.toggle('sel',
+    r.dataset.page===S.page||(r.dataset.page==='audits'&&S.page.startsWith('audit:'))));
+  const p=S.page;
+  if(p==='dash')renderDash();
+  else if(p.startsWith('gate:'))renderGate(p.slice(5));}
+function render(){buildPipe();refreshCert();setFooter();
+  $$('.prow').forEach(r=>r.classList.toggle('sel',
+    r.dataset.page===S.page||(r.dataset.page==='audits'&&S.page.startsWith('audit:'))));
+  const p=S.page;$('#page').scrollTop=0;
+  if(p==='dash')renderDash();
+  else if(p.startsWith('gate:'))renderGate(p.slice(5));
+  else if(p==='audits')renderHub();
+  else if(p.startsWith('audit:'))renderAudit(p.slice(6));
+  else if(p==='settings')renderSettings();}
+
+/* ================= RADAR (6.20 → lib/icz/radar.py) ================= */
+function radarSvg(){
+  const S0=210,c=S0/2,R=74,n=AXES.length,g=[];
+  const pt=(i,f)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[c+Math.cos(a)*R*f,c+Math.sin(a)*R*f];};
+  [.25,.5,.75,1].forEach(f=>g.push(`<polygon points="${AXES.map((_,i)=>pt(i,f).map(v=>v.toFixed(1)).join(',')).join(' ')}"
+    fill="none" stroke="var(--rule)" stroke-width="1"/>`));
+  AXES.forEach((_,i)=>{const[x,y]=pt(i,1);
+    g.push(`<line x1="${c}" y1="${c}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--rule)"/>`);});
+  if(S.scanned){
+    g.push(`<polygon points="${AXES.map((a,i)=>pt(i,a[1]/100).map(v=>v.toFixed(1)).join(',')).join(' ')}"
+      fill="var(--accent)" fill-opacity=".20" stroke="var(--accent)" stroke-width="2"/>`);
+    AXES.forEach((a,i)=>{const[x,y]=pt(i,a[1]/100);
+      const col=a[1]>=85?'--pass':a[1]>=60?'--warn':'--fail';
+      g.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="var(${col})"/>`);});
   }
-  function subtab(el){ el.parentNode.querySelectorAll('.subtab').forEach(t=>t.classList.remove('on')); el.classList.add('on');
-    document.querySelectorAll('#p-aud .subpanel').forEach(s=>s.classList.remove('on')); document.getElementById('s-'+el.dataset.s).classList.add('on'); }
-  function mtab(el){ el.parentNode.querySelectorAll('.subtab').forEach(t=>t.classList.remove('on')); el.classList.add('on');
-    document.querySelectorAll('#p-set .subpanel').forEach(s=>s.classList.remove('on')); document.getElementById('m-'+el.dataset.s).classList.add('on'); }
-  var CUR=null;   // group key currently shown (for Check all / None)
-  function pillTog(el){ el.classList.toggle('on'); }
-  // ---- dashboard stage pill <-> group-page phase pills, one shared model (GROUPS) ----
-  function stageState(key){ var ps=GROUPS[key].phases, on=ps.filter(function(p){return p.on;}).length;
-    return on===0?'none':(on===ps.length?'all':'some'); }
-  function applyStagePill(pill,state){ pill.className='pill'+(state==='all'?' on':state==='some'?' part':''); }
-  function refreshDashPills(){ document.querySelectorAll('#p-dash .frow .pill[data-g]').forEach(function(p){ applyStagePill(p, stageState(p.dataset.g)); }); }
-  function togStage(key,pill){ var on = stageState(key)!=='all';           // any-off -> all on; all-on -> all off
-    GROUPS[key].phases.forEach(function(p){ p.on=on; }); applyStagePill(pill, on?'all':'none'); syncQ(); }
-  function togPhase(key,i,pill){ GROUPS[key].phases[i].on = pill.classList.toggle('on'); syncQ(); }   // writes back to model; dashboard re-reads on return
-  function groupAll(on){ if(CUR){ GROUPS[CUR].phases.forEach(function(p){ p.on=on; }); renderGroup(CUR); } syncQ(); }
-  function syncQ(){ var n=0; for(var k in GROUPS){ GROUPS[k].phases.forEach(function(p){ if(p.on) n++; }); }
-    document.getElementById('foot').textContent='Ready · workshared · '+n+' phases queued'; }
-  function pulse(btn,msg){ var f=document.getElementById('foot'); var old=f.textContent; f.textContent=msg; btn.style.opacity=.6;
-    setTimeout(function(){btn.style.opacity=1; f.textContent=old;},1100); }
-  function tgl(){ document.documentElement.setAttribute('data-theme', document.documentElement.getAttribute('data-theme')==='light'?'dark':'light'); }
-  refreshDashPills(); syncQ();   // init: dashboard stage pills reflect the model's queued state on load
+  AXES.forEach((a,i)=>{const[x,y]=pt(i,1.19);
+    g.push(`<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="7.5" fill="var(--text-2)"
+      text-anchor="middle" dominant-baseline="middle" font-family="Consolas">${a[0]}</text>`);});
+  return `<svg viewBox="0 0 ${S0} ${S0}" width="200" height="200" data-xname="radar_canvas">${g.join('')}</svg>`;
+}
+
+/* ================= PAGES ================= */
+function gearBtn(key){return `<button class="gearb" data-xname="btn_gear_${key}" onclick="flipTog('${key}')"
+  title="Page settings">&#9881;</button>`;}
+function flipTog(k){S.flip[k]=!S.flip[k];render();}
+function togRow(t,d,on){return `<div class="togrow"><div style="flex:1">
+  <div class="tt">${t}</div><div class="dd">${d}</div></div>
+  <div class="pill lg${on?' on':''}" onclick="this.classList.toggle('on')"></div></div>`;}
+
+function renderDash(){
+  const fbg=GATES.map(G=>{const f=gateFind(G),sev=gateSev(G);
+    const col=sev==='fail'?'--fail':sev==='warn'?'--warn':sev==='ok'?'--pass':'--text-2';
+    return {G,f,sev,col};});
+  const mx=Math.max(1,...fbg.map(x=>x.f));
+  $('#page').innerHTML=`
+   <h2 class="pg">Inspection board</h2>
+   <div class="sub">Six quality axes, six gates. Read the verdict above, find the weak axis, walk the gate line.</div>
+   <div class="grid2">
+     <div>
+       <div class="card"><h4>Findings by gate
+         <span class="r"><button class="btn sm" data-xname="btn_checkall" onclick="checkAll()">CHECK ALL</button>
+         <button class="btn sm" onclick="clearQ()">CLEAR QUEUE</button></span></h4>
+         ${fbg.map(({G,f,sev,col})=>`<div class="frow" onclick="go('gate:${G.g}')">
+           <div class="nm"><span class="gcode" style="color:var(--accent)">${G.code}</span>${G.g}</div>
+           <div class="bar"><i style="width:${S.scanned?Math.max(f?6:0,f/mx*100):0}%;background:var(${col})"></i></div>
+           <div class="c" style="color:var(${col})">${S.scanned?(f||'✓'):'·'}</div>
+           <div class="pill${G.phases.every(p=>S.queued[p.k])?' on':''}"
+                onclick="event.stopPropagation();gateQ('${G.g}')"></div></div>`).join('')}
+         ${!S.scanned?'<div class="rednote">Nothing inspected yet — <b>SCAN HEALTH</b> in the certificate band sweeps all 14 scanners and fills every gauge, lamp and axis.</div>':''}
+       </div>
+       <div class="card" data-xname="host_reports"><h4>Stage record
+         <span class="r"><button class="btn sm" onclick="clearRep()">&#128465; Clear</button></span></h4>
+         ${S.alerts.map(a=>`<div class="alertband"><b style="color:var(--fail);font-size:11.5px">✕ ${a.name}</b>
+            ${a.lines.map(l=>`<div class="dl"><span>${l[0]}</span><b>${l[1]}</b></div>`).join('')}</div>`).join('')}
+         <div class="mx"><span></span><span>Phase</span><span>Health</span><span>Preview</span><span>Applied</span></div>
+         ${matrixRows()}
+       </div>
+     </div>
+     <div>
+       <div class="card"><h4>Quality radar <span class="r"><span class="sub">6.20</span></span></h4>
+         <div class="radarwrap">${radarSvg()}</div>
+         <div class="axleg" style="margin-top:6px">
+           ${AXES.map(a=>{const col=a[1]>=85?'--pass':a[1]>=60?'--warn':'--fail';
+             return `<div class="axrow" onclick="go('${a[2]}')">
+               <span class="sw" style="background:var(${S.scanned?col:'--text-2'})"></span>
+               <span class="an">${a[0]}</span>
+               <span class="av" style="color:var(${S.scanned?col:'--text-2'})">${S.scanned?a[1]:'—'}</span></div>`;}).join('')}
+         </div>
+         <div class="rednote">Each axis opens the instrument that produces it. Drawn by the promoted
+           <b>lib/icz/radar.py</b> seam — AA is consumer #2, which fires 6.20's pre-decided promotion trigger.</div>
+       </div>
+       <div class="card"><h4>Scope</h4>
+         <div class="mrow"><span class="n">709</span><span>LOI checks selected</span><span></span></div>
+         <div class="mrow"><span class="n">${queuedN()}</span><span>Phases queued</span><span></span></div>
+         <div class="mrow"><span class="n">29,927</span><span>Model elements</span><span></span></div>
+         <div class="mrow"><span class="n">${S.lastScan||'—'}</span><span>Last inspection</span><span></span></div>
+       </div>
+     </div>
+   </div>`;
+}
+function matrixRows(){
+  const ks=allPh().filter(p=>{const r=S.reports[p.k];return r&&(r.health||r.preview||r.applied);});
+  if(!ks.length)return '<div class="sub" style="padding:8px 4px">No stage has run yet.</div>';
+  const cell=(st,c)=>{
+    if(!c)return '<span class="cell" style="color:var(--text-2)">&mdash;</span>';
+    const G={health:'&#9671;',preview:'&#9675;'},AG={Passed:'&#9679;',Warnings:'&#9650;',Failed:'&#10005;'};
+    const K={Passed:'--pass',Warnings:'--warn',Failed:'--fail'};
+    const g=st==='applied'?AG[c.status]:G[st];
+    const col=st==='applied'?K[c.status]:(st==='preview'?'--accent':'--text-2');
+    return `<span class="cell${c.stale?' stale':''}" title="${c.stale?'Superseded by an Apply — no longer counts toward OPEN FINDINGS':st+' at '+c.stamp}">
+      <span style="color:var(${col})">${g}</span>${st==='applied'?c.status:c.count}</span>`;};
+  return ks.map(p=>{const r=S.reports[p.k];
+    let det='';
+    ['health','preview','applied'].forEach(st=>{const c=r[st];if(!c)return;
+      let lab=st[0].toUpperCase()+st.slice(1);
+      if(st==='applied'&&c.status)lab+=' - '+c.status;
+      lab+='  ·  '+c.stamp;if(c.stale)lab+='  ·  superseded by a later Apply';
+      det+=`<div style="font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+             color:var(--text-2);margin:6px 0 2px" class="${c.stale?'stale':''}">${lab}</div>`;
+      det+=(c.lines||[]).map(l=>`<div class="dl ${c.stale?'stale':''}"><span>${l[0]}</span><b>${l[1]}</b></div>`).join('');});
+    return `<div class="mxr">
+      <span class="chevb" onclick="detTog('${p.k}',this)">&#9656;</span>
+      <span style="font-size:11.5px;font-weight:600;cursor:pointer" onclick="goPhase('${p.k}')"
+        title="Open this phase in its gate">${p.s}: ${p.t.split(': ')[1]}</span>
+      ${cell('health',r.health)}${cell('preview',r.preview)}${cell('applied',r.applied)}</div>
+      <div class="det" id="det-${p.k}">${det}</div>`;}).join('');
+}
+function detTog(k,el){const d=$('#det-'+k);d.classList.toggle('on');
+  el.innerHTML=d.classList.contains('on')?'&#9662;':'&#9656;';}
+
+function renderGate(g){
+  const G=GATES.find(x=>x.g===g);const key='gate_'+G.code;
+  if(S.flip[key]){
+    $('#page').innerHTML=`<h2 class="pg"><span class="code">${G.code}</span>${G.g} — settings ${gearBtn(key)}</h2>
+      <div class="sub">Options for this gate only (the FIT/PSU gear-flip pattern).</div>
+      <div class="card" data-xname="settings_${key}">
+        ${togRow('Require preview before Apply','Apply stays disabled for a phase until it has been previewed once. Default OFF.',false)}
+        ${togRow('Confirm before Apply','Themed Yes/No prompt before committing. Recommended while the gate is off.',true)}
+        ${togRow('Isolate element on row click','Zoom to and temporarily isolate the clicked finding. Now persisted per project.',false)}
+        ${G.g==='SPEC'?togRow('Overwrite existing SPEC values','Off = populate blanks only. On = replace values already set.',false):''}
+        ${G.g==='CMMN'?`<div class="edh" style="grid-template-columns:200px 1fr">
+          <span>Field</span><span>Value</span></div>
+          ${[['status_code parameter','CMMN_STATUS_CODE'],['tool_id parameter','CMMN_TOOL_ID'],
+             ['building parameter','IFX_BUILDING'],['TOOL_ID delimiter','_'],['TOOL_ID token index','3']]
+            .map(r=>`<div class="edr" style="grid-template-columns:200px 1fr"><span class="sub">${r[0]}</span>
+              <input value="${r[1]}"></div>`).join('')}`:''}
+        <div class="rednote">r37: these lived on the single monolithic Settings page. Each gate now carries its own
+          options, and <b>Isolate</b> stops being duplicated (it existed on two pages, unsynced, and did not persist).</div>
+      </div>`;
+    return;
+  }
+  $('#page').innerHTML=`
+    <h2 class="pg"><span class="code">${G.code}</span>${G.g}
+      <span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+        <button class="btn sm" onclick="gateQ('${G.g}',true)">Queue all</button>
+        <button class="btn sm" onclick="gateQ('${G.g}',false)">None</button>
+        ${gearBtn(key)}</span></h2>
+    <div class="sub">${G.sub} — ${G.phases.length} phase${G.phases.length===1?'':'s'} ·
+      lamp ${gateSev(G)==='off'?'not inspected':gateSev(G)} · ${gateFind(G)} open finding(s)</div>
+    ${(()=>{const b=blockedBy(G);return b?`<div class="blockbanner" data-xname="banner_blocked_${G.code}">
+      <b>BLOCKED BY ${b.code}</b><span style="flex:1">${DEPNOTE[G.g]} — applying this gate first is not a
+      preference, it is a prerequisite: the resolver reads what ${b.code} writes.</span>
+      <button class="btn sm" onclick="go('gate:${b.g}')">Go to ${b.code}</button></div>`:'';})()}
+    <div data-xname="view_${key}">
+      ${G.phases.map(p=>phCard(p)).join('')}
+    </div>`;
+}
+function phCard(p){
+  const open=!!S.open[p.k],r=S.reports[p.k],c=live(r);
+  const rows=ROWS[p.k]||ROWS.generic;
+  return `<div class="ph${open?' open':''}" data-xname="card_phase_${p.k}">
+    <div class="hd" onclick="phTog('${p.k}')">
+      <div class="pill lg${S.queued[p.k]?' on':''}" onclick="event.stopPropagation();phQ('${p.k}')"></div>
+      <div style="flex:1"><div class="tt">${p.t}</div><div class="dd">${p.d}</div>
+        <div class="brief">${p.brief}</div></div>
+      <span class="gcnt ${p.sev==='fail'&&phFind(p)?'failc':phFind(p)?'warnc':S.scanned?'okc':''}">
+        ${S.scanned?(phFind(p)||'&#10003;'):'·'}</span>
+      <span class="chev">&#9662;</span></div>
+    <div class="bd">
+      ${p.settingsOnly?`<div class="rednote">Settings-only phase — no scan. Configure the source tokens on the
+        gate's <b>gear</b>, then Apply. <b>r37 note:</b> Phase 3 is the only write phase with no resolver, preview
+        grid or exclusion set; adding one is filed, not built this round.</div>`:`
+      <div class="gtb"><span class="cnt">${c?`${c.count} flagged · scanned ${c.stamp}`:'Not scanned yet.'}</span>
+        <button class="btn sm" onclick="scanOne('${p.k}')">Scan</button>
+        <button class="btn sm">All</button><button class="btn sm">None</button>
+        <button class="btn sm">Remove &#10003;</button><button class="btn sm">Zoom &#10003;</button></div>
+      <div class="gridbox">
+        <div class="gh"><span>&#10003;</span><span>ID</span><span>Family &amp; Type</span><span>Target</span></div>
+        ${c?rows.map(x=>`<div class="gr"><input type="checkbox" checked>
+            <span class="id" onclick="flash('Zoom to element ${x[0]}')">${x[0]}</span>
+            <span>${x[1]}</span><span class="nt">${x[2]}</span></div>`).join('')
+          :`<div class="sub" style="padding:8px 6px">Press “Scan” to list the elements this phase would change.</div>`}
+      </div>`}
+    </div></div>`;
+}
+function phTog(k){S.open[k]=!S.open[k];renderGate(GATES.find(G=>G.phases.some(p=>p.k===k)).g);}
+function phQ(k){S.queued[k]=!S.queued[k];refreshAll();}
+function gateQ(g,force){const G=GATES.find(x=>x.g===g);
+  const on=force!==undefined?force:!G.phases.every(p=>S.queued[p.k]);
+  G.phases.forEach(p=>S.queued[p.k]=on);refreshAll();}
+function checkAll(){const on=!allPh().every(p=>S.queued[p.k]);allPh().forEach(p=>S.queued[p.k]=on);refreshAll();}
+function clearQ(){allPh().forEach(p=>S.queued[p.k]=false);refreshAll();}
+function goPhase(k){const G=GATES.find(x=>x.phases.some(p=>p.k===k));
+  S.open[k]=true;go('gate:'+G.g);
+  flash(`Opened ${k} inside gate ${G.code} · ${G.g} — the gate line stays selected and the footer reads ${G.g}.`);}
+
+function renderHub(){
+  $('#page').innerHTML=`<h2 class="pg">Instruments</h2>
+    <div class="sub">Read-only — nothing is written to the model. Every count is reachable: click a row's
+      <b>Select</b> to put those elements in the Revit selection.</div>
+    ${AUDITS.map(a=>`<div class="aud"><span class="ai">${a.i}</span>
+      <div><div class="at">${a.t}</div><div class="ad">${a.d}</div></div>
+      <button class="btn" onclick="go('audit:${a.k}')">Open</button></div>`).join('')}`;
+}
+function renderAudit(k){
+  const a=AUDITS.find(x=>x.k===k),key='audit_'+k;
+  if(S.flip[key]){
+    $('#page').innerHTML=`<h2 class="pg">${a.t} — settings ${gearBtn(key)}</h2>
+      <div class="card" data-xname="settings_${key}">
+        ${k==='mhealth'?`<div class="edh" style="grid-template-columns:220px 1fr"><span>Setting</span><span>Value</span></div>
+          <div class="edr" style="grid-template-columns:220px 1fr"><span class="sub">Allowed wall-type patterns</span>
+          <input value="DX_*, STB_*, GEN_*"></div>
+          <div class="rednote"><b>r37 improvement:</b> this feeds the newly wired
+            <b>mhealth.offstandard_wall_types</b> — r36's pinned round-37 opener. It sits outside
+            <b>REGISTRY</b> because it needs these patterns, so it has never executed. The patterns persist as a new
+            sub-key in <b>aa_config.json</b> via configstore (schema extension, not a new file).</div>`:''}
+        ${k==='colorize'?togRow('AWS colour-code palette','Paint buckets from the promoted AWS-MASTER colour data (icz.bimstd); unmatched buckets keep auto HSV colours.',false):''}
+        ${togRow('Cache results between page switches','Keep the last sweep when navigating away.',true)}
+      </div>`;
+    return;
+  }
+  const M=INSTR[k]||{score:null,unit:'',lab:'',what:'Item',rows:[]};
+  const clickable=k!=='colorize';
+  const band=s=>s>=85?'ok':s>=60?'warn':'fail';
+  const sevOf=(v,w)=>!v?'--text-2':w>=6?'--fail':w>=3?'--warn':'--text-2';
+  $('#page').innerHTML=`
+    <h2 class="pg">${a.t}<span style="margin-left:auto;display:flex;gap:6px;align-items:center">
+      <button class="btn sm" onclick="runAudit('${k}')">Run instrument</button>${gearBtn(key)}</span></h2>
+    <div class="sub">${a.d}</div>
+    <div data-xname="view_${key}">
+
+      ${M.score!==null?`<div class="readout" data-xname="readout_${k}">
+        <div><div class="big" style="color:var(--${band(M.score)==='ok'?'pass':band(M.score)==='warn'?'warn':'fail'})">
+          ${M.score}<span class="unit">${M.unit}</span></div>
+          <div class="rlab">${M.lab}</div></div>
+        <span class="vchip ${band(M.score)}">${band(M.score)==='ok'?'within standard':band(M.score)==='warn'?'advisory':'below standard'}</span>
+        <div style="margin-left:auto;text-align:right">
+          <div class="rlab" style="margin:0 0 3px">vs last inspection</div>
+          <div style="font:700 13px Consolas,monospace">${dchip(M.score,M.score-7,false)||'—'}</div></div>
+      </div>`:''}
+
+      ${k==='colorize'?`
+      <div class="card"><h4>Bucket the active view</h4>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="sub">Parameter</span>
+          <input style="width:200px;background:var(--input-bg);border:1px solid var(--border);
+            border-radius:4px;color:var(--text-main);padding:4px 8px;font:11px Consolas,monospace"
+            value="SPEC_SYSTEM" data-xname="tb_colorize_param">
+          <span class="sub">Palette</span>
+          <select style="background:var(--input-bg);border:1px solid var(--border);border-radius:4px;
+            color:var(--text-main);padding:4px 8px;font-size:11px" data-xname="cmb_colorize_palette">
+            <option>Auto (HSV)</option><option>AWS Colour Code (KUL073)</option></select>
+          <button class="btn acc" onclick="flash('Active view coloured by SPEC_SYSTEM — 5 buckets, reversible.')">Colorize</button>
+          <button class="btn" onclick="flash('Colour overrides cleared.')">Reset</button></div>
+        <div class="cbuckets" data-xname="host_legend">
+          ${CBUCKETS.map(b=>`<div class="cbucket" onclick="flash('Select every element in bucket ${b[0]}')">
+            <span class="sw" style="background:${b[1]}"></span><span class="cn">${b[0]}</span></div>`).join('')}
+        </div>
+        <div class="rednote">Reversible per-element view overrides only — no model data is written.
+          Each legend chip selects its bucket, so the colour map is a picker as well as a picture.</div>
+      </div>`:''}
+
+      ${M.rows.length?`<div class="card" data-xname="host_results_${k}">
+        <h4>Indicators <span class="r">
+          <button class="btn sm out" onclick="flash('Selected every flagged element across all indicators')">Select all flagged</button>
+        </span></h4>
+        <div class="mgrid h"><span style="text-align:right">Value</span><span>${M.what}</span>
+          <span style="text-align:right">Target</span>
+          <span style="text-align:right">Weight</span><span style="text-align:right">Δ</span><span></span></div>
+        ${M.rows.map(r=>{const[nm,v,w,base,tgt]=r;
+          const meets=tgt===null?null:v<=tgt;
+          return `<div class="mgrid">
+            <span class="n" style="color:var(${sevOf(v,w)})">${v}</span>
+            <span><span class="sevdot" style="background:var(${sevOf(v,w)})"></span>${nm}</span>
+            <span class="w" style="${meets===false?'color:var(--fail)':meets?'color:var(--pass)':''}"
+              >${tgt===null?'—':'≤ '+tgt}</span>
+            <span class="w">${w?'×'+w:'—'}</span>
+            <span class="w">${base===null?'<span style="color:var(--accent)">NEW</span>'
+              :v===base?'±0':`<span style="color:var(--${v<base?'pass':'fail'})">${v<base?'▼':'▲'}${Math.abs(v-base)}</span>`}</span>
+            ${v?`<button class="btn sm" onclick="flash('Select ${v} × ${nm} in Revit')">Select</button>`:'<span></span>'}
+          </div>`;}).join('')}
+        <div class="rednote"><b>r37 improvement:</b> ${k==='mhealth'||k==='vfilters'
+          ?'this instrument was a dead end — it counted problems with no way to reach them.'
+          :'per-row Select joins the clickable IDs this page already had.'}
+          Every count now honours the standing clickable-element-IDs rule. Weight is the metric's
+          contribution to the score, so the reader can see which count actually moves the needle.
+          ${k==='mhealth'?'<br><b>Off-standard wall types</b> is the newly wired <b>mhealth.offstandard_wall_types</b> (r36’s pinned round-37 opener) — marked NEW because it has no baseline yet.':''}
+        </div>
+      </div>`:''}
+
+      ${k==='loi'?`<div class="card" data-xname="host_loi_report">
+        <h4>The report <span class="r">
+          <button class="btn sm" onclick="flash('LOI report written to HTML — same payload as on screen.')">Export to HTML</button>
+        </span></h4>
+        <div class="sub" style="margin-bottom:4px">709 checks · 511 pass · 198 fail — one
+          <b>report_data()</b> pass. The page IS the report; Export only hands the same payload to someone else.</div>
+        ${LOI_TREE.map((h,hi)=>`
+          <div class="loih" id="lh${hi}" onclick="loiTog(${hi})">
+            <span class="chv">&#9656;</span><span class="nm">${h.h}</span>
+            <span class="pf">${h.pass} pass · ${h.fail} fail</span>
+            <span class="pct" style="color:var(--${h.pct>=85?'pass':h.pct>=60?'warn':'fail'})">${h.pct}%</span></div>
+          <div class="loib" id="lb${hi}">
+            ${h.secs.map(s=>`<div style="font-size:11px;font-weight:600;color:var(--text-2);margin:8px 0 2px">${s.s}</div>
+              ${s.checks.map((c,ci)=>`
+                <div class="lchk" onclick="itemsTog(${hi},${ci})">
+                  <span class="cn">${c.c}</span>
+                  <span class="cb"><i style="width:${Math.min(100,c.fails/c.appl*100*8).toFixed(1)}%"></i></span>
+                  <span class="cf">${c.fails} / ${c.appl.toLocaleString()}</span></div>
+                <div class="litems" id="li${hi}_${ci}">
+                  <div class="lit h"><span>ID</span><span>Category / Type</span><span>Value</span><span>Failed check</span></div>
+                  ${LOI_ITEMS.map(it=>`<div class="lit">
+                    <span class="id" onclick="flash('Zoom to element ${it[0]}')">${it[0]}</span>
+                    <span>${it[1]}</span><span>${it[2]}</span><span style="color:var(--fail)">${it[3]}</span></div>`).join('')}
+                  <div class="sub" style="padding:3px 2px">+ ${c.fails-3} more failing element(s) — the exported HTML lists the full table.</div>
+                </div>`).join('')}`).join('')}
+          </div>`).join('')}
+      </div>`:''}
+    </div>`;
+}
+function loiTog(i){const h=$('#lh'+i),b=$('#lb'+i);
+  h.classList.toggle('open');b.classList.toggle('open');}
+function itemsTog(h,c){event.stopPropagation();$('#li'+h+'_'+c).classList.toggle('open');}
+function runAudit(k){const a=AUDITS.find(x=>x.k===k);
+  flash(`${a.t} swept via the ExternalEvent — re-entrancy guarded, so a second click cannot start a parallel sweep.`);
+  log(`${a.t}: sweep complete`);}
+
+function renderSettings(){
+  $('#page').innerHTML=`<h2 class="pg">Settings</h2>
+    <div class="sub">Firm-standard mapping tables. Per-gate and per-instrument options now live on their own page's gear.</div>
+    ${[['SPEC_SYSTEM prefix rules','Phase 4a/8 — prefix maps to a DX workset. Order matters: most specific first.',['DX-','DX_STB']],
+       ['Comment / interconnect prefix rules','Phase 4a/4c fallback.',['PV-','DX_PV']],
+       ['Interconnect system names','Exact system name → DX workset (Phase 4a PATH-3).',['Exhaust Air','DX_EA']],
+       ['IFC classification mapping','Phase 7 — SPEC label (lower-case) → IFC class.',['valve','IfcValveType']],
+       ['ChemicalBox family names','Phase 4b — families treated as chemical boxes.',['CHEM_BOX_A','']],
+       ['DX_RR family names','Phase 4a PATH-3 + Phase 8 override — one shared list.',['RR_Panel','']],
+       ['Surface-mounted accessory keywords','Phase 4c — name tokens identifying surface-mounted accessories.',['clamp','']]]
+      .map(s=>`<div class="card"><h4>${s[0]}</h4><div class="sub" style="margin-bottom:6px">${s[1]}</div>
+        <div class="edh" style="grid-template-columns:1fr 1fr 30px"><span>Key</span><span>Value</span><span></span></div>
+        <div class="edr" style="grid-template-columns:1fr 1fr 30px"><input value="${s[2][0]}">
+          <input value="${s[2][1]}"><button class="btn sm" style="color:var(--fail)">&#10005;</button></div>
+        <button class="btn sm out" style="margin-top:8px">+ Add row</button></div>`).join('')}`;
+}
+
+/* ================= ACTIONS ================= */
+function sweep(){
+  if(S.busy){flash('A model health scan is already running.');return;}
+  S.busy=true;S.cancel=false;$('#btnCancel').classList.add('on');$('#btnRun').disabled=true;
+  const list=allPh().filter(p=>!p.settingsOnly);let i=0;
+  const step=()=>{
+    if(S.cancel){done('Scan cancelled — partial results kept.');return;}
+    if(i>=list.length){S.scanned=true;S.lastScan='22:29';
+      done(`Model health scanned — ${list.length} phases, ${GATES.filter(G=>gateFind(G)).length} gates with findings.`);return;}
+    const p=list[i++];
+    rep(p.k).health={count:p.n,stamp:'22:29',stale:false,
+      lines:[['Will write',String(p.n)],['Need attention (no write)','0'],['Excluded by review','0']]};
+    $('#runbar').style.width=(i/list.length*100)+'%';
+    $('#fstatus').textContent=`Scanning model health — ${i} of ${list.length}: ${p.s}…`;
+    refreshCert();buildPipe();
+    setTimeout(step,70);};
+  step();
+}
+function preview(){
+  const ks=allPh().filter(p=>S.queued[p.k]);
+  if(!ks.length){flash('No phases queued.');return;}
+  ks.forEach(p=>rep(p.k).preview={count:p.n,stamp:'22:31',stale:false,
+    lines:[['Will write',String(p.n)],['Excluded by review','0']]});
+  S.scanned=true;S.lastScan=S.lastScan||'22:31';
+  $('#fstatus').textContent=`Preview of ${ks.length} phase(s) cached at 22:31 — open any phase to review its rows.`;
+  refreshAll();
+}
+function apply(){
+  const ks=allPh().filter(p=>S.queued[p.k]);
+  if(!ks.length)return;
+  S.busy=true;S.cancel=false;$('#btnCancel').classList.add('on');$('#btnRun').disabled=true;
+  let i=0;
+  const step=()=>{
+    if(S.cancel){done('Apply cancelled — committed phases kept, remainder skipped.');return;}
+    if(i>=ks.length){
+      Object.values(S.reports).forEach(r=>['health','preview'].forEach(s=>{if(r[s])r[s].stale=true;}));
+      ks.forEach(p=>{rep(p.k).applied={status:p.sev==='fail'?'Warnings':'Passed',stamp:'22:34',stale:false,
+        lines:[['Updated',String(p.n)]]};S.applied[p.k]=true;});
+      done(`Applied ${ks.length} phase(s) — see the stage record.`);return;}
+    const p=ks[i++];
+    $('#runbar').style.width=(i/ks.length*100)+'%';
+    $('#fstatus').textContent=`Applying ${i} of ${ks.length}: ${p.s}…`;
+    log(`${p.s}: committed (${p.n} updated)`);
+    setTimeout(step,200);};
+  step();
+}
+function done(msg){S.busy=false;$('#btnCancel').classList.remove('on');
+  $('#runbar').style.width='0';$('#fstatus').textContent=msg;render();}
+function flash(m){const b=$('#banner');$('#bannerText').textContent=m;b.classList.add('on');
+  clearTimeout(flash.t);flash.t=setTimeout(()=>b.classList.remove('on'),2600);}
+function log(l){$('#txtLog').textContent+=l+"\n";}
+function conTog(){$('#console').classList.toggle('on');}
+function pipeTog(){$('#pipe').classList.toggle('collapsed');}
+function theme(){const h=document.documentElement;
+  h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';render();}
+function scanOne(k){const p=allPh().find(x=>x.k===k);
+  rep(k).health={count:p.n,stamp:'22:36',stale:false,
+    lines:[['Will write',String(p.n)],['Excluded by review','0']]};
+  S.scanned=true;S.lastScan=S.lastScan||'22:36';
+  refreshAll();flash(`${p.s} scanned — ${p.n} flagged.`);}
+function clearRep(){S.reports={};S.alerts=[];S.scanned=false;S.lastScan=null;S.applied={};render();}
+
+/* ================= INIT ================= */
+$$('.prow').forEach(r=>r.onclick=()=>go(r.dataset.page));
+S.alerts=[];
+render();
 </script>
 </body>
 </html>
