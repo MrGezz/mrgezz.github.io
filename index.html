@@ -312,16 +312,12 @@ section:not(.hero) .shot .openfull{padding:2px 9px; font-size:10.5px}
    pre-measure default, so a mockup is never cropped or padded with dead space */
 .frame.live{transition:none}
 
-/* Phones: a 1224–1700px desktop UI scaled into a ~340px column is legible to
-   nobody, and panning inside an iframe fights the page scroll. So the embed
-   becomes a tap-to-open card — a readable crop of the window top, faded into a
-   full-width action bar; the mockup itself opens as its own page. */
+/* Phones: the embed autofits like everywhere else — the whole window, scaled to
+   the column, never cropped. Touch is still disabled on it (panning inside a
+   scaled iframe fights the page scroll, and these UIs want hover); reading the
+   detail is what the full-width Full size bar is for. */
 @media (max-width:700px){
   .frame.live iframe{pointer-events:none}
-  .frame.live::after{
-    content:''; position:absolute; left:0; right:0; bottom:0; height:60px; z-index:2;
-    background:linear-gradient(to bottom, transparent, var(--bg-2) 92%); pointer-events:none;
-  }
   section:not(.hero) .shot .bar{padding:0}
   section:not(.hero) .shot .openfull{
     margin:0; width:100%; justify-content:center; gap:8px; padding:12px 0;
@@ -2084,7 +2080,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
      size of its own at all. Neutralise both for the measurement, then restore. */
   const RELAX = 'html,body{min-height:0!important;height:auto!important;overflow:visible!important;' +
                 'justify-content:flex-start!important;align-items:flex-start!important}';
-  const measure = (f, d, avail) => {
+  const measure = (f, d, avail, fluidW) => {
     const st = d.createElement('style');
     st.textContent = RELAX;
     d.head.appendChild(st);
@@ -2105,7 +2101,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
        mockup just reports back whatever canvas it was handed */
     const wWide = widest(PROBE), wNarrow = widest(PROBE - 400);
     const fluid = wWide >= PROBE - 20 && wNarrow >= PROBE - 420;
-    let w = (fluid || wWide < 60) ? avail : wWide;
+    let w = (fluid || wWide < 60) ? (fluidW || avail) : wWide;
     f.style.width = w + 'px';                 /* height is width-dependent — measure after */
     const h = Math.ceil(d.body.scrollHeight);
     st.remove();
@@ -2129,20 +2125,11 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
         f.style.transform = 'scale(' + s + ')';
         return;
       }
-      const nat = measure(f, d, avail);
+      /* phones take the same fit path — only a FLUID mockup is handled apart, on a
+         desktop-ish canvas, so it scales down whole instead of reflowing into a
+         340px layout that exists nowhere else */
+      const nat = measure(f, d, avail, PHONE() ? Math.max(avail, 640) : avail);
       if (!nat) return;
-      if (PHONE()) {                          /* preview card, not a shrunken window */
-        /* a fluid mockup would reflow into a 340px phone layout that exists nowhere
-           else — give it a desktop-ish canvas and crop, same as the fixed ones */
-        const pw = Math.max(nat.w, 640);
-        const ps = Math.max(Math.min(1, avail / pw), 0.5);      /* legibility floor */
-        f.style.zoom = ''; f.style.transform = 'none';
-        f.style.width = pw + 'px'; f.style.height = nat.h + 'px';
-        if (ps < 1) { if (ZOOMABLE) f.style.zoom = ps; else f.style.transform = 'scale(' + ps + ')'; }
-        const full = Math.round(nat.h * ps);   /* short and already legible → show all of it */
-        fr.style.height = ((ps >= 0.6 && full <= 420) ? full : Math.min(full, 200)) + 'px';
-        return;
-      }
       /* fit: shrink to the column, never blow past 1:1 */
       let w = nat.w, h = nat.h, s = Math.min(1, avail / w);
       const apply = () => {
@@ -2171,7 +2158,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   if (PHONE()) {                              /* the desktop hint promises interaction phones don't get */
     const hint = document.querySelector('.live-hint');
     if (hint) hint.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Every window here is a live HTML ' +
-      'mockup — tap <b>Full size</b> to open one and pinch to explore it.';
+      'mockup, shown whole — tap <b>Full size</b> to open one and pinch to explore it.';
   }
   /* a frame measured at zero width (hidden pane, pre-layout mobile paint) bails
      out of fitFrames and would stay unsized forever — re-fit when it gets a width */
