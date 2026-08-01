@@ -280,7 +280,9 @@ section:not(.hero) .shot:hover{
 /* ===== Live interactive mockup embeds ===== */
 .frame.live iframe{
   position:absolute; top:0; left:0; border:0; transform-origin:0 0;
-  background:transparent; display:block;
+  /* never transparent: if an engine leaves part of the surface unpainted it must
+     read as the panel, not as a white slab (iOS Safari + zoom did exactly that) */
+  background:var(--bg-2); display:block;
 }
 .shot .openfull{
   margin-left:auto; display:inline-flex; align-items:center; gap:6px;
@@ -309,6 +311,24 @@ section:not(.hero) .shot .openfull{padding:2px 9px; font-size:10.5px}
 /* the frame takes the embed's measured height (see fitFrames) — 16/9 is only the
    pre-measure default, so a mockup is never cropped or padded with dead space */
 .frame.live{transition:none}
+
+/* Phones: a 1224–1700px desktop UI scaled into a ~340px column is legible to
+   nobody, and panning inside an iframe fights the page scroll. So the embed
+   becomes a tap-to-open card — a readable crop of the window top, faded into a
+   full-width action bar; the mockup itself opens as its own page. */
+@media (max-width:700px){
+  .frame.live iframe{pointer-events:none}
+  .frame.live::after{
+    content:''; position:absolute; left:0; right:0; bottom:0; height:60px; z-index:2;
+    background:linear-gradient(to bottom, transparent, var(--bg-2) 92%); pointer-events:none;
+  }
+  section:not(.hero) .shot .bar{padding:0}
+  section:not(.hero) .shot .openfull{
+    margin:0; width:100%; justify-content:center; gap:8px; padding:12px 0;
+    font-size:12.5px; color:var(--accent); border:0; border-top:1px solid var(--line);
+    border-radius:0; background:color-mix(in srgb, var(--accent) 7%, transparent);
+  }
+}
 .live-hint{
   display:flex; align-items:center; gap:8px; font-size:11.5px; color:var(--muted);
   margin:-22px 0 26px; padding:0 4px;
@@ -2034,10 +2054,30 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   /* ---- Live mockup embeds: measure the UI, then fit the frame to it ----
      The mockups carry nothing but their own window now, so the frame can take
      the window's true size instead of a guessed data-w inside a fixed 16:9.
-     Downscaling uses `zoom` (re-rasterises → crisp text), never `transform`
+     Downscaling prefers `zoom` (re-rasterises → crisp text) over `transform`
      (rasterise-then-resample → blurry), and never upscales past 1:1.       */
-  const ZOOMABLE = !!(window.CSS && CSS.supports && CSS.supports('zoom', '0.5'));
+  /* `zoom` on an IFRAME is only dependable on Chromium. WebKit scales the element
+     box but not the embedded document's paint surface, so an iOS Safari embed
+     paints its first `scale` fraction and leaves the rest of the frame blank.
+     Gate it on the engine AND on a live probe; everything else takes transform. */
+  const ZOOMABLE = (() => {
+    if (!(window.CSS && CSS.supports && CSS.supports('zoom', '0.5'))) return false;
+    const brands = (navigator.userAgentData && navigator.userAgentData.brands) || [];
+    const chromium = brands.some(b => /Chromium/i.test(b.brand));
+    if (!chromium) return false;              /* WebKit / Gecko → transform */
+    try {                                     /* prove the box scales and the inner viewport does not */
+      const p = document.createElement('iframe');
+      p.setAttribute('aria-hidden', 'true');
+      p.style.cssText = 'position:absolute;left:-9999px;top:0;width:100px;height:100px;border:0;zoom:0.5';
+      document.body.appendChild(p);
+      const boxOK = Math.abs(p.getBoundingClientRect().width - 50) < 2;
+      const viewOK = !p.contentWindow || Math.abs(p.contentWindow.innerWidth - 100) < 2;
+      p.remove();
+      return boxOK && viewOK;
+    } catch (e) { return false; }
+  })();
   const PROBE = 1800;                         /* wide canvas: nothing hits max-width:100% */
+  const PHONE = () => window.matchMedia('(max-width:700px)').matches;
   const docOf = f => { try { return f.contentDocument; } catch (e) { return null; } };
   /* Measuring is only honest with the page's own centring and vh sizing switched
      off: a centred child reports the canvas back at you, and a 100vh box has no
@@ -2091,6 +2131,18 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       }
       const nat = measure(f, d, avail);
       if (!nat) return;
+      if (PHONE()) {                          /* preview card, not a shrunken window */
+        /* a fluid mockup would reflow into a 340px phone layout that exists nowhere
+           else — give it a desktop-ish canvas and crop, same as the fixed ones */
+        const pw = Math.max(nat.w, 640);
+        const ps = Math.max(Math.min(1, avail / pw), 0.5);      /* legibility floor */
+        f.style.zoom = ''; f.style.transform = 'none';
+        f.style.width = pw + 'px'; f.style.height = nat.h + 'px';
+        if (ps < 1) { if (ZOOMABLE) f.style.zoom = ps; else f.style.transform = 'scale(' + ps + ')'; }
+        const full = Math.round(nat.h * ps);   /* short and already legible → show all of it */
+        fr.style.height = ((ps >= 0.6 && full <= 420) ? full : Math.min(full, 200)) + 'px';
+        return;
+      }
       /* fit: shrink to the column, never blow past 1:1 */
       let w = nat.w, h = nat.h, s = Math.min(1, avail / w);
       const apply = () => {
@@ -2115,6 +2167,26 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   };
   window.addEventListener('resize', fitFrames);
   window.addEventListener('load', fitFrames);
+  window.addEventListener('orientationchange', () => setTimeout(fitFrames, 120));
+  if (PHONE()) {                              /* the desktop hint promises interaction phones don't get */
+    const hint = document.querySelector('.live-hint');
+    if (hint) hint.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Every window here is a live HTML ' +
+      'mockup — tap <b>Full size</b> to open one and pinch to explore it.';
+  }
+  /* a frame measured at zero width (hidden pane, pre-layout mobile paint) bails
+     out of fitFrames and would stay unsized forever — re-fit when it gets a width */
+  if (window.ResizeObserver) {
+    const seen = new WeakMap();               /* width only — fitFrames sets heights itself */
+    const ro = new ResizeObserver(entries => {
+      let changed = false;
+      entries.forEach(e => {
+        const w = Math.round(e.contentRect.width);
+        if (w > 0 && seen.get(e.target) !== w) { seen.set(e.target, w); changed = true; }
+      });
+      if (changed) fitFrames();
+    });
+    document.querySelectorAll('.frame.live').forEach(fr => ro.observe(fr));
+  }
   /* an embed only knows its size once its own document (and fonts) are in */
   document.querySelectorAll('.frame.live iframe').forEach(f => {
     f.addEventListener('load', () => {
