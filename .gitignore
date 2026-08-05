@@ -1,0 +1,42 @@
+# --- editing residue -------------------------------------------------------
+# The suite's edit discipline writes a timestamped backup beside every file it
+# touches (<file>.<YYYYMMDD>_<round>_pre.bak). Those must never reach a public
+# repository: a .bak of a page is a second, unreviewed copy of the same content.
+*.bak
+*.orig
+*.rej
+*.tmp
+*~
+
+# --- OS noise --------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# --- editors ---------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-workspace
+
+# --- local tooling ---------------------------------------------------------
+# Nothing here is built: the site is zero-build, served as authored. These
+# entries exist so a stray local experiment cannot be committed by `git add -A`.
+node_modules/
+.cache/
+.parcel-cache/
+dist/
+build/
+.env
+.env.local
+
+# --- agent / session scratch ----------------------------------------------
+.claude/
+*.log

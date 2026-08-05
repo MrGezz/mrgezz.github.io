@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IcZ SuiteTools">
+  <title>IcZ SuiteTools</title>
+  <!-- Wordmark drawn as PATHS rather than a text element: a favicon renders in the
+       browser's own context, where a font-family is not guaranteed to resolve.
+       Tile uses the site's dark-mode accent #00BCD4; glyphs are knocked out in the
+       page background #0B1013. Letterforms are widened and the counter of the c is
+       left open so "IcZ" still reads as three marks at a 16px tab size.
+       NB: no double hyphen may appear in an XML comment. -->
+  <rect width="64" height="64" rx="14" fill="#00BCD4"/>
+  <g fill="#0B1013">
+    <!-- I -->
+    <rect x="7" y="18" width="6" height="28"/>
+    <!-- Z -->
+    <path d="M36 18 H57 V24 L46 40 H57 V46 H36 V40 L47 24 H36 Z"/>
+  </g>
+  <!-- c : an open ring, so the counter survives downscaling -->
+  <path d="M27.7 30.7 A6.5 6.5 0 1 0 27.7 41.3"
+        fill="none" stroke="#0B1013" stroke-width="5.5" stroke-linecap="round"/>
+</svg>

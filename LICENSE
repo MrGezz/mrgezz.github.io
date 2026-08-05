@@ -1,0 +1,55 @@
+Copyright (c) 2026 IcZ (https://github.com/MrGezz). All rights reserved.
+
+ABOUT THIS REPOSITORY
+---------------------
+This repository contains the public documentation and showcase site for
+IcZScripts.extension, a proprietary pyRevit suite for Autodesk Revit. It
+documents capabilities and architecture only. The suite's implementation lives
+in a separate private repository and is not distributed here.
+
+GRANT
+-----
+Permission is granted to any person to view this site and its source, and to
+read, quote and link to it for the purposes of evaluation, reference, review,
+commentary, and reporting, with attribution.
+
+RESERVED
+--------
+All other rights are reserved. Without prior written permission from the
+copyright holder you may not:
+
+  * redistribute this site or a substantial portion of it, in original or
+    modified form, as your own work or under your own branding;
+  * host a copy of it as a public site;
+  * use the "IcZ", "IcZ Workspace", "IcZForge" or "SuiteTools" names, or the
+    visual identity of this site, to identify your own product or materials.
+
+The interface mockups under mockups/ depict a proprietary application. They are
+published to document how the software behaves, not as templates for reuse.
+
+THIRD-PARTY COMPONENTS
+----------------------
+This site loads two third-party libraries from public CDNs. They are not
+covered by this notice and remain under their own licenses:
+
+  * Font Awesome 6.4.0 - icons CC BY 4.0, code MIT, fonts SIL OFL 1.1
+    https://fontawesome.com/license/free
+  * Prism.js 1.29.0 - MIT
+    https://github.com/PrismJS/prism/blob/master/LICENSE
+
+NO WARRANTY
+-----------
+This material is provided "as is", without warranty of any kind, express or
+implied. It describes software that operates on your Revit models; nothing here
+is a guarantee of behaviour, fitness for a particular purpose, or of any
+result. The copyright holder is not liable for any claim, damages or other
+liability arising from this material or its use.
+
+WHY THIS AND NOT AN OPEN-SOURCE LICENSE
+---------------------------------------
+A permissive license (MIT, Apache-2.0) is effectively irrevocable once
+published: anyone may rely on the grant from that moment on. This repository
+showcases proprietary software, so the reversible choice is to reserve rights
+now and loosen them deliberately later, rather than the other way round. If a
+permissive or Creative Commons license is wanted for the documentation text,
+replacing this file is a one-line decision - the reverse is not.

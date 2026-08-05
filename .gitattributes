@@ -1,0 +1,41 @@
+# Normalize line endings in the repository to LF.
+#
+# This repo is edited on Windows with core.autocrlf=true, which made every
+# `git add` warn "LF will be replaced by CRLF the next time Git touches it".
+# The committed blobs were already LF; this file makes that explicit so the
+# stored form can never drift with a contributor's local autocrlf setting.
+#
+# The working copy stays whatever the platform wants — only what Git STORES is
+# pinned. Source files here are authored LF and verified LF before every commit.
+* text=auto eol=lf
+
+# Explicitly text, so a stray heuristic cannot classify them as binary.
+*.html   text eol=lf
+*.css    text eol=lf
+*.js     text eol=lf
+*.json   text eol=lf
+*.md     text eol=lf
+*.svg    text eol=lf
+*.txt    text eol=lf
+*.xml    text eol=lf
+*.yml    text eol=lf
+*.yaml   text eol=lf
+
+# Binary — never touch these, never try to diff them as text.
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.webp   binary
+*.ico    binary
+*.pdf    binary
+*.woff   binary
+*.woff2  binary
+*.ttf    binary
+
+# Keep repository plumbing out of the downloadable archive and off the
+# GitHub "Languages" bar — the mockups are hand-authored HTML, but they are
+# design artifacts rather than the site itself.
+.gitattributes  export-ignore
+.gitignore      export-ignore
+mockups/*.html  linguist-documentation
