@@ -403,6 +403,24 @@ section:not(.hero) .shot .openfull{padding:2px 9px; font-size:10.5px}
 .subcard p{margin:0; font-size:13.8px; color:var(--text-2); line-height: 1.6;}
 
 /* callout */
+.toolset{display:grid; gap:18px}
+.tgrp-h{display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin:0 0 9px;
+  font-size:11px; font-weight:800; letter-spacing:.7px; text-transform:uppercase; color:var(--text-2)}
+.tgrp-h b{color:var(--accent)}
+.tgrp-h b.off{color:var(--text-2); opacity:.85}
+.tnum{font-size:10.5px; font-weight:800; padding:2px 7px; border-radius:20px; color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 14%, transparent);
+  border:1px solid color-mix(in srgb, var(--accent) 28%, transparent)}
+.tnum.off{color:var(--text-2); background:color-mix(in srgb, var(--panel) 80%, transparent); border-color:var(--line)}
+.tgrp-h em{font-style:normal; font-weight:500; letter-spacing:0; text-transform:none; opacity:.82}
+.tgrp-h em code{font-size:.92em; opacity:.95}
+.tchips{display:flex; flex-wrap:wrap; gap:7px}
+.tchip{font-size:11px; padding:4px 9px; border-radius:7px; white-space:nowrap;
+  border:1px solid color-mix(in srgb, var(--accent) 26%, transparent); color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 10%, transparent)}
+.tchip.off{border-color:var(--line); color:var(--text-2); opacity:.85;
+  background:color-mix(in srgb, var(--panel) 80%, transparent); text-decoration:line-through}
+@media (max-width:700px){ .tchip{font-size:10.5px; padding:3px 7px} .tgrp-h em{flex-basis:100%} }
 .note{
   display:flex; gap:14px; padding:16px 20px; border-radius:var(--radius); margin:20px 0;
   background:color-mix(in srgb, var(--accent) 10%, transparent); border:1px solid color-mix(in srgb,var(--accent) 30%,transparent);
@@ -1885,7 +1903,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
           </div>
           <p>Five local MCP servers back this suite's development. Four of them answer questions — the Revit API corpora, the pyRevit docs, the IronPython engine notes, the project memory. <code>revit-launch</code> is the one that <b>operates on a running session</b>: it is a single Node file (v1.9.0) speaking MCP over stdio with no runtime dependencies, discovers the pyRevit routes port by probing rather than assuming it, and reaches the open document through the <code>icz</code> routes API the extension registers at startup.</p>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-user-lock"></i><div class="ft"><b>Attach, Never Drive:</b> You open and close Revit; the bridge only attaches. The process-lifecycle tools are gated off by default — absent from the tool list and refusing in-band if called anyway — so the lifetime of a Revit session stays a human decision and never an agent&rsquo;s. <span class="win">The session stays yours; an agent cannot end it out from under you.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-user-lock"></i><div class="ft"><b>Attaches By Default; Launches Only If You Switch It On:</b> Out of the box the bridge attaches to a session you already opened — the seven process-lifecycle tools are absent from the tool list entirely and refuse in-band if called anyway, so no agent can start, restart or end Revit. It <em>can</em> launch, and that path is worth describing because getting it wrong once cost real time: passing the model on the command line races add-in initialisation and takes the host down. So the launcher starts Revit <em>bare</em>, waits for the routes server to actually answer before believing the session exists, and only then opens the document through the API — each phase gated on evidence rather than on a timer. <span class="win">Session lifetime is a switch you own, defaulted to off — not a capability the tool quietly assumes.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-clipboard-check"></i><div class="ft"><b>Dry Run Is The Default — And It's Measured, Not Predicted:</b> Without an explicit commit the work <em>really executes</em> inside a transaction that is then rolled back, so the outcome you read was measured against a model that never changed. On a delete, Revit reports every element it would remove <em>including the dependents it takes with them</em>. <span class="win">The full cascade is visible before anything is destroyed.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>One Undoable Transaction, And Nothing Is Ever Saved:</b> A committed write is a single named <code>Transaction</code>, so Ctrl+Z reverses it; destructive operations need an explicit confirmation on top of the commit flag. No route calls Save, Save As or Synchronize, and the code channel refuses a payload that does — the scan strips comments and requires an actual call, so a docstring mentioning it never false-refuses. <span class="win">The worst case a mistake reaches is an unsaved, undoable in-session change — what lands on disk stays your decision.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-image"></i><div class="ft"><b>It Can See What It Did:</b> A ribbon census, tool windows opened and closed with the proof being a measured window delta, a pyRevit reload proven by a changed session id, a live WPF visual-tree probe that reports rendered brushes and geometry — and PNG captures of a view or a rendered window, written to disk for the agent to read back. <span class="win">"Does it actually look right" stops being a screenshot request and becomes a check the agent runs itself.</span></div></li>
@@ -1898,6 +1916,39 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-eye"></i></div><h5>Dry Run</h5><p>Parameter writes, deletes, selection and view changes all execute and roll back, returning what actually happened rather than a prediction of it.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-check-double"></i></div><h5>Commit</h5><p>Commit plus confirm for anything destructive; the result is one named, undoable transaction in the model's history.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-window-maximize"></i></div><h5>Self-Smoke</h5><p>Open a suite tool from the ribbon, capture the rendered window, and compare it against the approved design mockup — the verification loop that used to need a human with a screenshot key.</p></div>
+            </div>
+          </div>
+          <div class="usage">
+            <div class="usage-h"><i class="fa-solid fa-list-check"></i> The surface &mdash; 40 tools in the default configuration</div>
+            <div class="toolset">
+            <div class="tgrp">
+              <div class="tgrp-h"><b>Orient &amp; read</b><span class="tnum">5</span><em>Read-only. Nothing here can change the model.</em></div>
+              <div class="tchips"><code class="tchip">revit_status</code><code class="tchip">revit_routes_get</code><code class="tchip">revit_view_list</code><code class="tchip">revit_ribbon</code><code class="tchip">revit_dialog_watch</code></div>
+            </div>
+            <div class="tgrp">
+              <div class="tgrp-h"><b>Code channel</b><span class="tnum">1</span><em>IronPython inside Revit, on the API thread. Dry run by default.</em></div>
+              <div class="tchips"><code class="tchip">revit_exec</code></div>
+            </div>
+            <div class="tgrp">
+              <div class="tgrp-h"><b>Write channel</b><span class="tnum">4</span><em>Executes, then rolls back — unless you pass commit.</em></div>
+              <div class="tchips"><code class="tchip">revit_write_params</code><code class="tchip">revit_write_selection</code><code class="tchip">revit_write_view</code><code class="tchip">revit_write_delete</code></div>
+            </div>
+            <div class="tgrp">
+              <div class="tgrp-h"><b>UI &amp; visual parity</b><span class="tnum">5</span><em>Drives the ribbon and reads back pixels.</em></div>
+              <div class="tchips"><code class="tchip">revit_tool_open</code><code class="tchip">revit_tool_close</code><code class="tchip">revit_pyrevit_reload</code><code class="tchip">revit_capture_view</code><code class="tchip">revit_capture_window</code></div>
+            </div>
+            <div class="tgrp">
+              <div class="tgrp-h"><b>Model command set</b><span class="tnum">22</span><em>Query, create, tag and operate — each one dry-runnable.</em></div>
+              <div class="tchips"><code class="tchip">revit_cmd_get_current_view_info</code><code class="tchip">revit_cmd_get_current_view_elements</code><code class="tchip">revit_cmd_get_available_family_types</code><code class="tchip">revit_cmd_get_selected_elements</code><code class="tchip">revit_cmd_ai_element_filter</code><code class="tchip">revit_cmd_analyze_model_statistics</code><code class="tchip">revit_cmd_get_material_quantities</code><code class="tchip">revit_cmd_export_room_data</code><code class="tchip">revit_cmd_say_hello</code><code class="tchip">revit_cmd_create_point_based_element</code><code class="tchip">revit_cmd_create_line_based_element</code><code class="tchip">revit_cmd_create_surface_based_element</code><code class="tchip">revit_cmd_create_level</code><code class="tchip">revit_cmd_create_room</code><code class="tchip">revit_cmd_create_grid</code><code class="tchip">revit_cmd_create_structural_framing_system</code><code class="tchip">revit_cmd_create_dimensions</code><code class="tchip">revit_cmd_color_elements</code><code class="tchip">revit_cmd_tag_all_walls</code><code class="tchip">revit_cmd_tag_all_rooms</code><code class="tchip">revit_cmd_operate_element</code><code class="tchip">revit_cmd_delete_element</code></div>
+            </div>
+            <div class="tgrp">
+              <div class="tgrp-h"><b>Project data</b><span class="tnum">3</span><em>A local store for what has already been read out.</em></div>
+              <div class="tchips"><code class="tchip">revit_data_query</code><code class="tchip">revit_data_store_project</code><code class="tchip">revit_data_store_rooms</code></div>
+            </div>
+              <div class="tgrp">
+                <div class="tgrp-h"><b class="off">Lifecycle &mdash; gated off</b><span class="tnum off">7</span><em>Not advertised and not callable unless <code>ICZ_RL_LIFECYCLE=1</code> is set in the server&rsquo;s config.</em></div>
+                <div class="tchips"><code class="tchip off">revit_launch</code><code class="tchip off">revit_restart</code><code class="tchip off">revit_force_restart</code><code class="tchip off">revit_dismiss_unsaved</code><code class="tchip off">revit_clear_dialogs</code><code class="tchip off">revit_licensing_status</code><code class="tchip off">revit_job_status</code></div>
+              </div>
             </div>
           </div>
           <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">Verified by four harnesses totalling <b>489 checks</b> — <b>245</b> out-of-process over real stdio JSON-RPC (fake routes and TCP servers on loopback, so nothing touches a live Revit), plus <b>110</b>, <b>82</b> and <b>52</b> in-session behaviour proofs for the UI, write and modelling engines. The guard suite asserts that every destructive refusal happens <em>before</em> anything spawns and that refused calls never reach the wire at all Key assertions are proven red against deliberately broken inputs before their green is trusted.</div></div>
