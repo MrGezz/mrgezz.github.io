@@ -785,18 +785,18 @@ footer a:hover{color: var(--accent);}
           <div class="arch glass-card" id="arch">
             <div class="arch-lab"><i class="fa-solid fa-toolbox"></i> SuiteTools ribbon <span class="cnt">· 13 tools</span></div>
             <div class="arch-row">
-              <span class="node tool" data-tool="aa"  data-uses="revit_compat theme shell modeless review_grid mep naming params paramreg configstore scorecard mcheck mhealth vfilters colorize failures worksets ownership units revit_utils">QAQC Suite <span class="nc">AA</span></span>
-              <span class="node tool" data-tool="fit" data-uses="revit_compat theme shell modeless mep geom route params units validation lastused revit_utils">MEP Workbench <span class="nc">FIT</span></span>
-              <span class="node tool" data-tool="psu" data-uses="revit_compat theme shell modeless configstore worksets ownership revit_utils">Project Setup <span class="nc">PSU</span></span>
+              <span class="node tool" data-tool="aa"  data-uses="revit_compat theme shell modeless review_grid mep naming params paramreg configstore scorecard mcheck mhealth vfilters colorize failures worksets ownership units">QAQC Suite <span class="nc">AA</span></span>
+              <span class="node tool" data-tool="fit" data-uses="revit_compat theme shell modeless mep geom route params units validation revit_utils">MEP Workbench <span class="nc">FIT</span></span>
+              <span class="node tool" data-tool="psu" data-uses="revit_compat theme shell modeless configstore worksets">Project Setup <span class="nc">PSU</span></span>
               <span class="node tool" data-tool="cd"  data-uses="revit_compat theme shell modeless review_grid mep naming units ownership">Model Cleanup <span class="nc">CD</span></span>
               <span class="node tool" data-tool="issueone" data-uses="revit_compat theme exportcfg xlsxlite perftracker failures lastused validation configstore">Transmit <span class="nc">EXP</span></span>
               <span class="node tool" data-tool="mepauto" data-uses="revit_compat theme shell doclayout naming">AutoDoc <span class="nc">DOC</span></span>
               <span class="node tool" data-tool="ro1" data-uses="revit_compat theme params paramreg">BOQ Lookup <span class="nc">RO1</span></span>
-              <span class="node tool" data-tool="guide" data-uses="theme shell pdfview dialogs">Guideline <span class="nc">GUIDE</span></span>
-              <span class="node tool" data-tool="wot" data-uses="revit_compat theme shell modeless mep naming units xlsxlite pycompat tristate params validation configstore host">MEP Opening <span class="nc">WOT</span></span>
+              <span class="node tool" data-tool="guide" data-uses="theme shell reader dialogs">Guideline <span class="nc">GUIDE</span></span>
+              <span class="node tool" data-tool="wot" data-uses="revit_compat theme shell modeless units xlsxlite pycompat tristate params validation configstore host">MEP Opening <span class="nc">WOT</span></span>
               <span class="node tool" data-tool="familyqc" data-uses="theme shell modeless host configstore serdes settingsform dialogs famqa scorecard reporthtml">Family QC <span class="nc">FQC</span></span>
               <span class="node tool" data-tool="scriptreader" data-uses="host theme shell modeless configstore dialogs pycompat">Script Reader <span class="nc">SR</span></span>
-              <span class="node tool" data-tool="sectionbox" data-uses="revit_compat theme modeless units revit_utils">Section Box <span class="nc">SB</span></span>
+              <span class="node tool" data-tool="sectionbox" data-uses="revit_compat theme modeless units">Section Box <span class="nc">SB</span></span>
               <span class="node tool" data-tool="sfx" data-uses="revit_compat theme shell modeless review_grid xlsxlite naming units">Framing Fix <span class="nc">SFX</span></span>
             </div>
 
@@ -811,6 +811,7 @@ footer a:hover{color: var(--accent);}
               <span class="node mod" id="m-dialogs" data-mod="dialogs">dialogs</span>
               <span class="node mod" id="m-validation" data-mod="validation">validation</span>
               <span class="node mod" id="m-pdfview" data-mod="pdfview">pdfview</span>
+              <span class="node mod" id="m-reader" data-mod="reader">reader</span>
               <span class="node mod" id="m-mep" data-mod="mep">mep</span>
               <span class="node mod" id="m-geom" data-mod="geom">geom</span>
               <span class="node mod" id="m-route" data-mod="route">route</span>
@@ -1697,7 +1698,7 @@ with SubTransaction(doc) as st:
               <div class="dom">UI / Shell</div>
               <h4><i class="fa-solid fa-file-pdf"></i> pdfview</h4>
               <p>Shared loader for <code>IcZ.PdfView.dll</code> — the suite's native WPF PDF viewer/editor (PDFium render, PdfSharpCore edit): scroll, search, ink/text/highlight markup, page rotate-reorder-insert-delete-extract-merge, and annotation burn-in.</p>
-              <div class="uses"><span class="u">GUIDE</span><span class="u">EXP</span></div>
+              <div class="uses"><span class="u">EXP</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="ui" data-name="dialogs file folder picker openfiledialog folderbrowserdialog hybrid safe no pyrevit forms">
@@ -1732,7 +1733,7 @@ with SubTransaction(doc) as st:
               <div class="dom">MEP</div>
               <h4><i class="fa-solid fa-diagram-successor"></i> mep</h4>
               <p>The suite's MEP connector engine: unused-connector detection, string-domain matching, an O(n) spatial-grid pair finder, and safe auto-connecting.</p>
-              <div class="uses"><span class="u">CD</span><span class="u">FIT</span><span class="u">WOT</span><span class="u">AA</span></div>
+              <div class="uses"><span class="u">AA</span><span class="u">FIT</span><span class="u">CD</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="mep" data-name="geom true geometry solid intersection primitives boolean overlap rotated fittings insulation">
@@ -1760,7 +1761,7 @@ with SubTransaction(doc) as st:
               <div class="dom">MEP</div>
               <h4><i class="fa-solid fa-tag"></i> naming</h4>
               <p>Safe family / type name resolution — the first non-empty type label across a list, handling the <code>FamilyInstance</code> ambiguities that trip up naïve lookups.</p>
-              <div class="uses"><span class="u">CD</span><span class="u">WOT</span><span class="u">AA</span><span class="u">DOC</span></div>
+              <div class="uses"><span class="u">AA</span><span class="u">FIT</span><span class="u">EXP</span><span class="u">SFX</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="data" data-name="params parameter read write instance type fallback overwrite policy">
@@ -1830,7 +1831,7 @@ with SubTransaction(doc) as st:
               <div class="dom">Worksharing</div>
               <h4><i class="fa-solid fa-user-lock"></i> ownership</h4>
               <p>Worksharing checkout / editability guards, so every write tool skips elements owned by other users and reports the owner identically.</p>
-              <div class="uses"><span class="u">AA</span><span class="u">PSU</span><span class="u">CD</span></div>
+              <div class="uses"><span class="u">AA</span><span class="u">FIT</span><span class="u">CD</span><span class="u">RO1</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="io" data-name="exportcfg profiles json handler schema v2 export">
@@ -1872,14 +1873,14 @@ with SubTransaction(doc) as st:
               <div class="dom">Export / IO</div>
               <h4><i class="fa-solid fa-clock-rotate-left"></i> lastused</h4>
               <p>Persistent per-purpose folder/file memory with slots (profile, template, output…), so each picker seeds from the right place instead of the last path used anywhere.</p>
-              <div class="uses"><span class="u">Transmit</span><span class="u">FIT</span></div>
+              <div class="uses"><span class="u">EXP</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="ui" data-name="revit_utils selection isolation ui helpers shared parameter binding">
               <div class="dom">UI / Shell</div>
               <h4><i class="fa-solid fa-toolbox"></i> revit_utils</h4>
               <p>Selection / isolation UI helpers and dynamic shared-parameter binding routines — the small conveniences several tools reach for.</p>
-              <div class="uses"><span class="u">AA</span><span class="u">PSU</span><span class="u">FIT</span></div>
+              <div class="uses"><span class="u">FIT</span><span class="u">RO1</span></div>
             </div>
 
             <div class="mod-empty" id="modEmpty">No modules match your filter.</div>
