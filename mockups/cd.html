@@ -2,7 +2,7 @@
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<title>CD Model Cleanup &#183; THE LINE &#183; r81 mockup 2</title>
+<title>CD Model Cleanup &#183; THE LINE</title>
 <style>
   /* ============================================================
      TOKENS - theme.py THEMES verbatim. WPF #AARRGGBB -> CSS #RRGGBBAA:
@@ -340,6 +340,7 @@
   .vd-del  { background:var(--StatusFailBg); color:var(--StatusFail); }
   .vd-chg  { background:var(--StatusWarnBg); color:var(--StatusWarn); }
   .vd-held { background:var(--TrackBg); color:var(--TextTertiary); }
+  .linkbtn:disabled { color:var(--TextTertiary); opacity:.55; cursor:default; }
   .trayfoot { display:flex; align-items:center; gap:10px; padding:8px 14px;
               border-top:1px solid var(--RuleBrush); font-size:10.5px;
               color:var(--TextTertiary); }
@@ -841,10 +842,16 @@
         <div class="trayfoot">
           <span id="lbl_tray_count" data-ctl="label">12 of 88 shown &#183; 71 ticked for removal</span>
           <span class="fspacer" style="flex:1 1 auto"></span>
+          <button class="linkbtn" id="btn_tray_zoom" data-ctl="button" data-page="line"
+                  data-handler="OnTrayZoom" data-new="true">Zoom ticked</button>
+          <button class="linkbtn" id="btn_export_csv" data-ctl="button" data-page="line"
+                  data-handler="OnExportCsv" data-new="true" disabled>Export CSV</button>
+          <button class="linkbtn" id="btn_undo_last" data-ctl="button" data-page="line"
+                  data-handler="OnUndoLast" data-new="true" disabled>Undo last run</button>
           <button class="linkbtn" id="btn_tray_all" data-ctl="button" data-page="line"
-                  data-handler="OnTickAll" data-new="true">tick all</button>
+                  data-handler="OnTickAll" data-new="true">Tick all</button>
           <button class="linkbtn" id="btn_tray_none" data-ctl="button" data-page="line"
-                  data-handler="OnTickNone" data-new="true">hold all</button>
+                  data-handler="OnTickNone" data-new="true">Hold all</button>
         </div>
       </div>
     </div>
@@ -900,7 +907,7 @@
       </div>
       <div class="mffoot">
         <button class="bigbtn" id="btn_dry" data-ctl="button" data-page="line"
-                data-handler="OnDryRun"><i class="g"></i><span class="bt">DRY RUN</span></button>
+                data-handler="OnDryRun"><i class="g"></i><span class="bt">PREVIEW</span></button>
         <button class="bigbtn pri" id="btn_run" data-ctl="button" data-page="line"
                 data-handler="Run_Click"><i class="g"></i>
           <span id="lbl_run" data-ctl="label">RUN CLEANUP</span></button>
