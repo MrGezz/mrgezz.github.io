@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>IcZScripts · SuiteTools</title>
-<meta name="description" content="The IcZ SuiteTools — a pyRevit suite of BIM/MEP automation tools for Autodesk Revit 2023–2026, built on a shared icz library.">
+<meta name="description" content="The IcZ SuiteTools — a pyRevit suite of BIM/MEP automation tools for Autodesk Revit 2022–2026, built on a shared icz library.">
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link id="prismTheme" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
@@ -654,7 +654,7 @@ footer a:hover{color: var(--accent);}
         <div class="nav-label">Tools Panel</div>
         <a href="#cd" data-name="cd model cleanup ghost purge connection fix nested"><span class="gi"><i class="fa-solid fa-broom"></i></span>Model Cleanup<span class="tcode">CD</span></a>
         <a href="#issueone" data-name="issueone transmit export nwc pdf dwg ifc excel images schedules transmittal ole"><span class="gi"><i class="fa-solid fa-file-export"></i></span>IcZ Transmit<span class="tcode">EXP</span></a>
-        <a href="#mepauto" data-name="mep autodoc auto doc tools plans sections elevations dimensions tags sheets naming layout engine profiles"><span class="gi"><i class="fa-solid fa-drafting-compass"></i></span>IcZ AutoDoc<span class="tcode">DOC</span></a>
+        <a href="#mepauto" data-name="mep autodoc auto doc tools plans sections elevations dimensions tags sheets naming layout engine profiles"><span class="gi"><i class="fa-solid fa-drafting-compass"></i></span>Sheet AutoDoc<span class="tcode">DOC</span></a>
         <a href="#sectionbox" data-name="section box pulldown quick dialog crop 3d view isolate"><span class="gi"><i class="fa-solid fa-cube"></i></span>Section Box<span class="tcode">SB</span></a>
       </div>
 
@@ -698,14 +698,14 @@ footer a:hover{color: var(--accent);}
 
       <!-- HERO / OVERVIEW -->
       <section class="doc hero reveal" id="overview" style="padding-top:10px">
-        <span class="eyebrow"><i class="fa-solid fa-cube"></i> Revit 2023–2026 · pyRevit · IronPython</span>
+        <span class="eyebrow"><i class="fa-solid fa-cube"></i> Revit 2022–2026 · pyRevit · IronPython</span>
         <h1>A custom <span class="grad">Revit automation</span><br>suite, built tool by tool</h1>
         <p class="lede">The <strong>IcZ SuiteTools</strong> turn slow, error-prone MEP coordination work into one-click
         operations — de-duplicating geometry, writing standardized parameters, generating Bills of Quantities, auto-producing
         drawings, and batch-issuing deliverables. Every tool is a modeless WPF app sharing one themeable shell and one
         dependency-free core library.</p>
         <div class="hero-meta">
-          <span class="pill"><i class="fa-brands fa-python"></i> IronPython 2.7 ⇋ IronPython 3</span>
+          <span class="pill"><i class="fa-brands fa-python"></i> IronPython 3 engine</span>
           <span class="pill"><i class="fa-solid fa-window-restore"></i> Modeless WPF / XAML</span>
           <span class="pill"><i class="fa-solid fa-shield-halved"></i> ExternalEvent-safe</span>
           <span class="pill"><i class="fa-solid fa-palette"></i> Light / Dark themed</span>
@@ -714,8 +714,8 @@ footer a:hover{color: var(--accent);}
         <div class="stats">
           <div class="stat glass-card"><div class="n" data-count="13">0</div><div class="l">SHIPPING TOOLS</div></div>
           <div class="stat glass-card"><div class="n" data-count="6">0</div><div class="l">RIBBON PANELS</div></div>
-          <div class="stat glass-card"><div class="n" data-count="40">0</div><div class="l">SHARED MODULES</div></div>
-          <div class="stat glass-card"><div class="n" data-count="4" data-suffix=" vers.">0</div><div class="l">REVIT 2023–26</div></div>
+          <div class="stat glass-card"><div class="n" data-count="73">0</div><div class="l">SHARED MODULES</div></div>
+          <div class="stat glass-card"><div class="n" data-count="5" data-suffix=" vers.">0</div><div class="l">REVIT 2022–26</div></div>
         </div>
 
         <!-- HERO MOCKUP -->
@@ -742,7 +742,7 @@ footer a:hover{color: var(--accent);}
           <div class="sec-glyph"><i class="fa-solid fa-diagram-project"></i></div>
           <div class="sec-titles">
             <h2>Suite Architecture <span class="tag">hybrid core</span></h2>
-            <div class="sub">Thirteen tools across six ribbon panels, all resting on one shared <code>icz</code> library of 32 modules. Hover a tool to trace the modules it consumes.</div>
+            <div class="sub">Thirteen tools across six ribbon panels, all resting on one shared <code>icz</code> library of 73 modules. Hover a tool to trace the modules it consumes.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -764,7 +764,7 @@ footer a:hover{color: var(--accent);}
               <span class="node tool" data-tool="sfx" data-uses="revit_compat theme shell modeless review_grid xlsxlite naming units">Framing Fix <span class="nc">SFX</span></span>
             </div>
 
-            <div class="arch-lab"><i class="fa-solid fa-cubes"></i> icz shared library <span class="cnt">· 32 modules</span></div>
+            <div class="arch-lab"><i class="fa-solid fa-cubes"></i> icz shared library <span class="cnt">· 73 modules</span></div>
             <div class="arch-row">
               <span class="node mod" id="m-revit_compat" data-mod="revit_compat">revit_compat</span>
               <span class="node mod" id="m-pycompat" data-mod="pycompat">pycompat</span>
@@ -803,12 +803,12 @@ footer a:hover{color: var(--accent);}
               <span class="node mod" id="m-perftracker" data-mod="perftracker">perftracker</span>
               <span class="node mod" id="m-failures" data-mod="failures">failures</span>
               <span class="node mod" id="m-lastused" data-mod="lastused">lastused</span>
-              <span class="node mod" id="m-apiclient" data-mod="apiclient">apiclient</span>
+              <span class="node mod" id="m-licensing" data-mod="licensing">licensing</span>
               <span class="node mod" id="m-units" data-mod="units">units</span>
               <span class="node mod" id="m-revit_utils" data-mod="revit_utils">revit_utils</span>
             </div>
 
-            <div class="arch-base"><i class="fa-solid fa-layer-group"></i> &nbsp;Autodesk Revit API 2023 · 2024 · 2025 · 2026 &nbsp;— version differences absorbed by <code>revit_compat</code></div>
+            <div class="arch-base"><i class="fa-solid fa-layer-group"></i> &nbsp;Autodesk Revit API 2022 · 2023 · 2024 · 2025 · 2026 &nbsp;— version differences absorbed by <code>revit_compat</code></div>
             <p class="arch-hint">Hover any tool to light up its dependencies · hover a module to see which tools rely on it.</p>
           </div>
         </div>
@@ -847,10 +847,10 @@ footer a:hover{color: var(--accent);}
           </ul>
 
           <div class="flow glass-card">
-            <div class="step"><span class="st">Scan</span><span class="sd">Dry-run pass of the target MEP categories — every proposed edit listed with isolate + zoom.</span></div>
-            <div class="step"><span class="st">Review</span><span class="sd">Approve or skip per row; the same resolver that previews is the one that will run.</span></div>
+            <div class="step"><span class="st">Scan Health</span><span class="sd">One-click triage sweep of every phase scanner — a full-fidelity read of what each gate would change.</span></div>
+            <div class="step"><span class="st">Preview</span><span class="sd">Element-level dry run per gate — every proposed edit listed with isolate + zoom; the same resolver that previews is the one that runs.</span></div>
             <div class="step"><span class="st">Apply six stages</span><span class="sd">Cleanup · CMMN · SPEC · Flags · Classification · Worksets, each stage isolated.</span></div>
-            <div class="step"><span class="st">Model Health</span><span class="sd">Live score + metric chips summarize what changed, exportable for the record.</span></div>
+            <div class="step"><span class="st">Issue Certificate</span><span class="sd">Stamps the inspection FIT or HELD (zero critical findings, LOI ≥ 90) and writes an HTML certificate plus an .xlsx findings workbook.</span></div>
           </div>
 
           <div class="code-label-wrap">
@@ -891,17 +891,17 @@ health.score(results)                           # live Model Health — no TaskD
                     <li>Modeless WPF with a <b>pre-scan review grid</b> (isolate/zoom)</li>
                     <li>Six stages (Scan→Apply) commit only what you <b>approve</b>; live Model Health score</li>
                     <li>Mappings externalized to <b><code>spec_mappings.json</code></b></li>
-                    <li>Logic factored into <b><code>icz</code></b> modules; Revit 2023–26 safe</li>
+                    <li>Logic factored into <b><code>icz</code></b> modules; Revit 2022–26 safe</li>
                   </ul>
                 </div>
               </div>
             </div>
           </details>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — Scan → review grid → Apply Selected</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — Scan Health → Preview → Apply</div>
             <div class="op-grid">
               <div class="op-group"><span>QC phase pipeline</span></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-broom"></i></div><h5>Cleanup · Phases 0–2</h5><p>Reconnects open MEP connectors within 20 mm, removes duplicate structural elements and zero-length ducts, and snaps over-slope runs back to vertical — run first so the network is continuous for the SPEC phases.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-broom"></i></div><h5>Cleanup · Phases 0–2</h5><p>Reconnects open MEP connectors within 20 mm, removes coincident duplicate elements and zero-length ducts, and snaps over-slope runs back to vertical — run first so the network is continuous for the SPEC phases.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-id-card"></i></div><h5>CMMN Identity · Phase 3</h5><p>Parses the model file name against your naming convention and writes the CMMN status, building and TOOL_ID parameters. Set the tokens in Settings, then Apply.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-tags"></i></div><h5>SPEC Parameters · Phases 4a–4f</h5><p>Assigns SPEC_SYSTEM (with chemical-box and clamp inheritance), then SPEC_SIZE, SPEC_QUANTITY and the bilingual SPEC_ARTICLE classes — the procurement backbone, driven by editable prefix/route tables.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-flag"></i></div><h5>Flags · Phases 5–6</h5><p>Sets IFX_INSULATION on insulated runs and IFX_POC_Element once POC tagging is final — the flags that drive insulation schedules and downstream filters.</p></div>
@@ -912,6 +912,7 @@ health.score(results)                           # live Model Health — no TaskD
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>LOI Scorecard</h5><p>Scores the model against your Autodesk Model Checker LOI ruleset — read straight from the .xml, no add-in needed — and lists every failing element worst-first.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-heart-pulse"></i></div><h5>Model Health</h5><p>Counts hygiene indicators — warnings, unpinned links, imported DWGs, in-place families, unused templates — into a weighted 0–100 score.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-filter"></i></div><h5>View Filters</h5><p>Decodes every view filter's rules into plain data and flags the ones applied to no view or template.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ruler-combined"></i></div><h5>Dim Coverage</h5><p>Lists undimensioned elements in the active view, per category — report-only, with click-to-zoom.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-palette"></i></div><h5>Colorize by Value</h5><p>Colours the active view's elements by a parameter (e.g. SPEC_SYSTEM) with a legend and one-click reset — spatial QA the piecharts can't give.</p></div>
             </div>
           </div>
@@ -926,7 +927,7 @@ health.score(results)                           # live Model Health — no TaskD
           <div class="sec-glyph"><i class="fa-solid fa-screwdriver-wrench"></i></div>
           <div class="sec-titles">
             <h2>MEP Workbench <span class="tag code">FIT</span> <span class="tag">IcZ.panel</span></h2>
-            <div class="sub">Four everyday MEP tasks — audit, coordinates, flex routing, param sync — in one navigated window. Each page carries a gear that flips to a Settings &amp; Info view with editable defaults persisted to JSON.</div>
+            <div class="sub">Nine MEP pages on a grouped rail — Diagnose, Fabricate, Document — in one modeless workbench: audit, connectivity, flex, routing, prefab, modify, coordinates, param sync. Five pages carry a gear that flips to a Settings &amp; Info view with editable defaults persisted to JSON.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -948,26 +949,26 @@ health.score(results)                           # live Model Health — no TaskD
           <div class="subgrid">
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-clipboard-check"></i> Fittings &amp; Accessories</h4>
-              <p>Scans pipe/duct fittings and accessories against editable rules, flagging routing-preference, pairing and system breaks — each with isolate + zoom on click. Whitelists come from <code>fitting_config.json</code>.</p>
+              <p>Checks pipe/duct fittings and accessories against editable rules — routing-preference, wrong-host accessories, wrong-system fittings, maintenance clearance — each a clickable review grid with zoom + isolate; a separate headroom scan makes five. Whitelists come from <code>fitting_config.json</code>.</p>
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-location-crosshairs"></i> Write X / Y Coordinates</h4>
-              <p>Writes world X/Y of each element into text parameters after an editable global offset, with an overwrite guard so existing values stay put. Defaults live in <code>coords_config.json</code>.</p>
+              <p>Stamps X/Y (optional Z) into shared parameters in three modes — Absolute, Grid-relative, Shared-site — after an editable offset, with an overwrite guard so existing values stay put. Missing firm-standard shared parameters are auto-bound to the selection's categories.</p>
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-wave-square"></i> Pipe / Duct → Flex</h4>
-              <p>Rebuilds rigid runs as flex — Replace (swap with reconnect) or Containment (lay alongside) with three containment sub-modes. Rank, snap, smoothing and branch count are tunable in <code>flex_config.json</code>.</p>
+              <p>Rebuilds rigid runs as flex — Replace (swap with reconnect) or Containment (lay alongside). Vertex count (2–9), sag, smoothing, diameter and workset overrides are tunable, with five sub-operations: convert, audit, simplify, split and parallel fan-out.</p>
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-arrows-left-right-to-line"></i> Copy Params Between Systems</h4>
-              <p>Copies IFLS / AKS / Prozessmedium from linked source fittings onto host targets, matched by MEP system type and gated by a proximity tolerance. Keyword and triple-map config in <code>paramsync_config.json</code>.</p>
+              <p>Copies IFLS / AKS / Prozessmedium from linked source fittings onto host targets, matched by MEP system name and gated by horizontal / vertical distance caps. Keyword and triple-map config in <code>paramsync_config.json</code>.</p>
             </div>
           </div>
 
           <div class="code-label-wrap">
             <div class="code-label"><i class="fa-brands fa-python"></i> config over hardcoding — the coordinates page</div>
           </div>
-          <pre><code class="language-python">cfg  = load_json("coords_config.json")   # offset + param names are DATA
+          <pre><code class="language-python">cfg  = load_json("fitting_config.json")  # offset + param names are DATA
 x, y = world_xy(elem, cfg["offset_mm"])  # editable per project, not baked in
 if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
     write(elem, cfg["param_x"], meters(x))</code></pre>
@@ -997,24 +998,28 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
                 <div class="col after">
                   <div class="lab"><i class="fa-solid fa-screwdriver-wrench"></i> MEP Workbench</div>
                   <ul>
-                    <li>One navigated <b>WPF</b> window, four pages, shared chrome</li>
-                    <li>Flex adds <b>Replace / Containment</b> modes with tunables (<code>flex_config.json</code>)</li>
+                    <li>One modeless <b>WPF</b> workbench — now nine pages on a grouped rail, shared chrome</li>
+                    <li>Flex adds <b>Replace / Containment</b> modes with in-window tunables</li>
                     <li>Coordinates: <b>editable</b> offset/params + overwrite guard, scoped run</li>
                     <li>Reconnection consolidated into the shared <b><code>icz.mep</code></b> engine</li>
+                    <li>Persistent selection <b>vise</b> + run ledger ("tape") — Verify reselects exactly what a run touched</li>
                   </ul>
                 </div>
               </div>
             </div>
           </details>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — six engines, pick one from the dashboard</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — nine pages, pick one from the grouped rail</div>
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-clipboard-check"></i></div><h5>Fittings &amp; Accessories Audit</h5><p>Validates pipe/duct fittings and accessories against editable compliance rules — four audit checks, each producing a clickable review matrix with zoom and isolate.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-location-crosshairs"></i></div><h5>Coordinate Stamping</h5><p>Stamps each element's plan position into two text parameters (metres, 3&nbsp;dp) after a site offset. An overwrite guard skips already-filled elements.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-location-crosshairs"></i></div><h5>Coordinate Stamping</h5><p>Stamps plan position into shared parameters in Absolute, Grid-relative or Shared-site mode, with optional Z, after an editable offset. An overwrite guard skips already-filled elements; missing shared parameters are auto-bound.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-wave-square"></i></div><h5>Flex Conversion</h5><p>Converts rigid runs to flex topology — Replace swaps and reconnects; Containment preserves the originals and draws alongside, with branch handling under Advanced.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-right-left"></i></div><h5>Parameter Synchronization</h5><p>Synchronizes IFLS / AKS / Prozessmedium from linked source fittings onto host targets, matched by MEP system name and gated by distance tolerances.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-scissors"></i></div><h5>Prefabrication Auto-Slicer</h5><p>Segments selected pipes or ducts into stock-length pieces and places couplings at each joint, aligning the model with prefabrication reality.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-route"></i></div><h5>Spatial Routing Engine</h5><p>Pick a start and a target element: the A* pathfinder plans an all-90° run around walls, floors and services, then draws the pipes or ducts with fittings at every corner.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-route"></i></div><h5>Spatial Routing Engine</h5><p>Pick a start and a target element: a deterministic orthogonal trunk (default) or an A* search around walls, floors and services plans the run, then draws the pipes or ducts with fittings at every corner — accelerated by the compiled core when present.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gauge-high"></i></div><h5>Dashboard &amp; Health Scan</h5><p>Opens on a read-only element census — KPI tiles plus an element-mix bar — and a one-click scan runs five compliance rules through one shared cache feeding the donut, the review grids and the nav badges.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-diagram-project"></i></div><h5>System Connectivity</h5><p>Read-only connector-graph walk of the whole model: open End connectors, disconnected islands, orphan fittings and off-network elements — per-system bars, a donut, and every hit as a clickable review row.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-wrench"></i></div><h5>Modify &amp; Align</h5><p>Element-level edits as named transactions — cap or connect open ends, join two, disconnect, split a joint, make parallel, rotate — each also a single pulldown button so it can take a keyboard shortcut.</p></div>
             </div>
           </div>
         </div>
@@ -1028,7 +1033,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
           <div class="sec-glyph"><i class="fa-solid fa-sliders"></i></div>
           <div class="sec-titles">
             <h2>Project Setup Utility <span class="tag code">PSU</span> <span class="tag">IcZ.panel</span></h2>
-            <div class="sub">Link worksets, project info, and level reassignment — three setup chores in one dashboard. Supersedes the standalone LNK / PRI / LVL pushbuttons.</div>
+            <div class="sub">Nine setup stations — BEP brief, link worksets, link paths, project info, levels, view templates, shared parameters, standards sync and Space ⇄ Room QA — behind one read-only audit cover sheet. Supersedes the standalone LNK / PRI / LVL pushbuttons.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1047,18 +1052,24 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
             <span class="ttag alt">ProjectInfo</span><span class="ttag alt">Level / WorksetTable</span><span class="ttag alt">JSON config</span>
           </div>
           <ul class="feat">
+            <li class="glass-card"><i class="fa-solid fa-gauge-high"></i><div class="ft"><b>Cover-Sheet Audit:</b> One read-only RUN AUDIT dispatch scores all seven audited domains and paints the readiness donut, per-domain bars and rail status dots — nothing is written to the model. <span class="win">Queue pills stage the fixes; one click commits every queued domain in order.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-link"></i><div class="ft"><b>Batch Link Worksets:</b> Sorts Revit / CAD / NWD link instances into the right worksets by filename pattern in one Transaction. <span class="win">A workset chore that used to be done by hand, automated.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>Guarded Project Info:</b> Reads/writes only standard built-in ProjectInfo fields with an IFD requirement reminder. <span class="win">Protects document health while you edit.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-stairs"></i><div class="ft"><b>Elevation-Safe Level Swap:</b> Re-hosts elements to a new reference level while computing a delta offset so nothing physically moves. <span class="win">Re-level a model without breaking geometry.</span></div></li>
           </ul>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — three compliance engines, one interface</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — audit the cover sheet, commit by station</div>
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-link"></i></div><h5>Link Worksets</h5><p>Enforce office workset standards across all linked models — Revit, CAD and Navisworks — using configurable pattern-matching rules.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-circle-info"></i></div><h5>Project Info</h5><p>Audit and synchronize project metadata against your IFD compliance requirements. Federated JSON Sync is available for firm-wide standards alignment.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-layer-group"></i></div><h5>Levels</h5><p>Consolidate and rehost elements across levels with automated offset compensation. Optionally delete redundant levels — views are safely rehosted before removal.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-diagram-project"></i></div><h5>Link Paths</h5><p>Audit every link, separating broken links — repath proposed by filename search under configured roots — from stale links reloaded in place. Shared coordinates acquire from a named survey link.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-clone"></i></div><h5>View Templates</h5><p>Apply pattern-to-template rules with a check-list preview, transfer templates from other open documents, and report or enforce controlled parameters.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Shared Params &amp; Standards</h5><p>Audit bound shared parameters against the firm registry, batch-bind from a shared-parameter file, and apply only the unit / object-style mismatches you leave checked.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-people-arrows"></i></div><h5>Space ⇄ Room QA</h5><p>Pair MEP spaces against rooms from the architectural model, classify number and name drift, and dry-run one rolled-back sample write before committing the batch sync.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-word"></i></div><h5>BEP Rule Import</h5><p>Parse tables straight out of a BEP .docx, map columns, preview the rules, then import them into the link-routing config — or export them to JSON.</p></div>
             </div>
-            <p style="margin:14px 0 0; font-size:12.5px; color:var(--text-2)">All rules are configurable from the settings page (gear icon), persisted to <code>psu_config.json</code>.</p>
+            <p style="margin:14px 0 0; font-size:12.5px; color:var(--text-2)">Rules are edited per station and persisted to <code>psu_config.json</code>; a bundled <code>psu_profiles.json</code> standards profile marks required stations and loads calibration presets in one click.</p>
           </div>
         </div>
       </section>
@@ -1087,19 +1098,19 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
           </div>
           <div class="techtags">
             <span class="ttag">Revit API</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
-            <span class="ttag alt">RevitPythonShell engine (MIT)</span><span class="ttag alt">Persistent scope</span><span class="ttag alt">Tab completion</span>
+            <span class="ttag alt">RevitPythonShell engine (MIT)</span><span class="ttag alt">Persistent scope</span><span class="ttag alt">Code completion</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-folder-tree"></i><div class="ft"><b>Library, Not Loose Files:</b> Scripts index from configurable shared folders with live search — the team's utility scripts one click from the ribbon, edited and saved in place. <span class="win">No more hunting network drives for the right macro.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-terminal"></i><div class="ft"><b>A Real Console In Revit:</b> One persistent session scope with command history and Tab completion; script runs share it by default so variables stay inspectable after a run, or opt into a fresh scope per run. <code>doc</code>/<code>uidoc</code> are re-injected at every execution — never stale. <span class="win">Debug against the live model interactively.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-folder-tree"></i><div class="ft"><b>Library, Not Loose Files:</b> Scripts index from configurable shared folders with live search — the team's utility scripts one click from the ribbon, edited with Python syntax highlighting and saved in place. <span class="win">No more hunting network drives for the right macro.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-terminal"></i><div class="ft"><b>A Real Console In Revit:</b> One persistent session scope with command history and code completion (Ctrl+Space or a typed dot); script runs share it by default so variables stay inspectable after a run, or opt into a fresh scope per run. <code>doc</code>/<code>uidoc</code> are re-injected at every execution — never stale. <span class="win">Debug against the live model interactively.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>ExternalEvent-Safe Execution:</b> All script and REPL execution dispatches through <code>icz.modeless.ExternalCall</code> — never from a raw UI event — matching the suite's modeless contract. <span class="win">Console convenience without threading crashes.</span></div></li>
           </ul>
           <div class="usage">
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — pick a script, Run, inspect in the console</div>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-folder-open"></i></div><h5>Browse &amp; Edit</h5><p>Filter the indexed library folders, open a script in the built-in editor, and save with an unsaved-edit guard.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-folder-open"></i></div><h5>Browse &amp; Edit</h5><p>Filter the indexed library folders, open scripts as editor tabs — per-tab dirty state, a + for a fresh buffer, Ctrl+O for any .py on disk — and save with an unsaved-edit guard.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-play"></i></div><h5>Run (F5)</h5><p>Execute in the shared session scope with <code>doc</code>/<code>uidoc</code>/<code>selection()</code> pre-loaded; output streams to the console.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-keyboard"></i></div><h5>Interactive REPL</h5><p>Type Python directly — Tab completes, ↑/↓ walks history, and results print inline, all inside a valid API context.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-keyboard"></i></div><h5>Interactive REPL</h5><p>Type Python directly — Ctrl+Space or a dot pops completions, ↑/↓ walks history, and results print inline, all inside a valid API context.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Settings</h5><p>Library folders, fresh-scope flag, init script, extra search paths and font size — persisted to <code>scriptreader_config.json</code>.</p></div>
             </div>
           </div>
@@ -1114,7 +1125,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
           <div class="sec-glyph"><i class="fa-solid fa-broom"></i></div>
           <div class="sec-titles">
             <h2>Model Cleanup <span class="tag code">CD</span> <span class="tag">Tools.panel</span></h2>
-            <div class="sub">Three cleanup engines behind one dashboard — duplicates, connectors, and the nested cases Ghost Purge can't see. Pick engines in the rail, review, then run.</div>
+            <div class="sub">Eight cleanup passes as stations on one production line — ghost duplicates, overkill lines, open connectors, the MEP system layer, nested cases and orphan purge. Arm stations on the line, preview, then commit the run as one undoable group.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1125,7 +1136,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
               <a class="openfull" href="mockups/cd.html" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Full size</a>
             </div>
             <div class="frame live">
-              <iframe src="mockups/cd.html" data-w="1700" loading="lazy" title="Model Cleanup — live mockup"></iframe>
+              <iframe src="mockups/cd.html" data-w="1360" loading="lazy" title="Model Cleanup — live mockup"></iframe>
             </div>
           </div>
           <div class="techtags">
@@ -1143,12 +1154,20 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
               <p>Seals open MEP connector pairs within a 20&nbsp;mm tolerance via spatial-grid bucketing, isolating each attempt in its own <code>SubTransaction</code>. Runs <b>after</b> Ghost Purge, on the already-reduced model.</p>
             </div>
             <div class="subcard glass-card">
-              <h4><i class="fa-solid fa-eye-slash"></i> Nested Fix <span class="tag new">new</span></h4>
+              <h4><i class="fa-solid fa-eye-slash"></i> Nested Fix</h4>
               <p>Finds hosts with intersecting same-type <b>nested sub-components</b> — a hidden duplicate Ghost Purge can't see because it lives inside one host. Where a per-family rule applies it clears the redundant one's visibility; with no rule it reports only, and any repair that doesn't clear the clash is rolled back.</p>
+            </div>
+            <div class="subcard glass-card">
+              <h4><i class="fa-solid fa-diagram-project"></i> Systems Group <span class="tag new">new</span></h4>
+              <p>Three stations repair the MEP system layer: empty systems (report-only where deleting would orphan a run), duplicate system names renamed free, and <b>Undefined</b> pipe/duct system types repaired from the connected healthy neighbour, with configurable fallback types.</p>
+            </div>
+            <div class="subcard glass-card">
+              <h4><i class="fa-solid fa-eraser"></i> Overkill Lines &amp; Orphan Purge</h4>
+              <p>Overkill Lines merges collinear detail/model/separation lines that overlap or touch onto one survivor and deletes the rest. Orphan Purge removes empty elevation markers and orphaned tags, with configurable extras — scope boxes, view filters, rooms/spaces, CAD imports.</p>
             </div>
           </div>
 
-          <div class="note warn glass-card"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Never acts on stale data.</b> Every scan cache is keyed to model state and invalidated by any <code>DocumentChanged</code> event — reopening prompts a fresh rescan instead of trusting old rows. A Dashboard, a JSON config page, dry-run, CSV export and one-click Undo round out the workflow.</div></div>
+          <div class="note warn glass-card"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Never acts on stale data.</b> Scope changes invalidate the scope-dependent caches and prompt a re-read, and a document-identity guard blocks committing against a switched document. PREVIEW is an honest dry-run — its dependent-cascade probe reports computed, capped or failed, never a reassuring zero — and CSV export plus one-click Undo round out the workflow.</div></div>
 
           <div class="code-label-wrap">
             <div class="code-label"><i class="fa-brands fa-python"></i> the safety pattern — isolate, verify, roll back</div>
@@ -1159,15 +1178,15 @@ with SubTransaction(doc) as st:
     apply_fix(candidate)
     doc.Regenerate()
     st.Commit() if clash_cleared(candidate) else st.RollBack()</code></pre>
-          <p class="illus"><i class="fa-solid fa-circle-info"></i> Illustrative — the guard pattern shared across all three engines.</p>
+          <p class="illus"><i class="fa-solid fa-circle-info"></i> Illustrative — the guard pattern shared across the repair stations.</p>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — tick engines, Scan &amp; Preview, then Commit</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — arm stations, Read Model, Preview, then Run</div>
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ghost"></i></div><h5>Ghost Purge</h5><p>Detects overlapping duplicate elements (MEP + structural), keeps the connected copy and deletes the floating ghost.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-plug"></i></div><h5>Connection Fix</h5><p>Seals open MEP connector pairs within 20 mm — run after Ghost Purge on the cleaned model.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-diagram-project"></i></div><h5>Nested Fix</h5><p>Finds hosts with intersecting same-type nested sub-components — a hidden duplicate Ghost Purge can't see — and clears the redundant one per family rule.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Scan &amp; Commit</h5><p>Tick the engines in the rail, Scan &amp; Preview for a dry-run count, then Commit Resolutions as one undoable group. Every action lands in the Compliance Log.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Configuration</h5><p>Tune bucket sizes, connect tolerance, excluded categories and per-family nested rules from an in-UI editor — persisted to <code>cd_config.json</code>.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Read, Preview, Run</h5><p>Arm or bypass each of the eight stations, READ MODEL for a read-only health sweep, PREVIEW for a dry-run count, then run as one undoable group — Ctrl+Z reverts every armed station, and the tray keeps a per-station run receipt.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Configuration</h5><p>Tune overlap buckets, connect tolerance, excluded categories, per-family nested rules, fallback system types and purge extras from an in-window overlay sheet — persisted to <code>cd_config.json</code>; Save clears all caches.</p></div>
             </div>
           </div>
         </div>
@@ -1200,23 +1219,23 @@ with SubTransaction(doc) as st:
             <span class="ttag alt">Navisworks / IFC</span><span class="ttag alt">Pure-Python XLSX</span><span class="ttag alt">OLE schedule embed</span><span class="ttag alt">Profiles v2 JSON</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-cube"></i><div class="ft"><b>Six Formats, One Run:</b> DWG, PDF, NWC, IFC, images and Excel from a single dark-theme shell with an in-window results log and a performance summary at the end. <span class="win">No more juggling separate export dialogs.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-table-cells"></i><div class="ft"><b>Excel Without Excel <span class="tag new">new</span>:</b> Schedules write to formatted <code>.xlsx</code> through a pure-Python OOXML writer — no COM, no install — with a live Excel-embed path available as an opt-in. <span class="win">Runs on any machine and protects values like Ø, 100×200 and DN.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-image"></i><div class="ft"><b>Clean CAD Deliverables <span class="tag new">new</span>:</b> Embeds crisp logos and lays out schedule tables as EMF OLE frames in the exported CAD files, so titleblock artwork survives the DWG round-trip intact. <span class="win">CAD issues look like the Revit sheets.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-gears"></i><div class="ft"><b>Profiles, Naming &amp; Guards:</b> Reusable export profiles, a token-based filename builder, split output folders, and mid-batch Revit warning suppression so a run never stalls on a popup. <span class="win">The fiddly parts of batch export, solved once.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-cube"></i><div class="ft"><b>Six Formats, One Run:</b> DWG, PDF, NWC, IFC, images and Excel from a single themeable shell with an in-window results log and a performance summary at the end. <span class="win">No more juggling separate export dialogs.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-table-cells"></i><div class="ft"><b>Excel Without Excel <span class="tag new">new</span>:</b> Schedules write to formatted <code>.xlsx</code> in the SheetLink table style — via Excel when it's installed, or a built-in pure-Python OOXML writer (no COM, no install) that produces the same styling. <span class="win">Runs on any machine and protects values like Ø, 100×200 and DN.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-image"></i><div class="ft"><b>Clean CAD Deliverables <span class="tag new">new</span>:</b> Embeds crisp logos and lays out schedule tables as clean OLE frames — an EMF picture or an editable embedded XLSX — in the exported CAD files, so titleblock artwork survives the DWG round-trip intact. <span class="win">CAD issues look like the Revit sheets.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-gears"></i><div class="ft"><b>Profiles, Naming &amp; Guards:</b> Reusable export profiles, a token-based filename builder with automatic dedupe of in-batch name collisions and an Overwrite/Rename/Cancel preflight, split output folders, and mid-batch Revit warning suppression so a run never stalls on a popup. <span class="win">The fiddly parts of batch export, solved once.</span></div></li>
           </ul>
 
-          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">IcZ Transmit is the evolution of the earlier ExportDocTools button (folder and module names kept deliberately under the rebrand) — rebuilt around profiles v2, a dependency-free spreadsheet writer, ICZOLE schedule/legend OLE embeds, and NWC preflight that runs with no open transaction. It leans on the shared <code>exportcfg</code>, <code>xlsxlite</code>, <code>perftracker</code>, <code>failures</code> and <code>lastused</code> modules.</div></div>
+          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">IcZ Transmit is the evolution of the earlier ExportDocTools / IssueOne button — fully renamed under the rebrand, bundle and logic module included, with one-time migration of machine-local settings and picker memory — — rebuilt around profiles v2, a dependency-free spreadsheet writer, ICZOLE schedule/legend OLE embeds, and NWC preflight that runs with no open transaction. It leans on the shared <code>exportcfg</code>, <code>xlsxlite</code>, <code>perftracker</code>, <code>failures</code> and <code>lastused</code> modules.</div></div>
           <div class="usage">
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — one transmittal, every format</div>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-paper-plane"></i></div><h5>Transmit Center</h5><p>Three steps: choose where the files go, tick the formats you need, press <b>Transmit&nbsp;Now</b> — every ticked format exports in one run.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Pick Drawings</h5><p>Choose the sheets/views to export, filter Sheets vs Views, search, and set a per-row output filename.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-cubes"></i></div><h5>Pick 3D &amp; Schedules</h5><p>Select 3D views for NWC and schedules for styled Excel export — no Excel install needed (built-in writer).</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-export"></i></div><h5>Formats</h5><p>DWG, PDF, NWC, IFC, images (PNG/JPEG/TIFF/BMP), schedules (XLSX) and a Drawing Register / Sheet Index — each with its own options.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-paper-plane"></i></div><h5>Destination</h5><p>Step one of the four-step pipeline (Destination → Contents → Formats → Issue): choose where the files go and tick the formats you need — <b>Transmit&nbsp;Now</b> stays one click away on every step, and every ticked format exports in one run.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Contents — Drawings</h5><p>Choose the sheets/views to export, filter Sheets vs Views, search, and set a per-row output filename.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-cubes"></i></div><h5>Contents — 3D &amp; Schedules</h5><p>Select 3D views for NWC/IFC and schedules for styled Excel export — live count badges per sub-view, no Excel install needed (built-in writer).</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-export"></i></div><h5>Formats</h5><p>DWG, PDF (combined or separate, with an optional issue stamp composited onto the run's PDFs), NWC, IFC, images (PNG/JPEG/TIFF/BMP/TARGA), schedules (XLSX) and a Drawing Register / Sheet Index — each with its own options.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-clock-rotate-left"></i></div><h5>Issue History</h5><p>Every master export is logged (project, profile, formats, sheets, errors, elapsed); write any record out as a formatted transmittal sheet.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-pdf"></i></div><h5>PDF Preview</h5><p>Render the first ticked drawing to PDF inline before you issue.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-sliders"></i></div><h5>Settings &amp; Profiles</h5><p>Per-project profiles, per-format subfolders, the token-based filename builder with live preview, and per-format export options.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-sliders"></i></div><h5>Machine &amp; Profile</h5><p>Named export profiles stored machine-side and restored automatically per project, plus per-format subfolders and machine-local settings — per-format options and the token filename builder live under Formats.</p></div>
             </div>
           </div>
         </div>
@@ -1229,19 +1248,19 @@ with SubTransaction(doc) as st:
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-drafting-compass"></i></div>
           <div class="sec-titles">
-            <h2>IcZ AutoDoc <span class="tag code">DOC</span> <span class="tag">Tools.panel</span> <span class="tag new">new</span></h2>
-            <div class="sub">Data-driven sheet generation on a Universal Layout Engine (<code>icz.doclayout</code>). Stage any number of elements — current selection or multi-pick — and generate one detail sheet per element: plan, longitudinal + cross sections, a 3D isometric with section box, auto tags and an optional BOQ schedule, all docked to anchor points defined in <code>sheet_profiles.json</code> so BIM standards live in a profile, not in code. One Transaction per element: a bad element rolls back alone, the batch continues.</div>
+            <h2>Sheet AutoDoc <span class="tag code">DOC</span> <span class="tag">Tools.panel</span> <span class="tag new">new</span></h2>
+            <div class="sub">Data-driven sheet generation on a Universal Layout Engine (<code>icz.doclayout</code>). Stage any number of elements — current selection or multi-pick — and generate one detail sheet per element: plan, longitudinal + cross sections, a 3D isometric with section box, auto tags and an optional BOQ schedule, all docked to anchor points defined in <code>sheet_profiles.json</code> so BIM standards live in a profile, not in code. A read-only pre-flight dry-runs the batch first — each sheet number checked against the live project register and remapped on collision, blockers grouped in a clickable review grid — then one Transaction per element: a bad element rolls back alone, the batch continues.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="shot">
             <div class="bar">
               <span class="dots"><i class="d1"></i><i class="d2"></i><i class="d3"></i></span>
-              <span class="ttl"><i class="fa-solid fa-drafting-compass"></i> IcZ AutoDoc <span class="code">DOC</span></span>
+              <span class="ttl"><i class="fa-solid fa-drafting-compass"></i> Sheet AutoDoc <span class="code">DOC</span></span>
               <a class="openfull" href="mockups/mepauto.html" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Full size</a>
             </div>
             <div class="frame live">
-              <iframe src="mockups/mepauto.html" data-w="1220" loading="lazy" title="IcZ AutoDoc — live mockup"></iframe>
+              <iframe src="mockups/mepauto.html" data-w="1220" loading="lazy" title="Sheet AutoDoc — live mockup"></iframe>
             </div>
           </div>
           <div class="techtags">
@@ -1252,7 +1271,7 @@ with SubTransaction(doc) as st:
           <div class="subgrid">
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-cubes-stacked"></i> Auto Views</h4>
-              <p>Generates plans, sections, elevations and an isometric 3D per element, with the view range solved on a strict top ≥ cut ≥ bottom hierarchy so nothing gets clipped by a fixed height.</p>
+              <p>Generates plans, longitudinal + cross sections and an isometric 3D per element, with the view range solved on a strict top ≥ cut ≥ bottom hierarchy so nothing gets clipped by a fixed height.</p>
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-ruler-combined"></i> Dimensions &amp; Tags</h4>
@@ -1264,11 +1283,11 @@ with SubTransaction(doc) as st:
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-font"></i> Naming Conventions</h4>
-              <p>Applies a consistent naming scheme across every view and sheet it creates, so the output set is coordinated and predictable without manual renaming.</p>
+              <p>Tokenized sheet number/name patterns from the profile (DT-{seq}, DETAIL - {cat}) name every view and sheet it creates — coordinated, predictable output without manual renaming.</p>
             </div>
           </div>
 
-          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">Layout logic is factored into the transaction-free <code>icz.doclayout</code> engine and runs on the shared master theme (<code>icz.theme</code> via <code>ShellWindow</code>) with version-safe element Ids (<code>icz.revit_compat</code>), so it looks and behaves like the rest of the suite across Revit 2023–2026. Group mode (scale-tiling, own 3D sheet, isolation) and a full Settings/profile CRUD page ship in v9.</div></div>
+          <div class="note glass-card"><i class="fa-solid fa-circle-info"></i><div class="nt">Layout logic is factored into the transaction-free <code>icz.doclayout</code> engine and runs on the shared master theme (<code>icz.theme</code> via <code>ShellWindow</code>) with version-safe element Ids (<code>icz.revit_compat</code>), so it looks and behaves like the rest of the suite across Revit 2022–2026. Group mode (all staged elements scale-tiled onto one grouped shop-drawing sheet) and full profile CRUD — duplicate, rename, delete, atomic save with an unsaved-edits guard — now ship, with drag-to-position layout editing on a live sheet-preview canvas.</div></div>
           <div class="usage">
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — pick a profile, stage elements, Generate</div>
             <div class="op-grid">
@@ -1277,6 +1296,7 @@ with SubTransaction(doc) as st:
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-object-ungroup"></i></div><h5>Element Staging</h5><p>One sheet per element (doors, equipment) or all staged on one grouped shop drawing (pipe/duct systems) — from the current selection or a pick.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-clone"></i></div><h5>Templates &amp; Auto-Tag</h5><p>Apply plan / section / 3D view templates and auto-tag where the profile allows.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ruler-combined"></i></div><h5>Auto-Dimensioning</h5><p>Optional per-view dimensioning: per-run segments, named family references, one running string, or grid/level datums.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-cells-large"></i></div><h5>Sheet Tools</h5><p>Align viewports across sheets to a main sheet, batch-duplicate sheets with granular copy options, crop a view to a drawn polygon — and pack every unplaced view onto auto-numbered index sheets from a dry-run packing plan.</p></div>
             </div>
           </div>
         </div>
@@ -1290,7 +1310,7 @@ with SubTransaction(doc) as st:
           <div class="sec-glyph"><i class="fa-solid fa-cube"></i></div>
           <div class="sec-titles">
             <h2>Section Box <span class="tag code">SB</span> <span class="tag">Tools.panel · pulldown</span></h2>
-            <div class="sub">Fast 3D section boxes from a ribbon pulldown — wrap the current selection, expand by an offset, or set the box from a quick themed dialog, without leaving the view.</div>
+            <div class="sub">Subject-aware 3D section boxes from a ribbon pulldown — a full Create window plus five one-click commands (Quick Box, Quick Section Box, Grow, Shrink, Toggle), each an individual pushbutton you can bind to a keyboard shortcut.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1309,11 +1329,11 @@ with SubTransaction(doc) as st:
             <span class="ttag alt">View3D.SetSectionBox</span><span class="ttag alt">BoundingBox math</span><span class="ttag alt">Quick dialog</span>
           </div>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — one pulldown, three moves</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — one pulldown, six commands</div>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-object-group"></i></div><h5>Box Selection</h5><p>Wraps a section box tight around the current selection in the active 3D view — with a configurable buffer so nothing sits on the crop face.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div><h5>Quick Dialog</h5><p>A compact themed dialog (<a href="mockups/sectionbox_quick.html" target="_blank" rel="noopener">see it live</a>) for numeric box extents and per-face offsets when the selection-wrap isn't enough.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-rotate-left"></i></div><h5>Reset</h5><p>Clears the section box and restores the full model extents in one click.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-object-group"></i></div><h5>Create Window</h5><p>The main button opens a modeless window that fits a subject-aware box to the selection, interactive picks (host or linked model), or pasted element IDs — into the active or a named 3D view, sized by total cube or padding in millimetres, with an optional view template.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></div><h5>Quick Box · Quick Section Box</h5><p>Quick Box wraps the current selection silently using the saved defaults — no window. Quick Section Box does the same through a small View / Size / Template dialog (<a href="mockups/sectionbox_quick.html" target="_blank" rel="noopener">see it live</a>). Defaults — view name, pad, size, grow/shrink step — persist from the window's Settings page.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-toggle-on"></i></div><h5>Grow · Shrink · Toggle</h5><p>One-click siblings: grow or shrink the active view's box by a saved step, or toggle it off and on — Revit keeps the box while off, so toggling back restores the exact same extents. Each is its own pushbutton, bindable to a keyboard shortcut.</p></div>
             </div>
           </div>
         </div>
@@ -1346,18 +1366,21 @@ with SubTransaction(doc) as st:
             <span class="ttag alt">Size parsing</span><span class="ttag alt">Lookup index</span><span class="ttag alt">SQL-ready data</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-database"></i><div class="ft"><b>Automated BOQ Engine:</b> Cross-references element parameters against a master lookup index to populate <code>SPEC_DESIGNATION</code> (Order ID) and <code>SPEC_DESCRIPTION</code>. <span class="win">Eliminates hours of manual referencing and instantly produces accurate Bills of Quantities.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-database"></i><div class="ft"><b>Automated BOQ Engine:</b> Classifies elements through a three-stage pipeline — material, fitting type, size — against the project's BOQ catalogue and writes <code>SPEC_DESIGNATION</code> (atomic BOQ number) and <code>SPEC_DESCRIPTION</code> across 17 MEP categories. <span class="win">Eliminates hours of manual referencing and instantly produces accurate Bills of Quantities.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-ruler"></i><div class="ft"><b>Smart Size Parsing:</b> Reads messy inch strings and fractions (e.g. <code>1 1/2"</code>) and resolves them to metric Nominal Widths, with a fallback to Revit's native calculated size. <span class="win">Handles the real-world mess in supplier data.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-arrow-up-right-dots"></i><div class="ft"><b>Scales With The Catalog:</b> A formatted data table drives the lookup, designed to migrate to SQL once the catalog grows past a few thousand rows. <span class="win">Starts simple, grows without a rewrite.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-file-invoice"></i><div class="ft"><b>Unit-Aware Bill &amp; XLSX Export:</b> Rolls the takeoff up by BOQ code, each code in its own catalogue unit (m, St, m²), with Revit-style Schedule Properties — Fields, Filter, Sorting/Grouping, Formatting, Appearance — and an XLSX export that mirrors the on-screen schedule. <span class="win">A deliverable bill, not just filled parameters.</span></div></li>
           </ul>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — Scan → Run Lookup → review</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — a 7-station stepper: Survey → Classify → Bill → Reconcile, plus Library, Data and Setup</div>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass"></i></div><h5>Scan Model</h5><p>Preview how many elements will classify, with no writes.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-barcode"></i></div><h5>Run BOQ Lookup</h5><p>Writes the SPEC_DESIGNATION atomic number and SPEC_DESCRIPTION onto each element, binding the shared params if missing (optional DN100 duct fallback).</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-list"></i></div><h5>Results</h5><p>Per-element grid with Matched / Needs-mapping / Read-only pills; click an ID to zoom, or uncheck a row to exclude it from the next run.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-database"></i></div><h5>BOQ Data Browser</h5><p>Search across every mapping table by material, fitting name or atomic number.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-pen-to-square"></i></div><h5>Data Editor</h5><p>Edit the mapping tables in a tabbed editor (materials, fittings, size index…) with add/delete/filter and a crash-safe save + live reload.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass"></i></div><h5>Survey</h5><p>Scan the model with no writes: will-classify / via-library / needs-mapping KPIs plus coverage per material system.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-list"></i></div><h5>Classify</h5><p>Per-element results grouped by reason, clickable IDs to select and zoom, per-row exclusion from the next run.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-barcode"></i></div><h5>Run BOQ Lookup</h5><p>Writes SPEC_DESIGNATION and SPEC_DESCRIPTION in one undoable transaction, binding the shared params if missing; authored values are preserved unless you opt into overwrite (optional DN100 duct fallback).</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-invoice"></i></div><h5>Bill</h5><p>Unit-aware takeoff rolled up by BOQ code — m codes total length, St count pieces, m² total insulation area — with Revit-style Schedule Properties and XLSX export.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-scale-balanced"></i></div><h5>Reconcile</h5><p>Read-only audit of filled SPEC parameters against the project BOM library; contradictions surface as conform / conflict findings.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-database"></i></div><h5>BOM Library &amp; Catalogue Data</h5><p>Browse the project's BOM library and search every catalogue mapping table by material, fitting name or BOQ number.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Setup</h5><p>Swap the project catalogue or BOM library, edit mapping tables in-app with validation and crash-safe saves — remembered per project, no reload.</p></div>
             </div>
           </div>
         </div>
@@ -1371,7 +1394,7 @@ with SubTransaction(doc) as st:
           <div class="sec-glyph"><i class="fa-solid fa-book-open"></i></div>
           <div class="sec-titles">
             <h2>IcZ Guideline <span class="tag code">GUIDE</span> <span class="tag">QualityCheck.panel</span> <span class="tag new">new</span></h2>
-            <div class="sub">The project standards library, inside Revit: browse, preview, annotate and edit reference documents without leaving the model. One governed library folder plus pinned files, a resizable list with live search, and inline preview for every common format — keeping modelers on the current standard instead of stale local copies.</div>
+            <div class="sub">The project standards library, inside Revit: browse, preview, annotate and edit reference documents without leaving the model. One governed set of library folders plus pinned files, a resizable list with live search, and inline preview for every common format — keeping modelers on the current standard instead of stale local copies.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1390,14 +1413,14 @@ with SubTransaction(doc) as st:
             <span class="ttag alt">IcZ.PdfView · PDFium</span><span class="ttag alt">PDF · Excel · Word · Markdown</span><span class="ttag alt">Inline annotate</span><span class="ttag alt">Notes sidecar</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-folder-tree"></i><div class="ft"><b>Standards At Your Fingertips:</b> One governed library folder plus pinned files, in a resizable list with live search — every reference document one click from the ribbon. <span class="win">Superseded local copies stop circulating.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-folder-tree"></i><div class="ft"><b>Standards At Your Fingertips:</b> Governed library folders plus pinned files, grouped by collection with live search and file-type facet chips — and a library-wide full-text search (Enter in the search box) that sweeps every document in the background: PDFs per page, plus Word, Excel, Markdown and text. A hit opens the document with every match highlighted; scanned PDFs with no text layer are flagged as not text-searched instead of silently skipped. <span class="win">Superseded local copies stop circulating.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-file-pdf"></i><div class="ft"><b>Native PDF Viewer/Editor:</b> PDFs open in the suite's own <code>IcZ.PdfView</code> (PDFium rendering, zero external dependencies): continuous scroll, full-document search, text selection, highlight / text-box / freehand markup, page rotate-reorder-insert-delete-extract-merge, print, and save with annotations burned in. <span class="win">No Acrobat, no locked-down-machine failures.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-file-lines"></i><div class="ft"><b>Preview &amp; Edit In Place:</b> Inline preview for Excel, Word (extracted text), Markdown, code/text and images; Markdown and text files edit in place with crash-safe writes, and every file carries a plain-text Notes sidecar for redlines that never touches the original. <span class="win">Annotate the standard without altering it.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-file-lines"></i><div class="ft"><b>Preview &amp; Edit In Place:</b> Inline preview for Excel, Word (.docx rendered natively — tables, list numbering, images and hyperlinks intact; legacy .doc text-only), Markdown, code/text and images; Markdown and text files edit in place with crash-safe writes, and every file carries a plain-text Notes sidecar for redlines that never touches the original. <span class="win">Annotate the standard without altering it.</span></div></li>
           </ul>
           <div class="usage">
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — browse, preview, annotate</div>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-folder-open"></i></div><h5>Browse Standards</h5><p>Search and open the company standards scanned from your configured shared folders.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-folder-open"></i></div><h5>Browse Standards</h5><p>Search the standards scanned from your configured folders by name — or press Enter for a full-text sweep of every document, opening hits straight to the highlighted match.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-eye"></i></div><h5>Multi-Format Preview</h5><p>Inline preview for PDF, Word, Excel, Markdown, text and images — PDFs open in a native annotate / rotate / reorder viewer.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-pen"></i></div><h5>Edit &amp; Save</h5><p>For Markdown, text and code, switch to the Edit tab and save straight back to the file (a crash-safe <code>.bak</code> is kept).</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-note-sticky"></i></div><h5>Notes / Redlines</h5><p>Attach a plain-text notes sidecar next to any document — the original PDF / Word / image is never modified.</p></div>
@@ -1415,7 +1438,7 @@ with SubTransaction(doc) as st:
           <div class="sec-glyph"><i class="fa-solid fa-vector-square"></i></div>
           <div class="sec-titles">
             <h2>MEP Opening Tool <span class="tag code">WOT</span> <span class="tag">Report.Panel</span></h2>
-            <div class="sub">Finds every place an MEP run pierces a wall — across host and linked files — reports it, and can mark it. The suite runs on the IronPython 3 engine (ipy2.7 retained for Revit ≤2023); WOT was the ipy3 pilot before the full rollout.</div>
+            <div class="sub">Finds every place an MEP run pierces a wall, floor, roof or structural framing member — across host and linked files — reports it, and can place and mark the openings. The suite runs on the IronPython 3 engine across Revit 2022–2026; WOT was the ipy3 pilot before the full rollout.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1431,20 +1454,20 @@ with SubTransaction(doc) as st:
           </div>
           <div class="techtags">
             <span class="ttag">Revit API</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
-            <span class="ttag alt">Cross-link intersection</span><span class="ttag alt">Family placement</span><span class="ttag alt">XLS report</span>
+            <span class="ttag alt">Cross-link intersection</span><span class="ttag alt">Family placement</span><span class="ttag alt">XLSX / XLS report</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-vector-square"></i><div class="ft"><b>Cross-Link Clash Detection:</b> Detects pipe/duct/conduit/tray crossings through basic, stacked and curtain walls, including walls in linked files. <span class="win">Catches openings the host model alone would miss.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-table-list"></i><div class="ft"><b>Review Grid + Filters:</b> Results land in a review grid with isolate/zoom and filters for wall type, workset, phase and scope (model / view / selection), exportable to XLS. <span class="win">Triage every crossing before you act.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-vector-square"></i><div class="ft"><b>Cross-Link Clash Detection:</b> Detects duct, flex duct, pipe, flex pipe, sprinkler, conduit and cable tray crossings — fittings and accessories optional — through walls (basic, stacked, curtain), floors, roofs and structural framing, including hosts in linked files. <span class="win">Catches openings the host model alone would miss.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-table-list"></i><div class="ft"><b>Review Grid + Filters:</b> Results land in a review grid with isolate/zoom, sizes in mm plus fractional inches, host fire rating, and filters for host type, workset, phase and scope (model / view / selection), exportable to XLSX or XLS. <span class="win">Triage every crossing before you act.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-location-dot"></i><div class="ft"><b>Auto-Placed Markers:</b> Drops opening family instances at each crossing so openings can be coordinated and scheduled, writing each dimension only into a genuinely writable parameter and flagging names that don't resolve. <span class="win">A complete, schedulable opening set in one run — no silently-missed sizes.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-list-check"></i><div class="ft"><b>Tri-State Element Scope:</b> The MEP element scope is a checkbox tree — one parent toggles ducts, pipes, conduit and tray together, or pick exactly the ones you want. <span class="win">Set "everything except one" in two clicks.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-list-check"></i><div class="ft"><b>Tri-State Element Scope:</b> The MEP element scope is a checkbox tree — one parent toggles ducts, flex ducts, pipes, flex pipes, sprinklers, conduit and cable tray together, or pick exactly the ones you want. <span class="win">Set "everything except one" in two clicks.</span></div></li>
           </ul>
           <div class="usage">
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — Configure → Run → Place</div>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass-chart"></i></div><h5>Configure &amp; Run</h5><p>Set wall scope (basic / stacked / curtain, incl. linked files), filters, buffer and the MEP element tree, then Run Analysis to detect every crossing.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-list"></i></div><h5>Review Results</h5><p>Triage the intersection grid — one row per host wall with an openings-count impact bar; click any row or logged element ID to select and zoom.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-location-dot"></i></div><h5>Place Openings</h5><p>Places your chosen opening family at every crossing, auto-rotated to face the wall, writing Width / Height / Diameter into the first writable parameter.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass-chart"></i></div><h5>Configure &amp; Run</h5><p>Set host scope (walls — basic / stacked / curtain — plus floors, roofs and framing, incl. linked files), filters, buffer and the MEP element tree, then Run Analysis to detect every crossing.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-list"></i></div><h5>Review Results</h5><p>Triage the intersection grid — one row per host with an openings-count impact bar; click any row, linked-file hit or logged element ID to select and zoom.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-location-dot"></i></div><h5>Place Openings</h5><p>Places your chosen opening family at every crossing, auto-rotated to the host with depth set to host thickness and sequential WOT-n marks, writing Width / Height / Diameter into the first writable parameter.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Parameter Settings</h5><p>Set the fallback parameter names tried for Width / Height / Diameter — first writable match wins, and "Radius" is halved automatically.</p></div>
             </div>
           </div>
@@ -1478,7 +1501,7 @@ with SubTransaction(doc) as st:
             <span class="ttag alt">Family editor</span><span class="ttag alt">Profile scoring</span><span class="ttag alt">HTML report</span>
           </div>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-heart-pulse"></i><div class="ft"><b>Family Health Score:</b> Runs the shared <code>famqa</code> scoring engine over the open family and shows an overall health number plus a per-check pass/warn/fail table grouped by category. <span class="win">One glance tells you if the family is delivery-ready.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-heart-pulse"></i><div class="ft"><b>Family Health Score:</b> Runs the shared <code>famqa</code> scoring engine over the open family and draws a Health Radar &amp; Report Card — a six-axis radar (Name, References, File, Plan View, Parameters, Structure) with clickable axis filters, an A–F grade badge, and a searchable findings list pivotable by group or severity. <span class="win">One glance tells you if the family is delivery-ready.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-sliders"></i><div class="ft"><b>Firm-Profile Driven:</b> Checks come from a JSON profile (bundled default + a per-user <code>%APPDATA%</code> overlay) edited through a schema-generated settings form — no raw JSON editing. <span class="win">Retarget the standard by picking a profile, not touching code.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-file-export"></i><div class="ft"><b>Shareable Report:</b> Exports a themed HTML scorecard via the shared <code>reporthtml</code> module for review outside Revit. <span class="win">Circulate the result without a Revit seat.</span></div></li>
           </ul>
@@ -1486,8 +1509,8 @@ with SubTransaction(doc) as st:
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — open a family, Scan, review, export</div>
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass"></i></div><h5>Scan Family</h5><p>With a family open in the family editor, Scan runs the health check through an ExternalEvent against its definition.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-heart-pulse"></i></div><h5>Health Scorecard</h5><p>Get an overall health % (banded green / amber / red) with Pass / Warn / Fail counts and per-check rows grouped by category.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-export"></i></div><h5>Export Report</h5><p>Save a themed HTML scorecard (<code>&lt;model&gt;_FamilyQC.html</code>) to circulate the result outside Revit.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-heart-pulse"></i></div><h5>Health Scorecard</h5><p>Get an overall health % with an A–F grade (banded Perfect / Healthy / Needs attention / Failing), Pass / Warn / Fail counts, a weakest-dimension callout, and a top-offenders panel that jumps straight to each finding.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-export"></i></div><h5>Export Report</h5><p>Save a themed HTML scorecard through a file dialog (last directory remembered) — it auto-opens for review, ready to circulate outside Revit.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-sliders"></i></div><h5>Profile Settings</h5><p>Pick the firm profile and edit its checks in a schema-generated form (no raw JSON); saves to <code>%APPDATA%</code>, never the bundled default.</p></div>
             </div>
           </div>
@@ -1523,14 +1546,14 @@ with SubTransaction(doc) as st:
           <ul class="feat">
             <li class="glass-card"><i class="fa-solid fa-ruler-horizontal"></i><div class="ft"><b>Length-Preserving Disallow:</b> Disallowing a join normally regrows the beam past its neighbour; SFX measures the regrowth and cancels it in the Start/End Extension parameters, so the physical faces never move and schedules keep the real lengths. <span class="win">Fabrication-true geometry, no manual retrimming.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-code-branch"></i><div class="ft"><b>Deterministic Node Resolution:</b> Ex-miter residual nodes get a deterministic primary/butt re-resolution, optional cope stripping, and a one-way location realign that snaps the line onto the physical length with extensions zeroed — faces unmoved. <span class="win">The same input always yields the same joint scheme.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-table-list"></i><div class="ft"><b>Scan → Review → Apply → Reverse:</b> Dry-count scan first, a review grid with status pills and reason groups (drift, residual, skip), XLSX export for the record, and a Re-Allow pass that reverses the whole operation under the extension-zeroing contract. <span class="win">Fully auditable and fully undoable.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-table-list"></i><div class="ft"><b>Scan → Review → Apply → Reverse:</b> Dry-count scan first, a KPI band and a review grid with status pills and reason groups (drift, residual, skip) — pivotable by status, family or joint — XLSX export for the record, and a Re-Allow pass that reverses the whole operation under the extension-zeroing contract. <span class="win">Fully auditable; reversible except the one-way realign and the permanent cope strip.</span></div></li>
           </ul>
           <div class="usage">
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — scope, Scan, review the pills, Apply</div>
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-crosshairs"></i></div><h5>Pick Scope</h5><p>Selection, active view or whole model — linear framing only, filtered through quick collectors.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass"></i></div><h5>Scan (dry count)</h5><p>Counts joined ends, residual nodes, copes and drift candidates with no writes — no auto-scan on open.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-check-double"></i></div><h5>Apply Fix</h5><p>Disallow + compensate per element; one grid row per element, worst status wins, click any ID to zoom.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-check-double"></i></div><h5>Apply Fix</h5><p>Disallow + compensate per element; one grid row per element, worst status wins, click any ID to zoom and load its end deltas into the End-Condition Inspector canvas.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-rotate-left"></i></div><h5>Re-Allow</h5><p>Reverses the operation — extensions zeroed, joins restored — with the same review-first workflow.</p></div>
             </div>
           </div>
@@ -1545,13 +1568,13 @@ with SubTransaction(doc) as st:
           <div class="sec-glyph"><i class="fa-solid fa-cubes"></i></div>
           <div class="sec-titles">
             <h2>Shared Library <span class="tag code">icz/</span></h2>
-            <div class="sub">Battle-tested utilities for pyRevit &amp; Revit API add-ins. Write it once, reuse it everywhere — 32 modules, zero external dependencies.</div>
+            <div class="sub">Battle-tested utilities for pyRevit &amp; Revit API add-ins. Write it once, reuse it everywhere — 73 modules, zero external dependencies.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="techtags">
-            <span class="ttag">Revit API</span><span class="ttag">IronPython 2.7 ⇋ IronPython 3</span><span class="ttag">WPF / XAML</span>
-            <span class="ttag alt">Dependency-Free</span><span class="ttag alt">Revit 2023–26 Safe</span><span class="ttag alt">Single source of truth</span>
+            <span class="ttag">Revit API</span><span class="ttag">IronPython 3</span><span class="ttag">WPF / XAML</span>
+            <span class="ttag alt">Dependency-Free</span><span class="ttag alt">Revit 2022–26 Safe</span><span class="ttag alt">Single source of truth</span>
           </div>
           <p>Every pyRevit tool in the suite once re-solved the same problems: the Revit 2024 <code>ElementId</code> breaking change, modeless-window threading, theme duplication, worksharing guards, MEP connector hashing, and batch-export plumbing. The <code>icz</code> package pulls all of it into one dependency-free library, so each tool imports instead of reimplementing.</p>
 
@@ -1592,11 +1615,11 @@ with SubTransaction(doc) as st:
               <div class="uses"><span class="u all">suite-wide</span></div>
             </div>
 
-            <div class="modcard glass-card" data-domain="core" data-name="apiclient protected logic api client system.net tls 1.2 server tier token">
+            <div class="modcard glass-card" data-domain="core" data-name="licensing entitlement gate machine fingerprint signed token compiled core licensegate">
               <div class="dom">Core</div>
-              <h4><i class="fa-solid fa-server"></i> apiclient</h4>
-              <p>IronPython client for the protected-logic API — .NET networking (<code>System.Net</code>, forced TLS 1.2) so crown-jewel algorithms can run server-side and the pyRevit tools still reach them.</p>
-              <div class="uses"><span class="u staged">staged</span></div>
+              <h4><i class="fa-solid fa-server"></i> licensing</h4>
+              <p>Thin IronPython caller over the compiled core's <code>LicenseGate</code> — machine fingerprint, signed entitlement activation and per-feature checks, so protected engines stay gated inside the DLL and the UI degrades gracefully.</p>
+              <div class="uses"><span class="u">compiled core</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="core" data-name="host application seam pyrevit decoupling doc uidoc transaction bundle file core dll path">
@@ -1686,7 +1709,7 @@ with SubTransaction(doc) as st:
             <div class="modcard glass-card" data-domain="mep" data-name="route a star astar pathfinding generative routing icz.core voxel fallback ironpython">
               <div class="dom">MEP</div>
               <h4><i class="fa-solid fa-diagram-project"></i> route</h4>
-              <p>Generative A* routing behind one call — <code>IcZ.Core.dll</code>'s fast voxel pathfinder when the binary is present, an identical-semantics pure-IronPython fallback (lower node cap) when it isn't. One netstandard2.0 binary serves Revit 2023–2026.</p>
+              <p>Generative A* routing behind one call — <code>IcZ.Core.dll</code>'s fast voxel pathfinder when the binary is present, an identical-semantics pure-IronPython fallback (lower node cap) when it isn't. One netstandard2.0 binary serves Revit 2022–2026.</p>
               <div class="uses"><span class="u">FIT</span></div>
             </div>
 
@@ -1846,7 +1869,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
     </div><!-- /content -->
 
     <footer>
-      <p><b>IcZScripts.extension</b> · SuiteTools for Autodesk Revit 2023–2026 · built on pyRevit 6.4 (IronPython 2.7 ⇋ IronPython 3)</p>
+      <p><b>IcZScripts.extension</b> · SuiteTools for Autodesk Revit 2022–2026 · built on pyRevit 6.4 · IronPython 3 engine</p>
       <p>&copy; 2026 IcZ</p>
     </footer>
   </div><!-- /main -->

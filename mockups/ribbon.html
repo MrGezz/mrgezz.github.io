@@ -3,7 +3,7 @@
 {
   "name": "SectionBox Ribbon Showcase",
   "schemaVersion": 1,
-  "description": "Website-ready, high-fidelity render of the Revit 2026 dark ribbon (SuiteTools tab → Tools panel) featuring the IcZ Section Box .pulldown expanded: Section Box (window), Box: Active View + Box: New View (the two create clones), Grow / Shrink / Toggle - each an individually shortcut-bindable pushbutton with its own icon. Includes a Revit-style 'Auto Section Box' hover tooltip. Standalone, dark, embeddable as a showcase image. Hover the big button to open/close the flyout; hover an item for its blue Revit highlight.",
+  "description": "Website-ready, high-fidelity render of the Revit 2026 dark ribbon (SuiteTools tab → Tools panel) featuring the IcZ Section Box .pulldown expanded: Section Box (window), Quick Box + Quick Section Box (the two one-click create commands), Grow / Shrink / Toggle - each an individually shortcut-bindable pushbutton with its own icon. Includes a Revit-style 'Quick Box' hover tooltip. Standalone, dark, embeddable as a showcase image. Hover the big button to open/close the flyout; hover an item for its blue Revit highlight.",
   "mcpTools": [],
   "mcpServerNames": []
 }
@@ -123,8 +123,8 @@
       <div class="panel">
         <div class="buttons">
           <div class="sbtn"><span class="ic mdl2 blue">&#xE74C;</span><span class="tx">Model<br>Cleanup</span></div>
-          <div class="sbtn"><span class="ic mdl2 green">&#xE898;</span><span class="tx">IcZ<br>Transmit</span></div>
-          <div class="sbtn"><span class="ic mdl2 blue">&#xE8A5;</span><span class="tx">IcZ<br>AutoDoc</span></div>
+          <div class="sbtn"><span class="ic mdl2 green">&#xE898;</span><span class="tx">Transmit</span></div>
+          <div class="sbtn"><span class="ic mdl2 blue">&#xE8A5;</span><span class="tx">Sheet<br>AutoDoc</span></div>
         </div>
         <div class="ptitle">Tools</div>
       </div>
@@ -144,9 +144,9 @@
                 <span class="t"><b>Section Box…</b><small>open the create window</small></span></div>
               <div class="fsep"></div>
               <div class="fi" id="fi_active"><span class="ic cube amber">&#xE809;</span>
-                <span class="t"><b>Box: Active View</b><small>selection &#x2192; active 3D view (auto section box)</small></span><span class="kb">B&#x200A;X</span></div>
+                <span class="t"><b>Quick Box</b><small>selection &#x2192; active 3D view, saved defaults, no window</small></span><span class="kb">B&#x200A;X</span></div>
               <div class="fi"><span class="ic cube amber">&#xE908;</span>
-                <span class="t"><b>Box: New View</b><small>selection &#x2192; new / named 3D view</small></span><span class="kb">set</span></div>
+                <span class="t"><b>Quick Section Box</b><small>small View / Size / Template dialog</small></span><span class="kb">set</span></div>
               <div class="fsep"></div>
               <div class="fi"><span class="ic mdl2 green">&#xE710;</span>
                 <span class="t"><b>Grow Box</b><small>active box + saved step</small></span><span class="kb">set</span></div>
@@ -157,7 +157,7 @@
             </div>
             <!-- tooltip -->
             <div class="tip" id="tip">
-              <h4><span class="ic cube">&#xE809;</span> Auto Section Box</h4>
+              <h4><span class="ic cube">&#xE809;</span> Quick Box</h4>
               <p>Automatically add a section box around the selected elements in the active 3D view — element extents plus the saved buffer. Bind it to <b>BX</b> to replace Revit's default.</p>
               <div class="f1">Press F1 for more help</div>
             </div>
@@ -168,7 +168,7 @@
     </div>
   </div>
 
-  <div class="hintbar">▸ hover the <b>Section Box</b> button to toggle the flyout · hover <b>Box: Active View</b> for the tooltip</div>
+  <div class="hintbar">▸ hover the <b>Section Box</b> button to toggle the flyout · hover <b>Quick Box</b> for the tooltip</div>
 
   </div>
 
