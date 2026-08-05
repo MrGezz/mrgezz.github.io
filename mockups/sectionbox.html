@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SectionBox — Pulldown + Compact · Round 13 rev2</title>
+<title>Section Box — Pulldown + Compact</title>
 <style>
   :root{
     --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
@@ -123,14 +123,14 @@
     <div class="ribtitle">Tools</div>
     <!-- the dropdown — closed by default, opens on hover / click -->
     <div class="dropdown" id="dropdown">
-      <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Section Box…</b><small>open the create window</small></span><span class="xn">SectionBox</span></div>
+      <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Section Box…</b><small>open the create window</small></span></div>
       <div class="sep"></div>
-      <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Box: Active View</b><small>selection → active 3D view</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxActive</span></div>
-      <div class="di"><span class="ic mdl2">&#xE8B3;</span><span class="t"><b>Box: New View</b><small>selection → new / named 3D view</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxNew</span></div>
+      <div class="di"><span class="ic mdl2">&#xE809;</span><span class="t"><b>Box: Active View</b><small>selection → active 3D view</small></span><span class="kb">shortcut</span></div>
+      <div class="di"><span class="ic mdl2">&#xE8B3;</span><span class="t"><b>Box: New View</b><small>selection → new / named 3D view</small></span><span class="kb">shortcut</span></div>
       <div class="sep"></div>
-      <div class="di"><span class="ic mdl2">&#xE710;</span><span class="t"><b>Grow Box</b><small>active box + saved step</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxGrow</span></div>
-      <div class="di"><span class="ic mdl2">&#xE738;</span><span class="t"><b>Shrink Box</b><small>active box − saved step</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxShrink</span></div>
-      <div class="di"><span class="ic mdl2">&#xE7B3;</span><span class="t"><b>Toggle Box</b><small>off (remembered) / restore</small></span><span class="kb">shortcut</span><span class="xn">SectionBoxToggle</span></div>
+      <div class="di"><span class="ic mdl2">&#xE710;</span><span class="t"><b>Grow Box</b><small>active box + saved step</small></span><span class="kb">shortcut</span></div>
+      <div class="di"><span class="ic mdl2">&#xE738;</span><span class="t"><b>Shrink Box</b><small>active box − saved step</small></span><span class="kb">shortcut</span></div>
+      <div class="di"><span class="ic mdl2">&#xE7B3;</span><span class="t"><b>Toggle Box</b><small>off (remembered) / restore</small></span><span class="kb">shortcut</span></div>
     </div>
   </div>
   <div class="rnote">
@@ -171,19 +171,19 @@
           <h3>&#x1F3AF; Subject</h3>
           <div class="lblrow" style="flex-wrap:wrap;gap:6px">
             <button class="btn" id="btn_prev"><span class="g">&#xE890;</span>Preview</button>
-            <button class="btn" id="btn_pm"><span class="g">&#xE1E3;</span>Pick in model<span class="xn">btn_pick_model</span></button>
-            <button class="btn" id="btn_pl"><span class="g">&#xE71B;</span>Pick in link<span class="xn">btn_pick_link</span></button>
+            <button class="btn" id="btn_pm"><span class="g">&#xE1E3;</span>Pick in model</button>
+            <button class="btn" id="btn_pl"><span class="g">&#xE71B;</span>Pick in link</button>
           </div>
           <div class="hint" id="sel">3 element(s) selected. — "Pick in link" boxes an element from a <b>linked model</b>.</div>
-          <div class="lbl">Paste element IDs (optional — overrides selection) <span class="xn">txt_ids</span></div>
+          <div class="lbl">Paste element IDs (optional — overrides selection)</div>
           <textarea class="in" rows="2" placeholder="Comma / space / newline separated IDs"></textarea>
         </div>
 
         <div class="card">
           <h3>&#x1F5BC; Target 3D View</h3>
           <div style="display:flex;gap:18px;flex-wrap:wrap">
-            <span class="rad on" data-r="tg" id="rb_active"><span class="rb"></span>Active 3D view<span class="xn">rb_target_active</span></span>
-            <span class="rad" data-r="tg" id="rb_named"><span class="rb"></span>Create / reuse named<span class="xn">rb_target_named</span></span>
+            <span class="rad on" data-r="tg" id="rb_active"><span class="rb"></span>Active 3D view</span>
+            <span class="rad" data-r="tg" id="rb_named"><span class="rb"></span>Create / reuse named</span>
           </div>
           <div id="named" style="opacity:.45;pointer-events:none;margin-top:6px">
             <div class="row-lab"><span class="fl">View name</span><input class="in" value="IcZ Section Box"></div>

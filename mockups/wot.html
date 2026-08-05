@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WOT — MEP vs Wall Opening · Round 12 Restructure</title>
+<title>WOT — MEP Opening Tool</title>
 <style>
   :root{
     --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
@@ -172,12 +172,12 @@
     <!-- ══ RAIL (existing 4-page ShellWindow rail) ══ -->
     <div class="rail" id="rail">
       <div class="rlab">ANALYSE</div>
-      <div class="nav sel" data-pg="config"><span class="g mdl2">&#xE713;</span>Configure<span class="xn">nav_config</span></div>
-      <div class="nav" data-pg="results"><span class="g mdl2">&#xE9F9;</span>Results<span class="xn">nav_results</span></div>
+      <div class="nav sel" data-pg="config"><span class="g mdl2">&#xE713;</span>Configure</div>
+      <div class="nav" data-pg="results"><span class="g mdl2">&#xE9F9;</span>Results</div>
       <div class="rlab">PLACE</div>
-      <div class="nav" data-pg="placement"><span class="g mdl2">&#xE945;</span>Place Openings<span class="xn">nav_placement</span></div>
+      <div class="nav" data-pg="placement"><span class="g mdl2">&#xE945;</span>Place Openings</div>
       <div class="rlab">CONFIG</div>
-      <div class="nav" data-pg="settings"><span class="g mdl2">&#xE713;</span>Settings<span class="xn">nav_settings</span></div>
+      <div class="nav" data-pg="settings"><span class="g mdl2">&#xE713;</span>Settings</div>
     </div>
 
     <!-- ══ CONTENT ══ -->
@@ -200,9 +200,9 @@
           <div style="display:flex;flex-direction:column;gap:12px">
             <div class="card">
               <h3>&#x1F9F1; Wall Scope</h3>
-              <div class="chk on" data-t><span class="box"></span>Basic / Stacked<span class="xn">cb_basic</span></div>
-              <div class="chk" data-t style="margin-left:18px"><span class="box"></span>Curtain Walls<span class="xn">cb_curtain</span></div>
-              <div class="chk acc" data-t style="display:flex;margin-top:10px"><span class="box"></span>Include walls from linked files<span class="xn">cb_linked_walls</span></div>
+              <div class="chk on" data-t><span class="box"></span>Basic / Stacked</div>
+              <div class="chk" data-t style="margin-left:18px"><span class="box"></span>Curtain Walls</div>
+              <div class="chk acc" data-t style="display:flex;margin-top:10px"><span class="box"></span>Include walls from linked files</div>
               <div class="hint">Workset / Phase filters apply to host walls only.</div>
             </div>
 
@@ -214,12 +214,12 @@
               <div class="row-lab"><span class="fl">Scope</span><select class="sel2" id="sel_scope"><option>Whole Model</option><option selected>Active View</option><option>Current Selection</option></select></div>
               <div class="row-lab"><span class="fl">Buffer / side (mm)</span>
                 <div style="display:flex;align-items:center;gap:8px"><input class="in" id="in_offset" style="width:64px" value="50"><input type="range" class="slider" id="sl_offset" min="0" max="150" value="50"></div></div>
-              <div class="xnrow" style="text-align:right"><span class="xn">cbo_wall_type</span><span class="xn">cbo_workset</span><span class="xn">cbo_phase</span><span class="xn">cbo_scope</span><span class="xn">txt_offset</span></div>
+              <div class="xnrow" style="text-align:right"></div>
               <div class="hint">Opening = MEP + insulation&#xD7;2 + buffer&#xD7;2</div>
             </div>
 
             <div class="card">
-              <h3>&#x1F50C; MEP Elements <span class="xn">tv_mep_scope</span></h3>
+              <h3>&#x1F50C; MEP Elements</h3>
               <div class="tree" id="mepTree">
                 <div class="trow parent partial" data-parent><span class="tbox"></span><b>MEP Elements</b></div>
                 <div class="trow child on" data-leaf="duct"><span class="tbox"></span><span class="dotc" style="background:var(--duct)"></span>Ducts</div>
@@ -228,22 +228,22 @@
                 <div class="trow child" data-leaf="tray"><span class="tbox"></span><span class="dotc" style="background:var(--tray)"></span>Trunking / Ladder</div>
               </div>
               <div style="display:flex;gap:16px;flex-wrap:wrap">
-                <div class="chk" data-t><span class="box"></span>Fittings<span class="xn">cb_fit</span></div>
-                <div class="chk" data-t><span class="box"></span>Accessories<span class="xn">cb_acc</span></div>
-                <div class="chk on" data-t id="chk_ins"><span class="box"></span>Insulation<span class="xn">cb_ins</span></div>
+                <div class="chk" data-t><span class="box"></span>Fittings</div>
+                <div class="chk" data-t><span class="box"></span>Accessories</div>
+                <div class="chk on" data-t id="chk_ins"><span class="box"></span>Insulation</div>
               </div>
-              <div class="chk acc" data-t style="display:flex"><span class="box"></span>Also scan host model MEP<span class="xn">cb_host_mep</span></div>
+              <div class="chk acc" data-t style="display:flex"><span class="box"></span>Also scan host model MEP</div>
             </div>
 
             <div class="card">
               <h3>&#x1F4E4; Export Settings</h3>
               <div style="display:flex;gap:16px;flex-wrap:wrap">
-                <div class="chk on" data-t><span class="box"></span>Formatted .xlsx<span class="xn">cb_xlsx</span></div>
-                <div class="chk on" data-t><span class="box"></span>Open after export<span class="xn">cb_open</span></div>
+                <div class="chk on" data-t><span class="box"></span>Formatted .xlsx</div>
+                <div class="chk on" data-t><span class="box"></span>Open after export</div>
               </div>
               <div class="lbl">Folder</div>
-              <div style="display:flex;gap:6px"><input class="in" value="C:\Users\IcZ\Desktop"><button class="btn">Browse<span class="xn">BrowseFolder</span></button></div>
-              <div class="lbl">File name <span class="xn">txt_folder / txt_filename</span></div>
+              <div style="display:flex;gap:6px"><input class="in" value="C:\Users\IcZ\Desktop"><button class="btn">Browse</button></div>
+              <div class="lbl">File name</div>
               <input class="in" value="Wall_Opening_Report_20260720.xlsx">
             </div>
           </div>
@@ -264,9 +264,9 @@
         </div>
 
         <div class="actionbar">
-          <div class="chk on" data-t><span class="box"></span>Debug log<span class="xn">cb_log</span></div>
+          <div class="chk on" data-t><span class="box"></span>Debug log</div>
           <div class="spacer"></div>
-          <button class="run" style="width:auto;padding:11px 22px" id="btn_run"><span class="g mdl2">&#xE768;</span> Run Analysis <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">btn_run_analysis</span></button>
+          <button class="run" style="width:auto;padding:11px 22px" id="btn_run"><span class="g mdl2">&#xE768;</span> Run Analysis</button>
         </div>
       </div>
 
@@ -284,17 +284,17 @@
 
         <div class="hero">
           <div class="card">
-            <h3>&#x1F9F1; Intersection Results <span class="xn">results_rows_panel</span> <span style="margin-left:auto;font-size:10px;color:var(--text-2)" id="results_count">14 walls · 37 openings</span></h3>
+            <h3>&#x1F9F1; Intersection Results <span style="margin-left:auto;font-size:10px;color:var(--text-2)" id="results_count">14 walls · 37 openings</span></h3>
             <div class="listtools">
-              <button class="btn mini">All<span class="xn">Results_All</span></button>
-              <button class="btn mini">None<span class="xn">Results_None</span></button>
-              <button class="btn mini">Remove &#x2713;<span class="xn">Results_RemoveChecked</span></button>
-              <button class="btn mini">Show<span class="xn">Results_NavChecked</span></button>
+              <button class="btn mini">All</button>
+              <button class="btn mini">None</button>
+              <button class="btn mini">Remove &#x2713;</button>
+              <button class="btn mini">Show</button>
             </div>
             <div class="revlist" id="revlist"></div>
           </div>
           <div class="card">
-            <h3>&#x1F4CA; By Category <span class="xn">canvas_legend</span></h3>
+            <h3>&#x1F4CA; By Category</h3>
             <div class="catrow"><span class="dotc" style="background:var(--duct)"></span><span class="cnm">Ducts</span><span class="ccount">18</span></div>
             <div class="catrow"><span class="dotc" style="background:var(--pipe)"></span><span class="cnm">Pipes</span><span class="ccount">11</span></div>
             <div class="catrow"><span class="dotc" style="background:var(--tray)"></span><span class="cnm">Trunking / Ladder</span><span class="ccount">8</span></div>
@@ -304,9 +304,9 @@
         </div>
 
         <div class="actionbar">
-          <div class="chk" data-t><span class="box"></span>Isolate on click<span class="xn">cb_isolate</span></div>
+          <div class="chk" data-t><span class="box"></span>Isolate on click</div>
           <div class="spacer"></div>
-          <button class="run" style="width:auto;padding:11px 24px"><span class="g mdl2">&#xE74E;</span> Export Report <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">ExportReport</span></button>
+          <button class="run" style="width:auto;padding:11px 24px"><span class="g mdl2">&#xE74E;</span> Export Report</button>
         </div>
       </div>
 
@@ -320,7 +320,7 @@
             <h3>&#x1F9F0; Opening Family</h3>
             <div class="row-lab"><span class="fl">Family</span><select class="sel2"><option>M_Wall Opening - Rectangular</option><option>M_Sleeve - Round</option></select></div>
             <div class="row-lab"><span class="fl">Type</span><select class="sel2"><option>Standard</option></select></div>
-            <div class="xnrow" style="text-align:right"><span class="xn">cbo_family</span><span class="xn">cbo_family_type</span><span class="xn">FamilySelected</span></div>
+            <div class="xnrow" style="text-align:right"></div>
             <div class="hint">Instances are auto-rotated to face the wall (<b>compute_rotation_angle</b>) and Width / Height / Diameter
               parameters are set from the first writable configured name. Run analysis first.</div>
             <div style="margin-top:10px;padding:10px;border:1px dashed var(--border);border-radius:6px;font-size:11px;color:var(--text-2)">
@@ -336,7 +336,7 @@
 
         <div class="actionbar">
           <div class="spacer"></div>
-          <button class="run" style="width:auto;padding:11px 22px" id="btn_place"><span class="g mdl2">&#xE768;</span> <span id="lbl_place">Place Openings</span> <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">btn_place / lbl_place</span></button>
+          <button class="run" style="width:auto;padding:11px 22px" id="btn_place"><span class="g mdl2">&#xE768;</span> <span id="lbl_place">Place Openings</span></button>
         </div>
       </div>
 
@@ -348,17 +348,17 @@
           <div class="card">
             <h3>&#x1F511; Opening Family Parameter Names</h3>
             <div class="hint" style="margin-top:0;margin-bottom:8px">Comma-separated fallbacks, tried in order. First writable match wins. 'Radius' is halved automatically.</div>
-            <div class="lbl">Width params <span class="xn">txt_pn_width</span></div>
+            <div class="lbl">Width params</div>
             <input class="in" value="Width, Opening Width, W, Horizontal Span">
-            <div class="lbl">Height params <span class="xn">txt_pn_height</span></div>
+            <div class="lbl">Height params</div>
             <input class="in" value="Height, Opening Height, H, Vertical Span">
-            <div class="lbl">Diameter params <span class="xn">txt_pn_diam</span></div>
+            <div class="lbl">Diameter params</div>
             <input class="in" value="Diameter, Opening Diameter, D, Radius">
           </div>
         </div>
         <div class="actionbar">
           <div class="spacer"></div>
-          <button class="run" style="width:auto;padding:11px 22px"><span class="g mdl2">&#xE74E;</span> Save Settings <span class="xn" style="color:var(--accent-fg);background:rgba(0,0,0,.12);border-color:transparent">SaveSettings</span></button>
+          <button class="run" style="width:auto;padding:11px 22px"><span class="g mdl2">&#xE74E;</span> Save Settings</button>
         </div>
       </div>
 
@@ -387,7 +387,7 @@
     <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
     <span class="fdiv"></span>
     <span id="footer_status">Analysis done: 14 wall(s), 37 opening(s)</span>
-    <div class="fright"><span class="fdot"></span><span>Model loaded</span><button class="btn mini" style="margin-left:8px">Reset View<span class="xn">OnResetView</span></button></div>
+    <div class="fright"><span class="fdot"></span><span>Model loaded</span><button class="btn mini" style="margin-left:8px">Reset View</button></div>
   </div>
 </div>
 

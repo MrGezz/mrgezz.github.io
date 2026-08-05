@@ -12,7 +12,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IcZ Transmit — Stepper + Cockpit · R17</title>
+<title>Transmit — Stepper + Cockpit</title>
 <style>
   :root{
     --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
@@ -216,7 +216,6 @@
             <select style="min-width:220px;background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:6px;padding:6px"><option>ISO - FOR CONSTRUCTION</option><option>Client A standard</option></select>
             <button class="ghostbtn" onclick="alert('ProfileSaveAs')">Save As…</button>
           </div>
-          <div class="xn" style="margin-top:8px">path_tb · BrowseFolder · profile_cb / ProfileChanged · ProfileSaveAs</div>
         </div>
         <div class="card">
           <h3><span class="hg">&#xE9E9;</span> What to issue</h3>
@@ -229,7 +228,6 @@
             <div class="ftile on" onclick="ftile(this,'xls')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE8FD;</span><span class="fl">Schedules</span></div>
             <div class="ftile on" onclick="ftile(this,'dr')"><span class="fchk">&#xE73E;</span><span class="fg">&#xE71D;</span><span class="fl">Sheet Index</span></div>
           </div>
-          <div class="xn" style="margin-top:9px">run_dwg · run_pdf · run_nwc · run_img · run_ifc · run_xls · run_dr &nbsp;|&nbsp; CheckAll / UncheckAll</div>
         </div>
       </div>
 
@@ -249,7 +247,6 @@
           <div class="toolrow" style="margin-bottom:8px">
             <span class="cklab"><span class="chk" onclick="tog(this)"></span> Sheets</span>
             <span class="cklab"><span class="chk off" onclick="tog(this)"></span> Views</span>
-            <div class="xn" style="margin-left:auto">view_list · filter_sheets / filter_views · search_dwg · UpdateFilter</div>
           </div>
           <table><thead><tr><th style="width:34px"></th><th style="width:80px">No.</th><th>Name</th><th style="width:260px">Output Filename</th></tr></thead>
             <tbody>
@@ -259,12 +256,10 @@
             </tbody></table>
         </div>
         <div class="card" id="seg_models" style="display:none">
-          <div class="xn" style="margin-bottom:8px">nwc_list · search_nwc · UpdateFilterNwc</div>
           <table><thead><tr><th style="width:34px"></th><th>3D View Name</th><th style="width:280px">Output Filename</th></tr></thead>
             <tbody><tr><td><span class="chk" onclick="tog(this)"></span></td><td>Navisworks - Coordination</td><td><input class="cell" value="SNT-COORD"></td></tr></tbody></table>
         </div>
         <div class="card" id="seg_sched" style="display:none">
-          <div class="xn" style="margin-bottom:8px">sched_list · search_sched · UpdateFilterSched</div>
           <table><thead><tr><th style="width:34px"></th><th>Schedule Name</th><th style="width:280px">Output Filename</th></tr></thead>
             <tbody><tr><td><span class="chk" onclick="tog(this)"></span></td><td>Door Schedule</td><td><input class="cell" value="Door Schedule"></td></tr></tbody></table>
         </div>
@@ -291,18 +286,18 @@
             <label class="cklab"><span class="chk" onclick="tog(this)"></span> Crisp logos (embed images as OLE)</label>
             <label class="cklab"><span class="chk off" onclick="tog(this)"></span> Merge views on sheets</label>
             <label class="cklab"><span class="chk" onclick="tog(this)"></span> Schedules / Excel / Legend tables</label>
-            <div class="xn" style="margin-top:8px">setup_cb · embed_ole · dwg_merged_views · sched_ole · sched_ole_excel · legend_ole</div></div>
+</div>
           <div class="card"><h3><span class="hg">&#xE790;</span> Logo Embedding <span class="np">NEW · B47</span></h3>
             <div class="gatebar"><span class="g">&#xE946;</span> Applies when <b>&nbsp;Crisp logos&nbsp;</b> is on. Cleans the title-block logo raster before the OLE/EMF paste.</div>
             <div style="height:4px"></div>
             <div class="row" id="row_clean"><span class="chk off" onclick="tog(this);syncPrev()"></span>
               <div class="meta"><div class="lab">Clean logos — key out the white box</div>
                 <div class="dsc">Adaptive Otsu paper detection → hard key → despeckle → defringe against the measured paper colour, via the shared <span class="mono">IcZ.Reader.ImageCleanup</span> (same code as the PDF signature import). Original extents preserved; coloured fills stay opaque.</div>
-                <div class="xn">ole_clean_logos → dwg.ole_clean_logos → _ole_clean_logo_rasters → reader.clean_image(mode="logo") → ImageCleanup.CleanLogoFile</div></div></div>
+</div></div>
             <div class="row" id="row_bg"><span class="chk off" onclick="tog(this);syncPrev()"></span>
               <div class="meta"><div class="lab">Transparent background (remove white)</div>
                 <div class="dsc">Emit a transparent EMF so keyed pixels stay clear in the OLE frame. Pairs with Clean logos; off = a white matte (guaranteed-pristine path).</div>
-                <div class="xn">ole_transparent_bg → dwg.ole_remove_background → white_background flag in _run_ole_batch</div></div></div>
+</div></div>
             <div class="prevwrap">
               <div class="prevcell"><div class="cap">BEFORE</div><div class="cadbg"><div class="logobox"><span class="logo-t">Ic<span class="y">Z</span></span></div></div></div>
               <div class="prevarrow">&#xE72A;</div>
@@ -315,7 +310,7 @@
                 <tr><td><input class="cell" value="*logo*.png"></td><td style="display:flex;gap:6px"><input class="cell" value="C:\Standards\Blocks\TitleLogo.dwg"><button class="browse" onclick="alert('.dwg picker')">&hellip;</button></td><td><input class="cell" value="TITLE_LOGO"></td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
               </tbody></table>
             <div class="editbar"><button class="ghostbtn" onclick="addSwap()"><span class="g">&#xE710;</span> Add rule</button>
-              <span class="xn">ole_swaps_grid · btn_swap_add → dwg.ole_block_swaps = [{match, block_dwg_path, block_name}]</span></div></div>
+             </div></div>
         </div>
 
         <div class="fpane" id="fp_pdf">
@@ -330,7 +325,7 @@
               <div class="fld"><span class="lb">Color depth</span><select><option>Color</option><option>Grayscale</option></select></div>
               <div class="fld"><span class="lb">Paper format</span><select><option>Default</option><option>ISO_A1</option></select></div>
             </div></div>
-            <div class="xn" style="margin-top:8px">pdf_combine · pdf_combined_name · pdf_hide_* · pdf_raster_quality · pdf_color_depth · pdf_paper_format · pdf_paper_orientation</div></div>
+</div>
           <div class="card"><h3><span class="hg">&#xE7C4;</span> PDF Issue Stamp <span class="np">B41</span></h3>
             <div class="grid2"><div>
               <label class="cklab"><span class="chk" onclick="tog(this)"></span> Stamp exported PDFs</label>
@@ -340,7 +335,7 @@
               <div class="fld"><span class="lb">Position</span><select><option>Diagonal</option><option>Bottom Right</option></select></div>
               <div class="fld"><span class="lb">Color</span><input value="#C00000" style="min-width:90px"></div>
             </div></div>
-            <div class="xn" style="margin-top:8px">pdf_stamp_enabled · pdf_stamp_preset · pdf_stamp_text · pdf_stamp_position/size/color/opacity/pages</div></div>
+</div>
         </div>
         <div class="fpane" id="fp_nwc"><div class="card"><h3><span class="hg">&#xE81E;</span> Navisworks (NWC)</h3>
           <div class="grid2"><div>
@@ -352,7 +347,7 @@
             <div class="fld"><span class="lb">Coordinates</span><select><option>Shared</option></select></div>
             <div class="fld"><span class="lb">Config XML</span><button class="browse" onclick="alert('BrowseNwcXml')">Browse XML…</button></div>
           </div></div>
-          <div class="xn" style="margin-top:8px">nwc_construction_parts · nwc_element_ids/props · nwc_linked_files · nwc_element_params · nwc_coordinates · nwc_faceting_factor · nwc_xml_tb</div></div></div>
+</div></div>
         <div class="fpane" id="fp_ifc"><div class="card"><h3><span class="hg">&#xE9F9;</span> IFC (Open BIM)</h3>
           <div class="grid2"><div>
             <div class="fld"><span class="lb">IFC version</span><select><option>IFC2x3CV2</option><option>IFC4</option></select></div>
@@ -361,7 +356,7 @@
             <label class="cklab"><span class="chk" onclick="tog(this)"></span> IFC common property sets</label>
             <div class="fld"><span class="lb">Phase</span><input placeholder="(current)"></div>
           </div></div>
-          <div class="xn" style="margin-top:8px">ifc_version · ifc_space_boundary_level · ifc_wall_column_split · ifc_export_ifc_common_property_sets · ifc_store_ifc_guid · ifc_phase</div></div></div>
+</div></div>
         <div class="fpane" id="fp_img"><div class="card"><h3><span class="hg">&#xEB9F;</span> Image (PNG / JPEG)</h3>
           <div class="grid2"><div>
             <div class="fld"><span class="lb">Format</span><select><option>PNG</option><option>JPEG</option></select></div>
@@ -369,7 +364,7 @@
           </div><div>
             <div class="fld"><span class="lb">Pixel size</span><input value="2000" style="min-width:80px"></div>
           </div></div>
-          <div class="xn" style="margin-top:8px">img_format · img_zoom_type · img_fit_direction · img_resolution · img_pixel_size · img_zoom_pct</div></div></div>
+</div></div>
         <div class="fpane" id="fp_idx"><div class="card"><h3><span class="hg">&#xE71D;</span> Sheet Index (Drawing Register)</h3>
           <div class="fld"><span class="lb">Excel file name</span><input value="Drawing Register" style="min-width:200px"></div>
           <div class="fld"><span class="lb">Sort rows by</span><input value="Sheet Number" style="min-width:200px"></div>
@@ -380,7 +375,7 @@
             </tbody></table>
           <div class="editbar"><button class="ghostbtn" onclick="alert('AddDrColumn')"><span class="g">&#xE710;</span> Add column</button>
             <label class="cklab"><span class="chk" onclick="tog(this)"></span> Revision history columns</label>
-            <span class="xn">dr_filename · dr_sort_by · dr_cols_list · dr_expand_revs · dr_rev_cell / dr_rev_prefix</span></div></div></div>
+           </div></div></div>
         <div class="fpane" id="fp_name"><div class="card"><h3><span class="hg">&#xE8AC;</span> Naming &amp; Filename Builder</h3>
           <div class="fld"><span class="lb">Default for all exports</span><select style="min-width:220px"><option>View / Schedule name</option><option>Filename Builder tokens</option></select></div>
           <table style="margin-top:8px"><thead><tr><th>Token</th><th>Sep</th><th style="width:8%"></th></tr></thead>
@@ -389,7 +384,7 @@
               <tr><td class="mono">Sheet Name</td><td> </td><td><button class="rowdel" onclick="this.closest('tr').remove()">&#xE711;</button></td></tr>
             </tbody></table>
           <div class="fld" style="margin-top:6px"><span class="lb">Preview</span><span style="font-style:italic;color:var(--text-2)">A-101 - Ground Floor Plan.pdf</span></div>
-          <div class="xn" style="margin-top:6px">naming_mode / NamingChanged · naming_fmt_* · filename_list · filename_new_* · AddFilenameToken/RemoveFilenameToken · filename_policy/preview</div></div></div>
+</div></div>
       </div>
 
       <!-- STEP 4 · ISSUE (page_results) -->
@@ -408,7 +403,6 @@
           <div class="ok">[10:15:19] Sheet Index ✓ Drawing Register.xlsx (18 rows)</div>
           <div>[10:15:19] Done — 42 files, 0 errors, 1:17 elapsed.</div>
         </div>
-        <div class="xn">txt_results (RichTextBox, clickable links) · Results_Clear</div>
       </div>
 
       <!-- SECONDARY · PDF PREVIEW -->
@@ -417,7 +411,6 @@
           <button class="ghostbtn" style="margin-left:auto" onclick="alert('PreviewSelectedSheet')">Preview Sheet</button>
           <button class="ghostbtn" onclick="alert('PreviewBrowsePdf')">Open PDF…</button></div>
         <div class="pdfhost"><span class="pg">&#xEA90;</span> Inline IcZ.PdfView host — render the first ticked drawing before issuing</div>
-        <div class="xn">pdf_host (icz.pdfview) · PreviewSelectedSheet · PreviewBrowsePdf · lbl_pdfview_path</div>
       </div>
       <!-- SECONDARY · ISSUE HISTORY -->
       <div class="step-body" id="s_history">
@@ -430,7 +423,6 @@
             <tr onclick="selHist(this)"><td>2026-07-21 10:15</td><td>Snowdon Towers</td><td>FOR CONSTRUCTION</td><td>PDF, DWG, XLSX</td><td>18</td><td><span class="pill pass">0</span></td><td>1:17</td></tr>
             <tr onclick="selHist(this)"><td>2026-07-18 16:40</td><td>Snowdon Towers</td><td>PRELIMINARY</td><td>PDF</td><td>12</td><td><span class="pill warn">2</span></td><td>0:41</td></tr>
           </tbody></table></div>
-        <div class="xn">history_list / HistoryRowSelected · history_detail · HistoryExportSheet · HistoryClear · lbl_history_count</div>
       </div>
       <!-- SECONDARY · MACHINE & PROFILE -->
       <div class="step-body" id="s_machine">
@@ -439,7 +431,7 @@
         <div class="card"><h3><span class="hg">&#xE713;</span> This computer</h3>
           <div class="fld"><span class="lb">AutoCAD for OLE embed</span><select style="min-width:180px"><option>Auto (newest)</option><option>2025</option><option>2026</option></select></div>
           <label class="cklab"><span class="chk" onclick="tog(this)"></span> Create per-format subfolders (PDF/, DWG/, NWC/, XLSX/)</label>
-          <div class="xn" style="margin-top:8px">acad_ver_cb / AcadVerChanged (machine-level _LOCAL_CFG) · chk_split_folder</div></div>
+</div>
       </div>
 
     </div>
@@ -458,7 +450,7 @@
         <button class="ghostbtn" onclick="allTiles(true)">Check all</button>
         <button class="ghostbtn" onclick="allTiles(false)">Uncheck all</button>
       </div>
-      <div class="cfoot">Destination set · profile "ISO - FOR CONSTRUCTION". The cockpit stays visible on every step so the whole issue — and Transmit Now — is always one glance away.<div class="xn" style="margin-top:6px">RunMasterExport · CheckAll · UncheckAll</div></div>
+      <div class="cfoot">Destination set · profile "ISO - FOR CONSTRUCTION". The cockpit stays visible on every step so the whole issue — and Transmit Now — is always one glance away.</div>
     </div>
   </div>
 
