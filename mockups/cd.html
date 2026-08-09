@@ -3,6 +3,13 @@
 <head>
 <meta charset="utf-8">
 <title>CD Model Cleanup &#183; THE LINE</title>
+<!--
+  Interactive mockup of the CD Model Cleanup tool - the shipped UI, not a
+  sketch. Two things worth trying: the chevron beside the footer status chip
+  opens the run console, and RUN CLEANUP switches the tool into its post-run
+  state, where the RESULTS chip, Export report and Undo last run become
+  reachable. Model and element names throughout are illustrative.
+-->
 <style>
   /* ============================================================
      TOKENS - theme.py THEMES verbatim. WPF #AARRGGBB -> CSS #RRGGBBAA:
@@ -297,6 +304,10 @@
   .chip .n { font-variant-numeric:tabular-nums; font-weight:800;
              color:var(--TextMain); }
   .chip.on .n { color:var(--AccentBg); }
+  /* RESULTS is post-run state, hidden by a rule rather than an inline style
+     on the instance. */
+  .chip.postrun { display:none; }
+  .win.has-run .chip.postrun { display:inline-flex; }
   .searchwrap { margin-left:auto; display:flex; align-items:center; gap:6px;
                 background:var(--InputBg); border:1px solid var(--BorderBrush);
                 border-radius:5px; padding:0 9px; height:25px; width:210px; }
@@ -407,14 +418,43 @@
               color:var(--TextSecondary); font-weight:600; }
   .hallmark .sq { width:11px; height:11px; border-radius:3px;
                   background:var(--AccentBg); }
+  /* The chip is the element that YIELDS and the chevron the one that stays
+     put: the wrapper takes the free space (min-width:0, or a flex item
+     refuses to shrink below its content) and the chip ellipsizes inside it,
+     so the chevron sits at a fixed x however long the status runs. Every
+     other footer child is pinned below - in the real window they are Auto
+     grid columns, which cannot shrink, whereas a CSS flex item shrinks by
+     default and would let the model name compress instead. */
+  .statuswrap { flex:1 1 auto; min-width:0; display:flex; align-items:center; }
+  .footer > :not(.statuswrap) { flex:0 0 auto; }
   .statuschip { display:inline-flex; align-items:center; gap:6px; height:20px;
-                padding:0 10px; border-radius:10px;
+                padding:0 10px; border-radius:10px; max-width:100%;
+                white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
                 background:var(--StatusWarnBg); color:var(--StatusWarn);
                 font-size:9.5px; font-weight:700; letter-spacing:.07em; }
+  .chevbtn { width:24px; height:18px; padding:0; border:0; cursor:pointer;
+             background:transparent; color:var(--TextTertiary); font-size:10px;
+             font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
+             line-height:1; display:inline-flex; align-items:center;
+             justify-content:center; }
+  .chevbtn:hover { color:var(--TextMain); }
   .fspacer { flex:1 1 auto; }
   .progwrap { width:132px; height:5px; border-radius:3px;
               background:var(--TrackBg); overflow:hidden; }
   .progwrap i { display:block; height:100%; width:0%; background:var(--AccentBg); }
+
+  /* ------------------------------------------------------- console --- */
+  /* The band has its own row between the body and the footer. Collapsed is
+     height 0 INCLUDING its rule - the 1px top border sits on the text box
+     rather than a wrapper, so it disappears with the console instead of
+     stacking a second line on the footer's. */
+  .conrow { flex:0 0 auto; }
+  .console { display:none; height:190px; overflow:auto; padding:8px 16px;
+             background:var(--PanelBg2);
+             border-top:1px solid var(--BorderBrush);
+             font-family:Consolas,"Cascadia Mono",monospace; font-size:11px;
+             line-height:1.6; white-space:pre; color:var(--TextSecondary); }
+  .win.console-open .console { display:block; }
 
   /* ------------------------------------------------- config sheet --- */
   .scrim { position:absolute; inset:0; background:rgba(0,0,0,.55);
@@ -451,6 +491,20 @@
   .tagpill { font-size:9.5px; padding:3px 8px; border-radius:9px;
              background:var(--PanelBg2); border:1px solid var(--BorderBrush);
              color:var(--TextSecondary); }
+  /* STATION 07 advanced editors. Multiline fields are monospace because a
+     cross-type pair list is read column-wise, not as prose. */
+  .cfglab { font-size:11px; color:var(--TextSecondary); margin:8px 0 4px; }
+  .cfgcard > .cfglab:first-of-type { margin-top:0; }
+  textarea.fml { width:100%; box-sizing:border-box; border-radius:5px;
+          padding:6px 7px; background:var(--InputBg); color:var(--InputText);
+          border:1px solid var(--BorderBrush); font-size:11px; resize:vertical;
+          font-family:Consolas,"Cascadia Mono",monospace; }
+  .nrrules { display:flex; flex-direction:column; gap:4px; }
+  .nrrule { display:flex; align-items:center; justify-content:space-between;
+            gap:10px; font-size:11px; padding:5px 8px; border-radius:5px;
+            background:var(--PanelBg2); border:1px solid var(--BorderBrush);
+            color:var(--TextSecondary); }
+  .nrbtns { display:flex; gap:9px; margin-top:8px; }
   .sheetfoot { display:flex; gap:9px; justify-content:flex-end;
                padding:11px 16px; border-top:1px solid var(--RuleBrush); }
   .sbtn { height:30px; padding:0 16px; border-radius:6px; cursor:pointer;
@@ -471,7 +525,7 @@
     </div>
     <div class="docchip"><i class="mdl2"></i>
       <b id="lbl_file" data-ctl="label">Tower-A_MEP_Part_001.rvt</b>
-      <span>&#183; 37 363 elements</span>
+      <span id="lbl_doc_count" data-ctl="label">&#183; 37 363 elements</span>
     </div>
     <div class="tb-right">
       <button class="iconbtn mdl2" id="btn_config" data-ctl="button" data-page="line"
@@ -499,6 +553,9 @@
             <span id="lbl_scope_echo" data-ctl="label">whole model</span>
           </span>
           <span class="lanespacer"></span>
+          <button class="iconbtn mdl2" id="btn_reset_view" data-ctl="button" data-page="line"
+                  data-handler="OnResetView" data-new="true"
+                  title="Reset temporary hide / isolate in the active view">&#xE72C;</button>
           <button class="lanebtn" id="btn_arm_all" data-ctl="button" data-page="line"
                   data-handler="OnCheckAll"><i class="g mdl2"></i><span class="bt">ARM ALL</span></button>
           <button class="lanebtn pri" id="btn_scan" data-ctl="button" data-page="line"
@@ -702,11 +759,17 @@
           <button class="chip" id="chip_held" data-ctl="button" data-page="line"
                   data-tag="held" data-handler="OnTrayFilter" data-new="true">HELD
             <span class="n" id="lbl_chip_held_n" data-ctl="label">17</span></button>
+          <!-- the receipt of the last run; appears once a run completes -->
+          <button class="chip postrun" id="chip_results" data-ctl="button" data-page="line"
+                  data-tag="results" data-handler="OnTrayFilter" data-new="true">RESULTS
+            <span class="n" id="lbl_chip_results_n" data-ctl="label">0</span></button>
           <span class="searchwrap"><i title="filter this catch"></i>
             <input id="txt_tray_search" data-ctl="textbox" data-page="line"
                    data-handler="OnTraySearch" data-new="true" placeholder="filter this catch&#8230;"></span>
         </div>
-        <div class="trayscroll">
+        <!-- wraps BOTH the header and the rows, so an empty catch collapses
+             the grid as one instead of leaving a floating header -->
+        <div class="trayscroll" id="tray_scroll" data-ctl="border" data-page="line">
           <div class="thead">
             <span></span><span>SURVIVOR</span><span>REMOVED</span><span>CATEGORY</span>
             <span class="c-num">LENGTH</span><span class="c-num">CASCADE</span>
@@ -844,8 +907,9 @@
           <span class="fspacer" style="flex:1 1 auto"></span>
           <button class="linkbtn" id="btn_tray_zoom" data-ctl="button" data-page="line"
                   data-handler="OnTrayZoom" data-new="true">Zoom ticked</button>
-          <button class="linkbtn" id="btn_export_csv" data-ctl="button" data-page="line"
-                  data-handler="OnExportCsv" data-new="true" disabled>Export CSV</button>
+          <button class="linkbtn" id="btn_export_report" data-ctl="button" data-page="line"
+                  data-handler="OnExportReport" data-new="true" disabled
+                  title="Export the last run receipt to Excel (.xlsx)">Export report</button>
           <button class="linkbtn" id="btn_undo_last" data-ctl="button" data-page="line"
                   data-handler="OnUndoLast" data-new="true" disabled>Undo last run</button>
           <button class="linkbtn" id="btn_tray_all" data-ctl="button" data-page="line"
@@ -895,9 +959,11 @@
         <div class="mfrule"></div>
         <div class="mfrow"><span class="lb">model after</span>
           <span class="vl" id="lbl_mf_after" data-ctl="label">&#8804; 36 816</span></div>
-        <div class="mfrow sub"><span class="lb">Orphan Purge exceeded the 800-element
-          cascade cap, so the true figure is at most this &#8212; never a
-          reassuring exact number.</span><span></span></div>
+        <!-- shown only when an armed delete pass exceeded the cascade probe
+             cap, hidden otherwise -->
+        <div class="mfrow sub"><span class="lb" id="lbl_mf_capnote" data-ctl="label">Orphan
+          Purge exceeded the 800-element cascade cap, so the true figure is at
+          most this &#8212; never a reassuring exact number.</span><span></span></div>
 
         <div class="mfrule"></div>
         <div class="mftxn" id="lbl_mf_txn" data-ctl="label">
@@ -905,9 +971,10 @@
           Ctrl+Z reverts all six armed stations together.
         </div>
       </div>
+      <!-- one button, not two: the manifest above already states every
+           consequence before the fact, so a second confirming press was the
+           tool making the same promise twice -->
       <div class="mffoot">
-        <button class="bigbtn" id="btn_dry" data-ctl="button" data-page="line"
-                data-handler="OnDryRun"><i class="g"></i><span class="bt">PREVIEW</span></button>
         <button class="bigbtn pri" id="btn_run" data-ctl="button" data-page="line"
                 data-handler="Run_Click"><i class="g"></i>
           <span id="lbl_run" data-ctl="label">RUN CLEANUP</span></button>
@@ -915,11 +982,33 @@
     </div>
   </div>
 
+  <!-- ================================ console ============================== -->
+  <!-- the run console. The chip below carries the LATEST event and only the
+       latest; this keeps all of them. The footer answers "what just
+       happened", the console answers "what happened". -->
+  <div class="conrow" id="row_log" data-ctl="border" data-page="line">
+    <div class="console" id="txt_log" data-ctl="textbox" data-page="line">[07:41:02] Model read - 37 363 elements in scope (whole model).
+[07:41:02] 01 Ghost Purge - 412 found
+[07:41:03] 02 Overkill Lines - 88 found
+[07:41:03] 03 Connection Fix - 126 found
+[07:41:04] 04 System Integrity - 17 found, report only
+[07:41:04] 05 System Names - 6 found
+[07:41:05] 06 System Type Repair - 23 found (19 repairable, 4 need a fallback)
+[07:41:05] 07 Nested Fix - 4 found
+[07:41:06] 08 Orphan Purge - 91 found, cascade probe capped at 800
+[07:41:06] Read complete. 6 of 8 armed.</div>
+  </div>
+
   <!-- ================================ footer =============================== -->
   <div class="footer">
     <span class="hallmark"><i class="sq"></i>IcZ Workspace</span>
-    <span class="statuschip" id="footer_status" data-ctl="label">6 OF 8 ARMED &#183; NOT YET RUN</span>
-    <span class="fspacer"></span>
+    <span class="statuswrap">
+      <span class="statuschip" id="footer_status" data-ctl="label"
+            title="6 OF 8 ARMED &#183; NOT YET RUN">6 OF 8 ARMED &#183; NOT YET RUN</span>
+    </span>
+    <button class="chevbtn" id="btn_console_chev" data-ctl="button" data-page="line"
+            data-handler="Console_Toggle" data-new="true"
+            title="Show or hide the run console">&#xE70E;</button>
     <span id="foot_model" data-ctl="label">Tower-A_MEP_Part_001 &#183; 37 363 elements</span>
     <span id="foot_page" data-ctl="label">The Line</span>
     <span class="progwrap"><i id="run_progress" data-ctl="progressbar"></i></span>
@@ -988,6 +1077,28 @@
           <div class="frow"><span class="fl">cross-type ratio</span>
             <input class="fin" id="txt_nr_cross_ratio" data-ctl="textbox" data-page="config" data-tag="nested_resolve.cross_type_ratio"
                    data-handler="OnCfgField" data-new="true" value="0.60"></div>
+        </div>
+        <div class="cfgcard wide">
+          <div class="cfgk">STATION 07 &#183; NESTED &#8212; ADVANCED</div>
+          <div class="cfglab">Cross-type pairs (Family A | Family B, one pair per line)</div>
+          <textarea class="fml" id="txt_nr_cross_pairs" data-ctl="textbox" data-page="config"
+                    data-tag="nested_resolve.cross_type_pairs" data-handler="OnCfgField"
+                    data-new="true" rows="3">Sprinkler Head - Pendent | Sprinkler Head - Upright</textarea>
+          <div class="cfglab">Cross-type keep list (winner family name, one per line)</div>
+          <textarea class="fml" id="txt_nr_cross_keep" data-ctl="textbox" data-page="config"
+                    data-tag="nested_resolve.cross_type_keep" data-handler="OnCfgField"
+                    data-new="true" rows="3">Sprinkler Head - Pendent</textarea>
+          <div class="cfglab">Per-family visibility rules</div>
+          <div class="nrrules" id="panel_nr_rules" data-ctl="border" data-page="config">
+            <div class="nrrule"><span>Sprinkler Head - Pendent</span><span>hide higher id</span></div>
+            <div class="nrrule"><span>Air Terminal - Supply Diffuser</span><span>hide lower id</span></div>
+          </div>
+          <div class="nrbtns">
+            <button class="sbtn" id="btn_nr_discover" data-ctl="button" data-page="config"
+                    data-handler="OnNrDiscover" data-new="true">Discover from model</button>
+            <button class="sbtn" id="btn_nr_add_rule" data-ctl="button" data-page="config"
+                    data-handler="OnNrAddRule" data-new="true">Add rule</button>
+          </div>
         </div>
         <div class="cfgcard">
           <div class="cfgk">STATIONS 04&#8211;06 &#183; SYSTEMS</div>
@@ -1114,9 +1225,36 @@
 
   /* ALL / WILL CHANGE / HELD - the approved filter, driving real rows */
   var tray = document.getElementById("tray_host");
+  var cdwin = document.getElementById("cd_window");
+
+  /* the run console - one chevron, one band */
+  var chev = document.getElementById("btn_console_chev");
+  chev.addEventListener("click", function () {
+    var open = cdwin.classList.toggle("console-open");
+    chev.innerHTML = open ? "&#xE70D;" : "&#xE70E;";
+  });
+
+  /* RUN CLEANUP -> the post-run state. RESULTS, Export and Undo exist ONLY
+     after a run, so a mockup that never runs cannot show them at all. */
+  document.getElementById("btn_run").addEventListener("click", function () {
+    cdwin.classList.add("has-run");
+    document.getElementById("lbl_chip_results_n").textContent = "656";
+    document.getElementById("btn_export_report").removeAttribute("disabled");
+    document.getElementById("btn_undo_last").removeAttribute("disabled");
+    var s = "CLEANUP COMPLETE \u00B7 656 ELEMENTS ACTED ON \u00B7 OPEN THE CONSOLE FOR THE RECEIPT";
+    var pill = document.getElementById("footer_status");
+    pill.textContent = s;
+    pill.setAttribute("title", s);
+    document.getElementById("txt_log").textContent +=
+      "\n[07:43:18] RUN CLEANUP - one transaction group, 6 armed stations." +
+      "\n[07:43:21] 656 elements acted on. Ctrl+Z reverts the whole cleanup." +
+      "\n[07:43:21] Receipt ready - press Export report for the .xlsx.";
+  });
+
   var chips = [document.getElementById("chip_all"),
                document.getElementById("chip_change"),
-               document.getElementById("chip_held")];
+               document.getElementById("chip_held"),
+               document.getElementById("chip_results")];
   chips.forEach(function (c) {
     c.addEventListener("click", function () {
       chips.forEach(function (o) { o.classList.remove("on"); });

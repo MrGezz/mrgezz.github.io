@@ -1162,7 +1162,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
           <div class="sec-glyph"><i class="fa-solid fa-broom"></i></div>
           <div class="sec-titles">
             <h2>Model Cleanup <span class="tag code">CD</span> <span class="tag">Tools.panel</span></h2>
-            <div class="sub">Eight cleanup passes as stations on one production line — ghost duplicates, overkill lines, open connectors, the MEP system layer, nested cases and orphan purge. Arm stations on the line, preview, then commit the run as one undoable group.</div>
+            <div class="sub">Eight cleanup passes as stations on one production line — ghost duplicates, overkill lines, open connectors, the MEP system layer, nested cases and orphan purge. Arm stations on the line, read the commit manifest, then commit the run as one undoable group.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1204,7 +1204,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
             </div>
           </div>
 
-          <div class="note warn glass-card"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Never acts on stale data.</b> Scope changes invalidate the scope-dependent caches and prompt a re-read, and a document-identity guard blocks committing against a switched document. PREVIEW is an honest dry-run — its dependent-cascade probe reports computed, capped or failed, never a reassuring zero — and CSV export plus one-click Undo round out the workflow.</div></div>
+          <div class="note warn glass-card"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Never acts on stale data.</b> Scope changes invalidate the scope-dependent caches and prompt a re-read, and a document-identity guard blocks committing against a switched document. The commit manifest states every consequence before the fact — its dependent-cascade probe reports computed, capped or failed, never a reassuring zero — and an .xlsx receipt, a run console holding every event, and one-click Undo round out the workflow.</div></div>
 
           <div class="code-label-wrap">
             <div class="code-label"><i class="fa-brands fa-python"></i> the safety pattern — isolate, verify, roll back</div>
@@ -1257,7 +1257,7 @@ with SubTransaction(doc) as st:
           </div>
           <ul class="feat">
             <li class="glass-card"><i class="fa-solid fa-cube"></i><div class="ft"><b>Six Formats, One Run:</b> DWG, PDF, NWC, IFC, images and Excel from a single themeable shell with an in-window results log and a performance summary at the end. <span class="win">No more juggling separate export dialogs.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-table-cells"></i><div class="ft"><b>Excel Without Excel <span class="tag new">new</span>:</b> Schedules write to formatted <code>.xlsx</code> in the SheetLink table style — via Excel when it's installed, or a built-in pure-Python OOXML writer (no COM, no install) that produces the same styling. <span class="win">Runs on any machine and protects values like Ø, 100×200 and DN.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-table-cells"></i><div class="ft"><b>Excel Without Excel <span class="tag new">new</span>:</b> Schedules write to formatted <code>.xlsx</code> in a clean banded table style — via Excel when it's installed, or a built-in pure-Python OOXML writer (no COM, no install) that produces the same styling. <span class="win">Runs on any machine and protects values like Ø, 100×200 and DN.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-image"></i><div class="ft"><b>Clean CAD Deliverables <span class="tag new">new</span>:</b> Embeds crisp logos and lays out schedule tables as clean OLE frames — an EMF picture or an editable embedded XLSX — in the exported CAD files, so titleblock artwork survives the DWG round-trip intact. <span class="win">CAD issues look like the Revit sheets.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-gears"></i><div class="ft"><b>Profiles, Naming &amp; Guards:</b> Reusable export profiles, a token-based filename builder with automatic dedupe of in-batch name collisions and an Overwrite/Rename/Cancel preflight, split output folders, and mid-batch Revit warning suppression so a run never stalls on a popup. <span class="win">The fiddly parts of batch export, solved once.</span></div></li>
           </ul>
