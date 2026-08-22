@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CIT — Clash Importer</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33; --readout:#101a20;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33; --violet:#B49BE0;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE; --readout:#F2F5F7;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE; --violet:#5E35B1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  body.light{background:#cfd8dc}
+  .window{width:1220px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .mono{font-family:Consolas,monospace}
+  /* titlebar */
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .burger{color:var(--text-2);font-size:15px;cursor:pointer}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.2px;color:var(--text-main);font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:3px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:12px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}.dot.c{background:#FF5F57;color:#7A1410}
+  /* body */
+  .main{display:flex;min-height:650px}
+  .rail{width:236px;background:var(--nav);border-right:1px solid var(--border);padding:10px 8px;display:flex;flex-direction:column;gap:3px;transition:width .12s;flex:none}
+  .rail.collapsed{width:0;padding:10px 0;overflow:hidden}
+  .rlab{font:600 9px Consolas,monospace;letter-spacing:.14em;color:var(--text-2);padding:6px 12px 6px}
+  .nav{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 12px;border-radius:6px;font-size:12.5px;color:var(--text-2);cursor:pointer;white-space:nowrap;position:relative}
+  .nav .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";width:18px;text-align:center;font-size:14px}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600}
+  .nav.sel .g{color:var(--accent)}
+  .nav.sel::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:2px;background:var(--accent)}
+  .nav:hover{background:var(--hover)}
+  .nav .badge{margin-left:auto;font:600 10px Consolas,monospace;color:var(--accent-fg);background:var(--accent);border-radius:99px;padding:1px 7px}
+  .content{flex:1;padding:18px 18px 18px 20px;display:flex;flex-direction:column;gap:12px;background:var(--window-bg);min-width:0}
+  h2.pg{font-size:15px;font-weight:600}
+  .sub{font-size:11.5px;color:var(--text-2);margin-top:3px;line-height:1.45;max-width:620px}
+  .page{display:none;flex-direction:column;gap:12px}
+  .page.on{display:flex}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px 16px}
+  .card h3{font-size:12.5px;font-weight:600;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .card h3 .spacer{flex:1}
+  .help{font-size:11px;color:var(--text-2);line-height:1.5;max-width:640px}
+  .help.warn{color:var(--warn);max-width:none}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .row + .row, .row + .help, .help + .row, .row + .readout, .readout + .row, .help + .readout{margin-top:10px}
+  .fl{font-size:11px;color:var(--text-2);white-space:nowrap}
+  .in,.sel2{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:4px;padding:5px 8px;font-size:11.5px;font-family:inherit;height:28px}
+  .in.mono{font-family:Consolas,monospace}
+  .in.grow{flex:1;min-width:0}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:0 12px;height:28px;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;justify-content:center;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:12px}
+  .btn.mini{height:26px;padding:0 11px;font-size:11px}
+  .btn.off{opacity:.45;cursor:default}
+  .readout{background:var(--readout);border:1px solid var(--border);border-radius:5px;padding:8px 12px;font:11px/1.7 Consolas,monospace;color:var(--text-main)}
+  .readout .ok{color:var(--pass)}
+  .readout .acc{color:var(--accent)}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;cursor:pointer;color:var(--text-main)}
+  .chk .box{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative;flex:none}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:10px;text-align:center;line-height:14px}
+  .dim{opacity:.45;pointer-events:none}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 13px}
+  .tile .lab{font-size:9.5px;letter-spacing:.08em;color:var(--text-2)}
+  .tile .val{font-size:21px;font-weight:700;margin:3px 0 1px;font-variant-numeric:tabular-nums}
+  .tile .val.acc{color:var(--accent)}
+  .tile .s{font-size:10px;color:var(--text-2)}
+  /* chips */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:10.5px;border:1px solid var(--border);border-radius:99px;padding:3px 10px;cursor:pointer;color:var(--text-2);background:var(--input-bg);display:inline-flex;align-items:center;gap:6px}
+  .chip.on{border-color:var(--accent);color:var(--text-main);background:var(--nav-sel)}
+  .chip i{font-style:normal;font:600 9.5px Consolas,monospace;color:var(--accent)}
+  /* review rows */
+  .revlist{display:flex;flex-direction:column;gap:4px;max-height:330px;overflow:auto;margin-top:10px}
+  .revrow{background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:6px 10px;cursor:pointer;display:grid;grid-template-columns:16px 78px 150px 92px 78px 1fr 150px;align-items:center;gap:10px;font-size:11px}
+  .revrow:hover{border-color:var(--accent)}
+  .revrow .rid{font-family:Consolas,monospace;color:var(--accent)}
+  .revrow .rnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .revrow .rt{color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .revrow .xyz{font-family:Consolas,monospace;color:var(--text-2);font-size:10.5px;text-align:right}
+  .revrow.placed{grid-template-columns:16px 90px 1fr 110px 200px}
+  .revrow.stat{grid-template-columns:16px 90px 1fr 160px 110px 170px}
+  .box2{width:13px;height:13px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative}
+  .revrow.on .box2{background:var(--accent);border-color:var(--accent)}
+  .revrow.on .box2::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:9px;text-align:center;line-height:13px}
+  .grp{display:flex;align-items:center;gap:8px;font-size:10.5px;color:var(--text-2);padding:8px 2px 3px;border-bottom:1px solid var(--border)}
+  .grp .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:9px}
+  .grp b{color:var(--text-main);font-weight:600}
+  .pill{font-size:9.5px;border-radius:99px;padding:2px 8px;font-weight:600;display:inline-block;white-space:nowrap}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.active{background:rgba(255,179,0,.16);color:var(--warn)}
+  .pill.reviewed{background:rgba(126,87,194,.18);color:var(--violet)}
+  .pill.approved{background:rgba(76,175,80,.16);color:var(--pass)}
+  .pill.resolved{background:var(--track);color:var(--text-2)}
+  .pill.placed{background:rgba(255,179,0,.16);color:var(--warn)}
+  .pill.completed{background:rgba(76,175,80,.16);color:var(--pass)}
+  .pill.gone{background:rgba(255,82,82,.14);color:var(--fail)}
+  .listhead{display:flex;align-items:center;gap:8px}
+  .listhead .spacer{flex:1}
+  .listhead b{font-size:12.5px;font-weight:600}
+  .note{font-size:11px;color:var(--text-2)}
+  /* console */
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .cbody{padding:10px 16px 12px}
+  .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.7 Consolas,monospace;padding:10px;height:112px;overflow:auto;margin:0}
+  .cbody pre a{color:var(--accent);text-decoration:none}
+  .cbody pre .w{color:var(--warn)}
+  .console.collapsed .cbody{display:none}
+  /* footer */
+  .footer{display:flex;align-items:center;gap:12px;background:var(--titlebar);border-top:1px solid var(--border);padding:7px 16px;font-size:11px;color:var(--text-2);height:48px}
+  .footer .hallmark .mdl2{color:var(--accent);margin-right:5px}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .fdiv{width:1px;height:14px;background:var(--border)}
+  .fdot{width:7px;height:7px;border-radius:50%;background:var(--pass);display:inline-block;margin-right:7px;vertical-align:middle}
+  .footer .fstat{max-width:420px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .footer .fright{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .footer .chev{cursor:pointer;background:none;border:none;color:var(--text-2);font-size:11px;padding:2px 6px;font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .footer .pg{color:var(--text-2)}
+  .run{background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;letter-spacing:.03em;border:none;border-radius:6px;width:188px;height:34px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:inherit}
+  .run .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:13px}
+</style>
+</head>
+<body>
+
+<div class="window">
+  <!-- titlebar -->
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger" title="Collapse / expand the navigation rail">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE9D9;</span>
+    <span class="tb-name">Clash Importer</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path" id="lbl_file">Tower-A_MEP_Coordination.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="themeBtn" title="Toggle light / dark theme">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- rail -->
+    <div class="rail" id="rail">
+      <div class="rlab">IMPORT PIPELINE</div>
+      <div class="nav sel" data-pg="import" data-run="READ REPORT" data-glyph="&#xE890;" data-title="Report &amp; coordinates"><span class="g mdl2">&#xE8E5;</span>Report &amp; coordinates</div>
+      <div class="nav" data-pg="results" data-run="EXPORT REPORT" data-glyph="&#xE74E;" data-title="Clashes"><span class="g mdl2">&#xE9D5;</span>Clashes<span class="badge" id="badge_results">119</span></div>
+      <div class="nav" data-pg="place" data-run="PLACE MARKERS" data-glyph="&#xE768;" data-title="Place markers"><span class="g mdl2">&#xE81D;</span>Place markers</div>
+      <div class="nav" data-pg="status" data-run="EXPORT STATUS" data-glyph="&#xE74E;" data-title="Status"><span class="g mdl2">&#xE930;</span>Status<span class="badge" id="badge_status">55</span></div>
+      <div class="nav" data-pg="settings" data-run="SAVE SETTINGS" data-glyph="&#xE74E;" data-title="Settings"><span class="g mdl2">&#xE713;</span>Settings</div>
+    </div>
+
+    <!-- content -->
+    <div class="content">
+
+      <!-- PAGE: REPORT & COORDINATES -->
+      <div class="page on" id="pg_import">
+        <div><h2 class="pg">Report &amp; coordinates</h2>
+          <div class="sub">Reads a clash report — Navisworks XML or HTML, a CSV or Excel sheet, or a BCF — and maps every clash point into this model. Nothing is created until you place markers.</div></div>
+
+        <div class="card">
+          <h3>Clash report</h3>
+          <div class="row"><input class="in mono grow" value="…\Coordination\Clash\L03_MEP-vs-STR.xml" readonly><button class="btn" style="width:96px"><span class="g">&#xE8E5;</span> Browse</button></div>
+          <div class="row"><span class="fl">Format</span>
+            <select class="sel2" style="width:260px" id="sel_format">
+              <option selected>Navisworks XML (detected)</option><option>Detect from the file</option><option>Navisworks HTML</option><option>CSV / delimited text</option><option>Excel workbook</option><option>BCF 2.x / 3.0</option>
+            </select></div>
+          <div class="help" id="lbl_format_help">Detected from the file's content, not its extension — a renamed export still reads. Override only if the detection is wrong.</div>
+          <div class="help" id="lbl_report_meta" style="margin-top:6px;color:var(--text-main)">Navisworks Clash Detective XML · 3 clash tests · 131 results · declared units mm · 86 results carry a size attribute.</div>
+        </div>
+
+        <div class="card">
+          <h3>Coordinate source</h3>
+          <div class="help">Shared reads this model's own project location and derives the mapping from it, then proves the mapping by round-tripping a probe point. Project Internal treats the report's numbers as Revit internal coordinates. Manual applies your own offset and rotation.</div>
+          <div class="row">
+            <span class="fl">Source</span>
+            <select class="sel2" style="width:260px" id="sel_mode"><option selected>Shared / survey coordinates</option><option>Project internal coordinates</option><option>Manual offset</option></select>
+            <span class="fl" style="margin-left:8px">Report units</span>
+            <select class="sel2" style="width:160px"><option selected>mm</option><option>From the report</option><option>m</option><option>cm</option><option>ft</option><option>in</option></select>
+          </div>
+          <div class="row" id="pnl_manual" style="display:none">
+            <span class="fl">ΔX mm</span><input class="in mono" style="width:90px" value="0">
+            <span class="fl">ΔY mm</span><input class="in mono" style="width:90px" value="0">
+            <span class="fl">ΔZ mm</span><input class="in mono" style="width:90px" value="0">
+            <span class="fl">Rotation °</span><input class="in mono" style="width:90px" value="0">
+          </div>
+          <div class="readout">Project base point:  E/W 420.500 m   N/S 318.250 m   Elev 0.000 m   True north 14.0000°<br>Mapping: <span class="ok">Shared basis established</span> — T, u, v probed through GetProjectPosition · round trip <span class="acc">0.00 mm</span> ✓</div>
+        </div>
+
+        <div class="card">
+          <h3>Duplicate clash points</h3>
+          <div class="help">Navisworks reports one result per intersecting pair, so a single duct through a layered wall arrives as several clashes at nearly the same point. Points closer together than this collapse to one marker. Set 0 to keep every clash.</div>
+          <div class="row"><span class="fl">Collapse within</span><input class="in mono" style="width:90px" value="150"><span class="fl">mm</span></div>
+        </div>
+      </div>
+
+      <!-- PAGE: CLASHES -->
+      <div class="page" id="pg_results">
+        <div><h2 class="pg">Clashes</h2></div>
+
+        <div class="kpis">
+          <div class="tile"><div class="lab">TO PLACE</div><div class="val acc" id="kpi_place">119</div><div class="s">after collapse + filter</div></div>
+          <div class="tile"><div class="lab">MAPPED</div><div class="val">131</div><div class="s">of 131 results</div></div>
+          <div class="tile"><div class="lab">COLLAPSED</div><div class="val">12</div><div class="s">within 150 mm</div></div>
+          <div class="tile"><div class="lab">CLASH TESTS</div><div class="val">3</div><div class="s">in the report</div></div>
+          <div class="tile"><div class="lab">WITH A SIZE</div><div class="val">86</div><div class="s">size attribute read</div></div>
+        </div>
+
+        <div class="card">
+          <h3>Filter</h3>
+          <div class="row"><span class="fl">Clash test</span>
+            <select class="sel2" style="width:300px"><option selected>All tests</option><option>Ducts vs Structure</option><option>Pipes vs Walls</option><option>Tray vs Ducts</option></select></div>
+          <div class="row"><span class="fl">Status</span>
+            <div class="chips" id="status_chips">
+              <span class="chip on" data-st="new">New <i id="c_new">0</i></span>
+              <span class="chip on" data-st="active">Active <i id="c_active">0</i></span>
+              <span class="chip on" data-st="reviewed">Reviewed <i id="c_reviewed">0</i></span>
+              <span class="chip on" data-st="approved">Approved <i id="c_approved">0</i></span>
+              <span class="chip on" data-st="resolved">Resolved <i id="c_resolved">0</i></span>
+            </div></div>
+        </div>
+
+        <div class="card">
+          <div class="listhead"><b id="lbl_rows_count">119 clashes · 3 tests</b><span class="spacer"></span><button class="btn"><span class="g">&#xE74E;</span> Export</button></div>
+          <div class="revlist" id="rows_clash"></div>
+          <div class="note" style="margin-top:10px">A clash point is not an element — it has no ElementId until a marker exists for it — so these rows are the report's. Click a row to zoom the active view to that point; Export writes the filtered set to .xlsx with both report and internal coordinates.</div>
+        </div>
+      </div>
+
+      <!-- PAGE: PLACE MARKERS -->
+      <div class="page" id="pg_place">
+        <div><h2 class="pg">Place markers</h2>
+          <div class="sub">Places one family instance at every clash point that survived the filter, on the nearest level, with a sequential Mark. Only OneLevelBased families can be positioned this way — anything else is refused before a transaction opens.</div></div>
+
+        <div class="card">
+          <h3>Marker family</h3>
+          <div class="row">
+            <span class="fl">Family</span><select class="sel2" style="width:300px"><option selected>CustomClashPoint</option><option>Coordination Marker - Sphere</option></select>
+            <span class="fl" style="margin-left:8px">Type</span><select class="sel2" style="width:240px"><option selected>ClashPoint</option><option>ClashPoint r150</option></select>
+          </div>
+          <div class="readout" id="lbl_place_state">'CustomClashPoint' is OneLevelBased — <span class="acc">55</span> marker(s) will be placed on the nearest level to each clash point · Mark continues from CLH-0411.</div>
+          <div class="row"><div class="chk on" id="cb_only_new"><span class="box"></span>Place only clashes that have no marker yet</div></div>
+          <div class="help" id="lbl_only_new" style="margin-top:4px;padding-left:22px">64 of the 119 already carry a marker — 55 will be placed.</div>
+        </div>
+
+        <div class="card">
+          <h3>Marker size</h3>
+          <div class="help">A clash report carries no geometry size. Leave this off for a fixed-geometry coordination marker; turn it on to write a size into every instance, taken from the report where it carries one and from these figures everywhere else.</div>
+          <div class="row"><div class="chk" id="cb_write_size"><span class="box"></span>Write size parameters</div></div>
+          <div class="row dim" id="pnl_size">
+            <span class="fl">Width mm</span><input class="in mono" style="width:110px" value="150">
+            <span class="fl">Height mm</span><input class="in mono" style="width:110px" value="150">
+            <span class="fl">Diameter mm</span><input class="in mono" style="width:110px" value="150">
+          </div>
+          <div class="help warn" style="margin-top:10px">'Diameter' is a TYPE parameter on this family, so a size cannot be written per marker — one write would resize every instance of the type. Those writes will be declined. Make it an instance parameter in the family editor, or leave size writing off.</div>
+        </div>
+
+        <div class="card">
+          <div class="listhead"><b id="lbl_placed_count">55 placed · grouped by clash test</b><span class="spacer"></span><button class="btn mini">All</button><button class="btn mini">None</button><button class="btn mini"><span class="g">&#xE890;</span> Show ✓</button></div>
+          <div class="revlist" id="rows_placed" style="max-height:260px"></div>
+          <div class="note" style="margin-top:10px">By now every row <b>is</b> a real element, so this is the suite's shared review grid: click a row to select and zoom that marker in Revit.</div>
+        </div>
+      </div>
+
+      <!-- PAGE: STATUS -->
+      <div class="page" id="pg_status">
+        <div><h2 class="pg">Status</h2>
+          <div class="sub">Every clash in the report, matched to the marker placed for it. Mark a clash completed when it has been resolved in the model — the state is stored on the marker itself, so it survives a save, travels with the model, and is still there the next time this report is imported.</div></div>
+
+        <div class="kpis">
+          <div class="tile"><div class="lab">NEW</div><div class="val acc">55</div><div class="s">no marker yet</div></div>
+          <div class="tile"><div class="lab">PLACED</div><div class="val">58</div><div class="s">marker, still open</div></div>
+          <div class="tile"><div class="lab">COMPLETED</div><div class="val" style="color:var(--pass)">6</div><div class="s">resolved in the model</div></div>
+          <div class="tile"><div class="lab">IGNORED</div><div class="val">0</div><div class="s">set aside</div></div>
+          <div class="tile"><div class="lab">NOT IN REPORT</div><div class="val" style="color:var(--fail)">2</div><div class="s">marker, clash gone</div></div>
+        </div>
+
+        <div class="card">
+          <h3>Filter</h3>
+          <div class="row">
+            <span class="fl">Show</span><select class="sel2" style="width:300px"><option selected>Outstanding (new + placed)</option><option>All</option><option>New</option><option>Placed</option><option>Completed</option><option>Ignored</option><option>Not in report</option></select>
+            <button class="btn" style="width:104px"><span class="g">&#xE72C;</span> Refresh</button>
+            <button class="btn off" title="The source is Navisworks XML — only a BCF source can be written back"><span class="g">&#xE898;</span> Write back to BCF</button>
+          </div>
+          <div class="help" id="lbl_status_note">Reconciled against 66 markers in the model. Two markers name a clash the re-run no longer reports — the crossing is gone, or the test was rebuilt.</div>
+        </div>
+
+        <div class="card">
+          <div class="listhead"><b id="lbl_status_count">113 outstanding · 3 ticked</b><span class="spacer"></span><button class="btn mini">All</button><button class="btn mini">None</button><button class="btn mini"><span class="g">&#xE890;</span> Show ✓</button></div>
+          <div class="listhead" style="margin-top:10px"><span class="note" id="lbl_status_actions">3 ticked — Mark completed stamps them done on the marker itself.</span><span class="spacer"></span><button class="btn mini"><span class="g">&#xE930;</span> Mark completed</button><button class="btn mini"><span class="g">&#xE72C;</span> Reopen</button><button class="btn mini"><span class="g">&#xE74D;</span> Delete markers</button></div>
+          <div class="revlist" id="rows_status"></div>
+        </div>
+      </div>
+
+      <!-- PAGE: SETTINGS -->
+      <div class="page" id="pg_settings">
+        <div><h2 class="pg">Settings</h2>
+          <div class="sub">Saved to cit_config.json beside this tool. The size-parameter lists are tried in order and the first name that exists, is writable and takes a length wins.</div></div>
+
+        <div class="card">
+          <h3>Marker identity</h3>
+          <div class="row">
+            <span class="fl">Mark prefix</span><input class="in mono" style="width:140px" value="CLH-">
+            <span class="fl" style="margin-left:8px">State parameter</span><input class="in" style="width:160px" value="Comments">
+          </div>
+          <div class="help">The state is written as a short [CIT|…] token inside that parameter, alongside anything already written there — your own text is preserved. Changing the parameter after markers exist orphans the ones already stamped.</div>
+          <div class="help" style="margin-top:8px">Markers are stamped prefix + a sequential number, continuing from the highest number already in the model. Keep this different from the MEP Opening Tool's WOT- prefix: both write the same Mark parameter, and a shared prefix makes the two sequences renumber each other.</div>
+        </div>
+
+        <div class="card">
+          <h3>Size parameter names</h3>
+          <div class="row"><span class="fl" style="width:78px">Width</span><input class="in grow" value="Width, Opening Width, W, Horizontal Span"></div>
+          <div class="row"><span class="fl" style="width:78px">Height</span><input class="in grow" value="Height, Opening Height, H, Vertical Span"></div>
+          <div class="row"><span class="fl" style="width:78px">Diameter</span><input class="in grow" value="Diameter, Opening Diameter, D, Radius, r, R"></div>
+          <div class="help">Comma separated. A name of Radius receives half the diameter. These are shared with the MEP Opening Tool, so a change here changes both.</div>
+        </div>
+
+        <div class="card">
+          <h3>Size from the report</h3>
+          <div class="help">Navisworks reports no sizes of its own, but a model appended with its parameters carries them as object attributes. Any of these keys, found on either side of a clash, is read as that clash's size.</div>
+          <div class="row"><input class="in grow" value="Size, Dimensions, Duct Size, Pipe Size, Nominal Diameter"></div>
+        </div>
+
+        <div class="card">
+          <h3>Export</h3>
+          <div class="row"><div class="chk on"><span class="box"></span>Open the file after export</div></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- console (activity log — ships collapsed; the footer chevron opens it) -->
+  <div class="console collapsed" id="console">
+    <div class="cbody">
+      <pre id="txt_log">[14:02:11] Report read: Navisworks XML · 3 tests · 131 results · units mm (declared)
+[14:02:11] Mapping: Shared basis — T, u, v probed through GetProjectPosition · round trip 0.00 mm ✓
+[14:02:12] Collapsed 12 results within 150 mm → 119 clash points
+[14:02:12] 64 points already carry a marker (state token matched) · 55 new
+[14:05:40] Placed 55 markers · <a href="#">CLH-0412</a> … <a href="#">CLH-0466</a> · 0 refused · one undoable transaction
+[14:05:40] <span class="w">Clash7 (Tray vs Ducts): group header, no clash point — reported, not placed</span></pre>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer">
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span id="foot_model"><span class="fdot"></span>Model loaded · workshared</span>
+    <span class="fdiv"></span>
+    <span class="fstat" id="footer_status">Ready — choose a clash report to begin.</span>
+    <div class="fright">
+      <button class="chev" id="chev" title="Show or hide the activity log">&#xE70E;</button>
+      <span class="pg" id="foot_page">Report &amp; coordinates</span>
+      <button class="run" id="btn_run"><span class="g" id="glyph_run">&#xE890;</span><span id="lbl_run">READ REPORT</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+
+  // ---- rail nav: page switch + footer primary-button swap (the shell's per-page primary) ----
+  $$(".nav").forEach(function(n){
+    n.addEventListener("click", function(){
+      $$(".nav").forEach(function(x){x.classList.remove("sel");});
+      n.classList.add("sel");
+      var pg = n.getAttribute("data-pg");
+      $$(".page").forEach(function(p){p.classList.remove("on");});
+      var el = document.getElementById("pg_"+pg);
+      if(el){ el.classList.add("on"); }
+      $("#lbl_run").textContent = n.getAttribute("data-run");
+      $("#glyph_run").innerHTML = n.getAttribute("data-glyph");
+      $("#foot_page").innerHTML = n.getAttribute("data-title");
+    });
+  });
+  $("#burger").addEventListener("click", function(){ $("#rail").classList.toggle("collapsed"); });
+
+  // ---- theme ----
+  $("#themeBtn").addEventListener("click", function(){
+    document.body.classList.toggle("light");
+    this.innerHTML = document.body.classList.contains("light") ? "&#xE708;" : "&#xE706;";
+  });
+
+  // ---- console chevron ----
+  $("#chev").addEventListener("click", function(){
+    var c = $("#console"); c.classList.toggle("collapsed");
+    this.innerHTML = c.classList.contains("collapsed") ? "&#xE70E;" : "&#xE70D;";
+  });
+
+  // ---- coordinate source: manual panel ----
+  $("#sel_mode").addEventListener("change", function(){
+    $("#pnl_manual").style.display = (this.selectedIndex === 2) ? "flex" : "none";
+  });
+
+  // ---- place page toggles ----
+  $("#cb_only_new").addEventListener("click", function(){
+    this.classList.toggle("on");
+    var on = this.classList.contains("on");
+    $("#lbl_only_new").textContent = on ? "64 of the 119 already carry a marker — 55 will be placed."
+                                        : "All 119 will be placed — 64 of them beside a marker that already exists.";
+  });
+  $("#cb_write_size").addEventListener("click", function(){
+    this.classList.toggle("on");
+    $("#pnl_size").classList.toggle("dim", !this.classList.contains("on"));
+  });
+
+  // ---- clash rows + status chips ----
+  var CLASHES = [
+    {n:"Clash1",  t:"Ducts vs Structure", st:"new",      grid:"B-4 : L03", a:"Duct 400×250 — Supply",  b:"Beam IPE 300",          xyz:"12.40, 8.15, 3.20"},
+    {n:"Clash2",  t:"Ducts vs Structure", st:"new",      grid:"B-5 : L03", a:"Duct 400×250 — Supply",  b:"Beam IPE 300",          xyz:"14.92, 8.15, 3.20"},
+    {n:"Clash3",  t:"Ducts vs Structure", st:"active",   grid:"C-2 : L03", a:"Duct Ø315 — Extract",     b:"Slab edge 250",         xyz:"6.80, 3.42, 3.55"},
+    {n:"Clash4",  t:"Pipes vs Walls",     st:"reviewed", grid:"D-6 : L03", a:"Pipe DN80 — CHW-S",       b:"Wall 200 blockwork",    xyz:"21.05, 11.60, 2.70"},
+    {n:"Clash5",  t:"Pipes vs Walls",     st:"approved", grid:"D-6 : L03", a:"Pipe DN80 — CHW-R",       b:"Wall 200 blockwork",    xyz:"21.05, 11.35, 2.70"},
+    {n:"Clash6",  t:"Tray vs Ducts",      st:"new",      grid:"A-3 : L03", a:"Cable tray 300 — LV",     b:"Duct 600×300 — Supply", xyz:"3.10, 6.02, 3.05"},
+    {n:"Clash8",  t:"Pipes vs Walls",     st:"resolved", grid:"E-1 : L03", a:"Pipe DN50 — FW",          b:"Wall 140 partition",    xyz:"26.40, 0.95, 2.95"},
+    {n:"Clash9",  t:"Tray vs Ducts",      st:"active",   grid:"A-4 : L03", a:"Cable ladder 450 — ELV",  b:"Duct 600×300 — Supply", xyz:"4.35, 8.20, 3.05"}
+  ];
+  var LABEL = {new:"New", active:"Active", reviewed:"Reviewed", approved:"Approved", resolved:"Resolved"};
+  var PER_ROW = 4;   // each sample row stands for ~4 of the 119 clashes in the full set
+  function renderClashes(){
+    var on = {}; $$("#status_chips .chip").forEach(function(c){ on[c.getAttribute("data-st")] = c.classList.contains("on"); });
+    var rows = CLASHES.filter(function(r){ return on[r.st]; });
+    $("#rows_clash").innerHTML = rows.map(function(r){
+      return '<div class="revrow"><span class="box2"></span><span class="rid">'+r.n+'</span>'+
+        '<span class="rt">'+r.t+'</span><span><span class="pill '+r.st+'">'+LABEL[r.st]+'</span></span>'+
+        '<span class="rt">'+r.grid+'</span><span class="rnm">'+r.a+' &#x2194; '+r.b+'</span><span class="xyz">'+r.xyz+'</span></div>';
+    }).join("");
+    var counts = {new:0,active:0,reviewed:0,approved:0,resolved:0};
+    CLASHES.forEach(function(r){ counts[r.st]++; });
+    Object.keys(counts).forEach(function(k){ $("#c_"+k).textContent = counts[k]; });
+    var total = 119 - (CLASHES.length - rows.length) * PER_ROW;
+    $("#lbl_rows_count").textContent = total + " clashes · 3 tests";
+    $("#kpi_place").textContent = total;
+    $("#badge_results").textContent = total;
+  }
+  $$("#status_chips .chip").forEach(function(c){ c.addEventListener("click", function(){ c.classList.toggle("on"); renderClashes(); }); });
+
+  // ---- placed grid (grouped by clash test) ----
+  var PLACED = [
+    {g:"Ducts vs Structure", n:31, rows:[["CLH-0412","Clash1","B-4 : L03"],["CLH-0413","Clash2","B-5 : L03"],["CLH-0414","Clash3","C-2 : L03"]]},
+    {g:"Pipes vs Walls",     n:17, rows:[["CLH-0443","Clash4","D-6 : L03"],["CLH-0444","Clash14","D-7 : L03"]]},
+    {g:"Tray vs Ducts",      n:7,  rows:[["CLH-0460","Clash6","A-3 : L03"],["CLH-0461","Clash9","A-4 : L03"]]}
+  ];
+  $("#rows_placed").innerHTML = PLACED.map(function(grp){
+    return '<div class="grp"><span class="g">&#xE70D;</span><b>'+grp.g+'</b> · '+grp.n+' placed</div>' + grp.rows.map(function(r){
+      return '<div class="revrow placed on"><span class="box2"></span><span class="rid">'+r[0]+'</span><span class="rnm">'+r[1]+'</span><span class="rt">'+r[2]+'</span><span class="rt">CustomClashPoint : ClashPoint</span></div>';
+    }).join("");
+  }).join("");
+
+  // ---- status grid ----
+  var STATUS = [
+    ["CLH-0412","Clash1","Ducts vs Structure","placed","Placed",true],
+    ["—","Clash2","Ducts vs Structure","new","New",false],
+    ["CLH-0443","Clash4","Pipes vs Walls","placed","Placed",true],
+    ["CLH-0460","Clash6","Tray vs Ducts","placed","Placed",true],
+    ["CLH-0377","Clash12","Pipes vs Walls","gone","Not in report",false],
+    ["—","Clash9","Tray vs Ducts","new","New",false],
+    ["CLH-0398","Clash3","Ducts vs Structure","completed","Completed",false],
+    ["CLH-0391","Clash5","Pipes vs Walls","completed","Completed",false]
+  ];
+  $("#rows_status").innerHTML = STATUS.map(function(r){
+    return '<div class="revrow stat'+(r[5]?' on':'')+'"><span class="box2"></span><span class="rid">'+r[0]+'</span><span class="rnm">'+r[1]+'</span><span class="rt">'+r[2]+'</span><span><span class="pill '+r[3]+'">'+r[4]+'</span></span><span class="rt">'+(r[0]==="—"?"no marker yet":"token on "+r[0])+'</span></div>';
+  }).join("");
+
+  // init
+  renderClashes();
+})();
+</script>
+</body>
+</html>
