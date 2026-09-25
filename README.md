@@ -139,6 +139,14 @@ BIM* deck describes this suite as its "real in-house extension".
 
 A single-page, zero-build portal, in the CyanogenMod-inspired cyan-on-charcoal theme.
 
+* **The fifteen tools at a glance** — one row per tool: panel, the ribbon's own one-liner, how it
+  touches the model, what goes in and out, what is new. Hover a row to light its ribbon button.
+* **Four workflow chapters** — set up and clean · coordinate · quantify, draw, issue · standards,
+  families, scripts — each opening with the hand-off and a linked flow strip; the sidebar follows.
+* **At-a-glance strip on every tool** — does / touches the model / works with — with the feature
+  list capped at four and the window's pages collapsed behind a summary that opens on arrival.
+* **An agent can drive it** — the orient / read / dry-run / commit story and the terminal, right
+  after Architecture; the MCP section keeps the reference half and a collapsed bridge history.
 * **Routing field** — the hero background is a live canvas: pipe-like runs walk a grid, a crossing
   flashes red as a clash and is then placed as a cyan marker, and the cursor is an obstacle.
   Paused when off-screen; a single static frame under `prefers-reduced-motion`.
@@ -147,11 +155,12 @@ A single-page, zero-build portal, in the CyanogenMod-inspired cyan-on-charcoal t
   button to jump to its section; the lit button follows the section on screen.
 * **Jump to anything** — `Ctrl`/`⌘` `K` opens a palette over every section, tool, carded module,
   MCP tool and round, with subsequence matching.
-* **Wired architecture diagram** — hover a tool to draw the wires to the modules it consumes,
-  hover a module to wire it to its consumers, click to pin, or run the tour across all fifteen.
+* **Wired architecture diagram** — all 104 modules in six domain bands, hubs weighted at rest;
+  hover a tool to draw the wires to the modules it consumes, hover a module to wire it to its
+  consumers, click to pin, or run the tour across all fifteen.
   Every edge is re-measured from the tool folders' `from icz… import` lines at each sync.
-* **What landed, round by round** — a scroll-snap timeline from r116 to r149; each stop opens
-  to what was measured and links to the tools it touched.
+* **What's new since August** — eight product stops on a calendar rail from r116 to r149, each
+  linking to the badge it explains.
 * **Try the contract** — an illustrative terminal in the MCP section plays the JSON-RPC exchange
   for a status call, a dry-run delete, commit + confirm, a refused `Save()`, a smoke scenario and
   a Navisworks clash run.
