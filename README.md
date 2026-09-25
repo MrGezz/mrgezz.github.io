@@ -137,8 +137,26 @@ BIM* deck describes this suite as its "real in-house extension".
 
 ## Site features
 
-A single-page, zero-build portal.
+A single-page, zero-build portal, in the CyanogenMod-inspired cyan-on-charcoal theme.
 
+* **Routing field** — the hero background is a live canvas: pipe-like runs walk a grid, a crossing
+  flashes red as a clash and is then placed as a cyan marker, and the cursor is an obstacle.
+  Paused when off-screen; a single static frame under `prefers-reduced-motion`.
+* **The ribbon, as Revit shows it** — the SuiteTools tab rebuilt inline: six panels, fifteen
+  buttons, the two pulldowns open, every tooltip taken from the tool's own `bundle.yaml`. Click a
+  button to jump to its section; the lit button follows the section on screen.
+* **Jump to anything** — `Ctrl`/`⌘` `K` opens a palette over every section, tool, carded module,
+  MCP tool and round, with subsequence matching.
+* **Wired architecture diagram** — hover a tool to draw the wires to the modules it consumes,
+  hover a module to wire it to its consumers, click to pin, or run the tour across all fifteen.
+  Every edge is re-measured from the tool folders' `from icz… import` lines at each sync.
+* **What landed, round by round** — a scroll-snap timeline from r116 to r149; each stop opens
+  to what was measured and links to the tools it touched.
+* **Try the contract** — an illustrative terminal in the MCP section plays the JSON-RPC exchange
+  for a status call, a dry-run delete, commit + confirm, a refused `Save()`, a smoke scenario and
+  a Navisworks clash run.
+* **Keyboard** — `/` filters the sidebar, `j`/`k` step sections, `t` flips the theme, `g g`
+  returns to the top, `?` shows the card. Cards tilt toward the cursor; there is one easter egg.
 * **Interactive architecture diagram** — hover a tool to trace the `icz` modules it consumes,
   or hover a module to see which tools depend on it.
 * **Live interface previews** — every tool's real UI, embedded as a hand-authored mockup
@@ -153,8 +171,9 @@ A single-page, zero-build portal.
 * **Privacy-first** — capabilities and architecture in prose only. No proprietary
   implementation beyond public import signatures, and **no client project identifiers**:
   every model name shown in a preview is masked.
-* **Tech stack** — HTML5/CSS3 with no framework, Prism.js for the one code stub,
-  Font Awesome 6 for iconography, `localStorage` for theme and nav state.
+* **Tech stack** — HTML5/CSS3 with no framework, a canvas for the routing field, inline SVG for
+  the architecture wires, Prism.js for the one code stub, Font Awesome 6 for iconography,
+  `localStorage` for theme and nav state. No build step, no bundle, one file.
 
 ## Local preview
 
