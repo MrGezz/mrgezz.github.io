@@ -17,9 +17,9 @@ the implementation lives in a separate private repository.
 
 ## The suite
 
-**14 tools across 6 ribbon panels** on the `SuiteTools` tab. Labels below are the
-ones the ribbon actually shows, read from a live Revit 2026.4 session rather than from a
-design document.
+**15 tools across 6 ribbon panels** on the `SuiteTools` tab. Labels below are the
+ones the ribbon actually shows, read from the extension's `bundle.yaml` titles rather than from a
+design document. The site is synced to workspace round **r149** (2026-09-24).
 
 | Code | Ribbon label | Panel | What it does |
 | --- | --- | --- | --- |
@@ -31,14 +31,15 @@ design document.
 | **FQC** | Family QC | QualityCheck | Family-definition health check that runs in the family editor — per-check pass/warn/fail, an overall score and an HTML report. |
 | **GUIDE** | Guideline | QualityCheck | The project standards library inside Revit: browse, preview, annotate and edit reference documents — PDF, Excel, Word, Markdown, images — without leaving the model. |
 | **WOT** | MEP Opening Tool | Report | MEP penetration and opening detection across host plus linked files, with a tri-state element scope, markers, a reservation audit of existing openings, a live schedule and a spreadsheet report. |
-| **CIT** | Clash Importer | Report | Brings a clash report (Navisworks XML / HTML, CSV, Excel, BCF) back into the model as placed markers on a round-trip-verified coordinate basis; each marker remembers its clash, so a re-import reconciles instead of duplicating. |
+| **CIT** | Clash Importer | Report | Brings a clash report (Navisworks XML / HTML, CSV, Excel, BCF) back into the model as placed markers on a round-trip-verified coordinate basis; each marker remembers its clash, so a re-import reconciles instead of duplicating. Takes the Interference Check's results directly, already in the model's own feet. |
+| **ICX** | Interference Check | Report | Interference detection between two category sets — against this model, linked Revit models and, unlike Revit's own dialog, linked Navisworks coordination models (read through the Navisworks API out of process). Every row says whether it is solid-exact or box-level; a re-run marks New / Gone; read-only. |
 | **SFX** | Framing Fix | Structural | Disallows structural framing joins while preserving the as-joined physical length — regrowth compensated into Start/End Extension so faces stay put. |
 | **CD** | Model Cleanup | Tools | Eight cleanup passes as one production line: ghosts, overkill lines, connections, system integrity, names, types, nested, orphans — armed individually, committed as one undoable act. |
 | **EXP** | Transmit | Tools | One transmittal, every format — batch export to DWG / PDF / NWC / IFC / images / Excel with profiles, a filename builder and a sheet index. |
 | **DOC** | Sheet AutoDoc | Tools | Data-driven sheet generation through a universal layout engine: plans, sections, elevations, 3D, dimensions, tags, placement and naming conventions. |
 | **SB** | Section Box | Tools | Section-box control: quick box, dialog-driven box, grow, shrink and toggle. Six sub-commands on one pulldown. |
 
-Two of these are pulldowns, so the tab registers **26 commands** in total.
+Two of these are pulldowns, so the tab registers **27 commands** in total.
 Every tool is a modeless WPF application sharing one themeable shell and the `icz` library.
 
 ---
@@ -48,7 +49,7 @@ Every tool is a modeless WPF application sharing one themeable shell and the `ic
 Every tool once re-solved the same problems: the Revit 2024 `ElementId` breaking change,
 modeless-window threading, theme duplication, worksharing checks, MEP connector hashing,
 batch-export plumbing. `icz` pulls all of it into one dependency-free library of
-**84 modules**, so each tool imports instead of reimplementing.
+**104 modules**, so each tool imports instead of reimplementing.
 
 - ✅ **No external dependencies** — pure Revit API + WPF. Nothing to pip-install, no COM.
 - ✅ **IronPython 3** — the suite runs the ipy3 engine (measured 3.4.2 in-session);
@@ -65,16 +66,16 @@ batch-export plumbing. `icz` pulls all of it into one dependency-free library of
 
 | Domain | Purpose | Modules |
 | --- | --- | --- |
-| **Core &amp; host seam** | The things every tool needs before it can do anything. | `revit_compat` &middot; `pycompat` &middot; `host` &middot; `availability` &middot; `units` &middot; `fmt` &middot; `depends` &middot; `licensing` &middot; `diaglog` &middot; `scripting` |
-| **UI &amp; shell** | One window chrome, one palette, one set of inputs — so fourteen tools look like one product. | `theme` &middot; `shell` &middot; `modeless` &middot; `confirm` &middot; `dialogs` &middot; `review_grid` &middot; `validation` &middot; `tristate` &middot; `settingsform` &middot; `checkcombo` &middot; `reader` &middot; `codetok` &middot; `pdfview` &middot; `sheetpreview` &middot; `reporthtml` |
+| **Core &amp; host seam** | The things every tool needs before it can do anything. | `revit_compat` &middot; `pycompat` &middot; `host` &middot; `availability` &middot; `units` &middot; `depends` &middot; `licensing` &middot; `dllguard` &middot; `diaglog` &middot; `scripting` &middot; `scan` &middot; `selection` &middot; `design_options` |
+| **UI &amp; shell** | One window chrome, one palette, one set of inputs — so fifteen tools look like one product. | `theme` &middot; `shell` &middot; `modeless` &middot; `confirm` &middot; `dialogs` &middot; `review_grid` &middot; `validation` &middot; `tristate` &middot; `settingsform` &middot; `checkcombo` &middot; `reader` &middot; `codetok` &middot; `pdfview` &middot; `sheetpreview` &middot; `reporthtml` &middot; `fmt` |
 | **Data visualisation** | The in-window reporting surface shared by the QA/QC tools. | `dashboard` &middot; `piechart` &middot; `radar` &middot; `scorecard` &middot; `colorize` &middot; `vfilters` &middot; `viewbox` &middot; `preview3d` |
-| **Revit model** | Reading, selecting and safely changing elements. | `revit_utils` &middot; `selection` &middot; `modify` &middot; `geom` &middot; `naming` &middot; `tags` &middot; `params` &middot; `paramreg` &middot; `spacesync` &middot; `openings` &middot; `famlib` &middot; `famedit` |
-| **MEP &amp; geometry engines** | The computational core; five of these are drop-ins over the compiled IcZ.Core assembly. | `mep` &middot; `mepdoctor` &middot; `route` &middot; `routing` &middot; `flex` &middot; `framing_join` &middot; `layout_native` &middot; `nodecluster` &middot; `wallmath` &middot; `overkill` &middot; `orphans` &middot; `doclayout` |
-| **Quality &amp; health** | The checks behind QAQC Suite and Family QC. | `mcheck` &middot; `mhealth` &middot; `famqa` &middot; `famqa_config` &middot; `famqa_logic` &middot; `bimstd` |
-| **Clash coordination** | Every clash-report format behind one reader, and the marker ⇄ clash link. Revit-free, harness-tested offline. | `clashreport` &middot; `clashxml` &middot; `clashhtml` &middot; `clashtable` &middot; `bcf` &middot; `xmlwalk` &middot; `clashstate` |
-| **Data, IO &amp; persistence** | One canonical JSON path, one spreadsheet writer, no third-party packages. | `configstore` &middot; `serdes` &middot; `exportcfg` &middot; `xlsxlite` &middot; `xlsxread` &middot; `lastused` &middot; `perftracker` &middot; `failures` |
+| **Revit model** | Reading, selecting and safely changing elements. | `revit_utils` &middot; `modify` &middot; `geom` &middot; `naming` &middot; `tags` &middot; `tag_leader` &middot; `params` &middot; `paramreg` &middot; `spacesync` &middot; `openings` &middot; `famlib` &middot; `famedit` &middot; `vfilters` &middot; `vg_transfer` &middot; `viewbox` |
+| **MEP &amp; geometry engines** | The computational core; five of these are drop-ins over the compiled IcZ.Core assembly. | `mep` &middot; `mepdoctor` &middot; `route` &middot; `routing` &middot; `flex` &middot; `riser` &middot; `framing_join` &middot; `layout_native` &middot; `nodecluster` &middot; `wallmath` &middot; `overkill` &middot; `orphans` &middot; `doclayout` &middot; `sheet_overlap` &middot; `nwd` |
+| **Quality &amp; health** | The checks behind QAQC Suite and Family QC. | `mcheck` &middot; `mhealth` &middot; `revitwarnings` &middot; `famqa` &middot; `famqa_atom` &middot; `famqa_catalogue` &middot; `famqa_rename` &middot; `famqa_config` &middot; `famqa_logic` &middot; `bimstd` &middot; `wot_delta` |
+| **Clash coordination** | Every clash-report format behind one reader, the marker ⇄ clash link, the spatial index and the ICX → CIT handoff. Revit-free, harness-tested offline. | `clashreport` &middot; `clashxml` &middot; `clashhtml` &middot; `clashtable` &middot; `bcf` &middot; `xmlwalk` &middot; `clashstate` &middot; `clashgrid` &middot; `clashhandoff` &middot; `icx_delta` |
+| **Data, IO &amp; persistence** | One canonical JSON path, one spreadsheet writer, no third-party packages. | `configstore` &middot; `presets` &middot; `toolstate` &middot; `serdes` &middot; `exportcfg` &middot; `xlsxlite` &middot; `xlsxread` &middot; `report_export` &middot; `lastused` &middot; `perftracker` &middot; `failures` |
 | **Worksharing** | Multi-user safety. | `worksets` &middot; `ownership` |
-| **Agent bridge** | The in-Revit half of the MCP bridge — the routes an external agent talks to. | `mcpui` &middot; `mcpmodel` &middot; `mcpwrite` |
+| **Agent bridge** | The in-Revit half of the MCP bridge — the routes an external agent talks to. | `mcpui` &middot; `mcpmodel` &middot; `mcpwrite` &middot; `mcpdynamo` |
 | **Out-of-process** | The persistent CPython worker used by the compiled Native tier. | `cpyworker` |
 
 ### Integration
@@ -110,24 +111,66 @@ if is_valid(my_element):                    # guards against mid-run deletions
 ## Revit MCP bridge
 
 The suite also ships an **attach-by-default MCP server** (`revit-launch`) that lets an AI agent
-work with a running Revit session over pyRevit routes: read the model, dry-run writes that
-execute and roll back, drive the ribbon and click named controls, and capture every page of a
+work with a running Revit session: read the model, dry-run writes that execute and roll back,
+drive the ribbon and click named controls, run named smoke scenarios, and capture every page of a
 rendered window as PNGs to review against an approved design. Zero dependencies, JSON-RPC 2.0
-over stdio, **43 tools** in the default configuration with the seven process-lifecycle tools
-gated off (it can launch Revit two-phase when that gate is switched on). It is one of seven
-local MCP servers in the development workspace; the other six answer questions. It is documented in the
+over stdio, **140 tools** in the default configuration (161 with every gate on), behind four
+independent gates — the seven process-lifecycle tools and the live Dynamo tools are off by
+default — and three profiles (core 7 · standard 30 · full). The 90 modelling commands run over
+two transports behind one prefix: 64 in the first-party `IcZ.Bridge` add-in over a named pipe,
+which needs no pyRevit, and 26 inside the pyRevit session. Its sibling **`navisworks-launch`**
+(30 tools) drives Navisworks Manage / Simulate the same way, with a dry run whose revert is
+measured rather than assumed. They are two of nine local MCP servers in the development
+workspace; six answer questions and one drives a local ComfyUI. Both are documented in the
 site's *Revit MCP Bridge* section.
+
+## BIM & AI Guide
+
+The site links to the companion **[BIM & AI Guide](https://bim-with-ai.ugezz94.workers.dev)** — a
+free course from zero Dynamo and zero code to pyRevit, the Revit API and Navisworks coordination,
+with an AI assistant as the pair-programmer. Its decks are reveal.js pages generated from the same
+scripts that build the PowerPoint files; the site is handed out by link rather than found by
+search, and this page is one of the places the link lives. The guide's *Practical AI Automation in
+BIM* deck describes this suite as its "real in-house extension".
 
 ---
 
 ## Site features
 
-A single-page, zero-build portal.
+A single-page, zero-build portal, in the CyanogenMod-inspired cyan-on-charcoal theme.
 
+* **The fifteen tools at a glance** — one row per tool: panel, the ribbon's own one-liner, how it
+  touches the model, what goes in and out, what is new. Hover a row to light its ribbon button.
+* **Four workflow chapters** — set up and clean · coordinate · quantify, draw, issue · standards,
+  families, scripts — each opening with the hand-off and a linked flow strip; the sidebar follows.
+* **At-a-glance strip on every tool** — does / touches the model / works with — with the feature
+  list capped at four and the window's pages collapsed behind a summary that opens on arrival.
+* **An agent can drive it** — the orient / read / dry-run / commit story and the terminal, right
+  after Architecture; the MCP section keeps the reference half and a collapsed bridge history.
+* **Routing field** — the hero background is a live canvas: pipe-like runs walk a grid, a crossing
+  flashes red as a clash and is then placed as a cyan marker, and the cursor is an obstacle.
+  Paused when off-screen; a single static frame under `prefers-reduced-motion`.
+* **The ribbon, as Revit shows it** — the SuiteTools tab rebuilt inline: six panels, fifteen
+  buttons, the two pulldowns open, every tooltip taken from the tool's own `bundle.yaml`. Click a
+  button to jump to its section; the lit button follows the section on screen.
+* **Jump to anything** — `Ctrl`/`⌘` `K` opens a palette over every section, tool, carded module,
+  MCP tool and round, with subsequence matching.
+* **Wired architecture diagram** — all 104 modules in six domain bands, hubs weighted at rest;
+  hover a tool to draw the wires to the modules it consumes, hover a module to wire it to its
+  consumers, click to pin, or run the tour across all fifteen.
+  Every edge is re-measured from the tool folders' `from icz… import` lines at each sync.
+* **What's new since August** — eight product stops on a calendar rail from r116 to r149, each
+  linking to the badge it explains.
+* **Try the contract** — an illustrative terminal in the MCP section plays the JSON-RPC exchange
+  for a status call, a dry-run delete, commit + confirm, a refused `Save()`, a smoke scenario and
+  a Navisworks clash run.
+* **Keyboard** — `/` filters the sidebar, `j`/`k` step sections, `t` flips the theme, `g g`
+  returns to the top, `?` shows the card. Cards tilt toward the cursor; there is one easter egg.
 * **Interactive architecture diagram** — hover a tool to trace the `icz` modules it consumes,
   or hover a module to see which tools depend on it.
 * **Live interface previews** — every tool's real UI, embedded as a hand-authored mockup
   under `mockups/`, auto-fitted down to phone widths.
+* **Learn section** — the companion BIM & AI Guide, linked from the hero, the sidebar and the footer.
 * **Module explorer** — the library as filterable cards grouped by domain, each naming its
   consuming tools.
 * **Light / dark theme** — a CyanogenMod-inspired charcoal blue-grey with the `#00BCD4` cyan
@@ -137,8 +180,9 @@ A single-page, zero-build portal.
 * **Privacy-first** — capabilities and architecture in prose only. No proprietary
   implementation beyond public import signatures, and **no client project identifiers**:
   every model name shown in a preview is masked.
-* **Tech stack** — HTML5/CSS3 with no framework, Prism.js for the one code stub,
-  Font Awesome 6 for iconography, `localStorage` for theme and nav state.
+* **Tech stack** — HTML5/CSS3 with no framework, a canvas for the routing field, inline SVG for
+  the architecture wires, Prism.js for the one code stub, Font Awesome 6 for iconography,
+  `localStorage` for theme and nav state. No build step, no bundle, one file.
 
 ## Local preview
 
@@ -155,8 +199,9 @@ cd mrgezz.github.io
 | Path | What it is |
 | --- | --- |
 | `index.html` | The entire site — markup, styles and script in one file |
-| `mockups/` | Hand-authored interface previews, one per tool, embedded by `index.html` |
+| `mockups/` | Hand-authored interface previews, one per tool (`icx.html` is the newest), embedded by `index.html` |
 | `404.html` | Themed not-found page |
+| `og.html`, `og.png` | The link-preview card and the template it is rendered from — a designed 1200×630 card, never a screenshot of the page; the regeneration recipe is in the template's head comment |
 | `favicon.svg`, `robots.txt`, `sitemap.xml` | Site plumbing |
 | `.nojekyll` | Serve the tree as authored; skip Jekyll processing |
 

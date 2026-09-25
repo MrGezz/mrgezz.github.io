@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ICX — Interference Check</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33; --readout:#101a20;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33; --violet:#B49BE0;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE; --readout:#F2F5F7;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE; --violet:#5E35B1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  body.light{background:#cfd8dc}
+  .window{width:1220px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .mono{font-family:Consolas,monospace}
+  /* titlebar */
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .burger{color:var(--text-2);font-size:15px;cursor:pointer}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.2px;color:var(--text-main);font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:3px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:12px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}.dot.c{background:#FF5F57;color:#7A1410}
+  /* body */
+  .main{display:flex;min-height:640px}
+  .rail{width:236px;background:var(--nav);border-right:1px solid var(--border);padding:10px 8px;display:flex;flex-direction:column;gap:3px;transition:width .12s;flex:none}
+  .rail.collapsed{width:0;padding:10px 0;overflow:hidden}
+  .rlab{font:600 9px Consolas,monospace;letter-spacing:.14em;color:var(--text-2);padding:6px 12px 6px}
+  .nav{display:flex;align-items:center;gap:12px;padding:8px 10px 8px 12px;border-radius:6px;font-size:12.5px;color:var(--text-2);cursor:pointer;white-space:nowrap;position:relative}
+  .nav .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";width:18px;text-align:center;font-size:14px}
+  .nav.sel{background:var(--nav-sel);color:var(--text-main);font-weight:600}
+  .nav.sel .g{color:var(--accent)}
+  .nav.sel::before{content:"";position:absolute;left:0;top:7px;bottom:7px;width:3px;border-radius:2px;background:var(--accent)}
+  .nav:hover{background:var(--hover)}
+  .nav .badge{margin-left:auto;font:600 10px Consolas,monospace;color:var(--accent-fg);background:var(--accent);border-radius:99px;padding:1px 7px}
+  .rail .actions{margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:8px 4px 2px}
+  .rail .actions .btn{width:100%;justify-content:flex-start}
+  .content{flex:1;padding:18px 18px 18px 20px;display:flex;flex-direction:column;gap:12px;background:var(--window-bg);min-width:0}
+  h2.pg{font-size:15px;font-weight:600}
+  .sub{font-size:11.5px;color:var(--text-2);margin-top:3px;line-height:1.45;max-width:640px}
+  .page{display:none;flex-direction:column;gap:12px}
+  .page.on{display:flex}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px 16px}
+  .card h3{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--text-2);margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .card h3 .spacer{flex:1}
+  .help{font-size:11px;color:var(--text-2);line-height:1.5;max-width:660px}
+  .help.warn{color:var(--warn);max-width:none}
+  .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .row + .row, .row + .help, .help + .row, .row + .readout, .readout + .row, .help + .readout, .help + .help{margin-top:10px}
+  .fl{font-size:11px;color:var(--text-2);white-space:nowrap}
+  .in,.sel2{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:4px;padding:5px 8px;font-size:11.5px;font-family:inherit;height:28px}
+  .in.mono{font-family:Consolas,monospace}
+  .in.grow{flex:1;min-width:0}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:0 12px;height:28px;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;justify-content:center;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:12px}
+  .btn.mini{height:26px;padding:0 11px;font-size:11px}
+  .btn.off{opacity:.45;cursor:default}
+  .readout{background:var(--readout);border:1px solid var(--border);border-radius:5px;padding:8px 12px;font:11px/1.7 Consolas,monospace;color:var(--text-main)}
+  .readout .ok{color:var(--pass)}
+  .readout .acc{color:var(--accent)}
+  .readout .w{color:var(--warn)}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;cursor:pointer;color:var(--text-main)}
+  .chk .box{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative;flex:none}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:10px;text-align:center;line-height:14px}
+  .chk .cnt{font:600 10px Consolas,monospace;color:var(--text-2)}
+  .radio{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;cursor:pointer}
+  .radio .rb{width:14px;height:14px;border-radius:50%;border:1px solid var(--border);background:var(--input-bg);position:relative;flex:none}
+  .radio.on .rb{border-color:var(--accent)}
+  .radio.on .rb::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .dim{opacity:.45;pointer-events:none}
+  /* two-column category sets */
+  .sets{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .set{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
+  .set .sh{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+  .set .sh b{font-size:11px;letter-spacing:.06em}
+  .set .sh .n{font:600 10px Consolas,monospace;color:var(--text-2)}
+  .set .sh .spacer{flex:1}
+  .cats{display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
+  .cats .chk{font-size:11px}
+  .cats .chk .cnt{margin-left:auto}
+  /* file list */
+  .files{display:flex;flex-direction:column;gap:4px;margin-top:10px}
+  .file{display:grid;grid-template-columns:16px 1fr 96px 120px 90px;align-items:center;gap:10px;background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:6px 10px;font-size:11px}
+  .file .nm{font-family:Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .file .st{color:var(--text-2);font-size:10.5px}
+  .file .st.ok{color:var(--pass)}.file .st.w{color:var(--warn)}
+  .file .box2{width:13px;height:13px;border:1px solid var(--border);border-radius:3px;background:var(--panel2);position:relative}
+  .file.on .box2{background:var(--accent);border-color:var(--accent)}
+  .file.on .box2::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:9px;text-align:center;line-height:13px}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 13px}
+  .tile .lab{font-size:9.5px;letter-spacing:.08em;color:var(--text-2)}
+  .tile .val{font-size:21px;font-weight:700;margin:3px 0 1px;font-variant-numeric:tabular-nums}
+  .tile .val.acc{color:var(--accent)}
+  .tile .s{font-size:10px;color:var(--text-2)}
+  /* delta strip */
+  .delta{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--text-2);background:var(--readout);border:1px solid var(--border);border-radius:6px;padding:7px 12px}
+  .delta b{color:var(--text-main)}
+  .delta .pill{margin-left:0}
+  /* chips */
+  .chips{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:10.5px;border:1px solid var(--border);border-radius:99px;padding:3px 10px;cursor:pointer;color:var(--text-2);background:var(--input-bg);display:inline-flex;align-items:center;gap:6px}
+  .chip.on{border-color:var(--accent);color:var(--text-main);background:var(--nav-sel)}
+  .chip i{font-style:normal;font:600 9.5px Consolas,monospace;color:var(--accent)}
+  .chip.gone.on{border-color:var(--fail)}
+  /* result rows */
+  .revlist{display:flex;flex-direction:column;gap:4px;max-height:330px;overflow:auto;margin-top:10px}
+  .revrow{background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:6px 10px;cursor:pointer;display:grid;grid-template-columns:64px 1fr 1fr 96px 84px 88px 70px;align-items:center;gap:10px;font-size:11px}
+  .revrow:hover{border-color:var(--accent)}
+  .revrow.gone{opacity:.55}
+  .revrow .rid{font-family:Consolas,monospace;color:var(--accent)}
+  .revrow .rnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .revrow .rt{color:var(--text-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .revrow .mm{font-family:Consolas,monospace;color:var(--text-2);text-align:right}
+  .pill{font-size:9.5px;border-radius:99px;padding:2px 8px;font-weight:600;display:inline-block;white-space:nowrap}
+  .pill.host{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.link{background:rgba(126,87,194,.18);color:var(--violet)}
+  .pill.nwd{background:rgba(255,179,0,.16);color:var(--warn)}
+  .pill.exact{background:rgba(76,175,80,.16);color:var(--pass)}
+  .pill.approx{background:var(--track);color:var(--text-2)}
+  .pill.new{background:rgba(0,188,212,.16);color:var(--accent)}
+  .pill.gone{background:rgba(255,82,82,.14);color:var(--fail)}
+  .pill.none{background:transparent;color:var(--text-2)}
+  .listhead{display:flex;align-items:center;gap:8px}
+  .listhead .spacer{flex:1}
+  .listhead b{font-size:12.5px;font-weight:600}
+  .note{font-size:11px;color:var(--text-2)}
+  .warnbox{display:flex;gap:10px;align-items:flex-start;background:rgba(255,179,0,.08);border:1px solid rgba(255,179,0,.35);border-radius:6px;padding:8px 12px;font-size:11px;line-height:1.5}
+  .warnbox .g{color:var(--warn);font-size:14px;font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  /* console */
+  .console{background:var(--nav);border-top:1px solid var(--border)}
+  .cbody{padding:10px 16px 12px}
+  .cbody pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text-main);font:11px/1.7 Consolas,monospace;padding:10px;height:112px;overflow:auto;margin:0}
+  .cbody pre a{color:var(--accent);text-decoration:none}
+  .cbody pre .w{color:var(--warn)}
+  .console.collapsed .cbody{display:none}
+  /* footer */
+  .footer{display:flex;align-items:center;gap:12px;background:var(--titlebar);border-top:1px solid var(--border);padding:7px 16px;font-size:11px;color:var(--text-2);height:48px}
+  .footer .hallmark .mdl2{color:var(--accent);margin-right:5px}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .fdiv{width:1px;height:14px;background:var(--border)}
+  .fdot{width:7px;height:7px;border-radius:50%;background:var(--pass);display:inline-block;margin-right:7px;vertical-align:middle}
+  .footer .fstat{max-width:460px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Consolas,monospace;font-size:10.5px}
+  .footer .fright{margin-left:auto;display:flex;align-items:center;gap:14px}
+  .footer .chev{cursor:pointer;background:none;border:none;color:var(--text-2);font-size:11px;padding:2px 6px;font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .footer .pg{color:var(--text-2)}
+  .run{background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;letter-spacing:.03em;border:none;border-radius:6px;width:150px;height:34px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:inherit}
+  .run .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:13px}
+  .run.stop{background:var(--panel2);color:var(--text-main);border:1px solid var(--border);width:86px}
+</style>
+</head>
+<body>
+
+<div class="window">
+  <!-- titlebar -->
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger" title="Collapse / expand the navigation rail">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE9D5;</span>
+    <span class="tb-name">Interference Check</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path">Tower-A_MEP_Coordination.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="themeBtn" title="Toggle light / dark theme">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- rail -->
+    <div class="rail" id="rail">
+      <div class="rlab">CHECK</div>
+      <div class="nav sel" data-pg="scope" data-title="Scope"><span class="g mdl2">&#xE71C;</span>Scope</div>
+      <div class="nav" data-pg="results" data-title="Results"><span class="g mdl2">&#xE9D5;</span>Results<span class="badge" id="badge_results">199</span></div>
+      <div class="nav" data-pg="settings" data-title="Settings"><span class="g mdl2">&#xE713;</span>Settings</div>
+      <div class="actions">
+        <button class="btn"><span class="g">&#xE74E;</span> Export</button>
+        <button class="btn" id="btn_handoff" title="Hand the current result set to the Clash Importer"><span class="g">&#xE8B5;</span> Place markers (CIT)</button>
+      </div>
+    </div>
+
+    <!-- content -->
+    <div class="content">
+
+      <!-- PAGE: SCOPE -->
+      <div class="page on" id="pg_scope">
+        <div><h2 class="pg">Scope</h2>
+          <div class="sub">Two sets of categories, and where the second set lives — this model, the linked Revit models, or the Navisworks coordination models Revit's own Interference Check cannot see. Nothing here opens a transaction.</div></div>
+
+        <div class="card">
+          <h3>WHAT TO CHECK</h3>
+          <div class="row">
+            <span class="fl">Scope</span>
+            <select class="sel2" style="width:200px"><option selected>Whole model</option><option>Active view</option><option>Current selection</option></select>
+            <span class="fl" style="margin-left:8px">Preset</span>
+            <select class="sel2" style="width:220px" id="sel_preset"><option selected>Hookup vs Steel</option><option>MEP vs MEP</option><option>Everything vs Structure</option><option>— none —</option></select>
+            <button class="btn mini"><span class="g">&#xE74E;</span> Save preset</button>
+          </div>
+          <div class="help">A preset fills both lists; every category stays editable. The count beside each category is how many instances <b>this</b> model actually has — a preset naming categories the model lacks is not an error, but it is why a run comes back thin.</div>
+          <div class="sets" style="margin-top:12px">
+            <div class="set">
+              <div class="sh"><b>SET A</b><span class="n">3 selected</span><span class="spacer"></span><button class="btn mini">None</button><button class="btn mini">All</button></div>
+              <div class="cats">
+                <div class="chk on"><span class="box"></span>Pipes<span class="cnt">2,418</span></div>
+                <div class="chk"><span class="box"></span>Ducts<span class="cnt">1,206</span></div>
+                <div class="chk on"><span class="box"></span>Pipe Fittings<span class="cnt">3,977</span></div>
+                <div class="chk"><span class="box"></span>Duct Fittings<span class="cnt">1,540</span></div>
+                <div class="chk on"><span class="box"></span>Cable Trays<span class="cnt">612</span></div>
+                <div class="chk"><span class="box"></span>Flex Pipes<span class="cnt">88</span></div>
+                <div class="chk"><span class="box"></span>Generic Models<span class="cnt">340</span></div>
+                <div class="chk"><span class="box"></span>Electrical Fixtures<span class="cnt">0</span></div>
+              </div>
+            </div>
+            <div class="set">
+              <div class="sh"><b>SET B</b><span class="n">2 selected</span><span class="spacer"></span><button class="btn mini">None</button><button class="btn mini">All</button></div>
+              <div class="cats">
+                <div class="chk on"><span class="box"></span>Structural Framing<span class="cnt">1,912</span></div>
+                <div class="chk on"><span class="box"></span>Structural Connections<span class="cnt">0</span></div>
+                <div class="chk"><span class="box"></span>Structural Columns<span class="cnt">214</span></div>
+                <div class="chk"><span class="box"></span>Floors<span class="cnt">96</span></div>
+                <div class="chk"><span class="box"></span>Walls<span class="cnt">1,088</span></div>
+                <div class="chk"><span class="box"></span>Ducts<span class="cnt">1,206</span></div>
+                <div class="chk"><span class="box"></span>Pipes<span class="cnt">2,418</span></div>
+                <div class="chk"><span class="box"></span>Generic Models<span class="cnt">340</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>WHERE SET B LIVES</h3>
+          <div class="row">
+            <div class="chk on"><span class="box"></span>This model</div>
+            <div class="chk"><span class="box"></span>Linked Revit models <span class="cnt">4 loaded</span></div>
+            <div class="chk on" id="cb_nwd"><span class="box"></span>Coordination models (NWD / NWC / NWF)</div>
+            <span class="spacer" style="flex:1"></span>
+            <button class="btn mini"><span class="g">&#xE896;</span> Pre-read now</button>
+          </div>
+          <div class="help">The Revit API returns <b>empty geometry</b> for a coordination model, so Revit's own dialog reports a federated model as clean. The geometry is read through the Navisworks API out of process, bounded to the envelope of everything in scope plus the clearance, and cached per envelope — the first run of a file is slow, the next is not.</div>
+          <div class="files" id="files">
+            <div class="file on"><span class="box2"></span><span class="nm">STR_Federated_L01-L05.nwd</span><span class="st ok">cached · 61,204 boxes</span><span class="st">2 of 3 disciplines</span><span><button class="btn mini">Models…</button></span></div>
+            <div class="file on"><span class="box2"></span><span class="nm">ARC_Envelope_Shell.nwc</span><span class="st ok">measured (0, 0, 0) mm</span><span class="st">1 model</span><span><button class="btn mini">Models…</button></span></div>
+            <div class="file"><span class="box2"></span><span class="nm">CIV_External_Works.nwd</span><span class="st w">placeholder, not downloaded</span><span class="st">—</span><span><button class="btn mini off">Models…</button></span></div>
+          </div>
+          <div class="readout" style="margin-top:10px">Navisworks Manage 2026 found · reader bin\nwd\NwBoxes.exe · envelope 84.2 × 61.7 × 19.4 m · <span class="acc">2 files ticked</span>, 1 skipped (<span class="w">Desktop Connector placeholder — listed, never downloaded</span>)</div>
+        </div>
+
+        <div class="card">
+          <h3>HOW TO TEST</h3>
+          <div class="row">
+            <div class="radio on" id="rb_hard"><span class="rb"></span>Hard clash</div>
+            <div class="radio" id="rb_clear"><span class="rb"></span>Clearance</div>
+            <span class="fl" style="margin-left:8px">within</span><input class="in mono" style="width:70px" value="25"><span class="fl">mm</span>
+            <span class="fl" style="margin-left:18px">Merge results closer than</span><input class="in mono" style="width:70px" value="150"><span class="fl">mm (0 keeps every result)</span>
+          </div>
+          <div class="help" id="lbl_mode">Hard clash intersects real solids — a row against this model or a Revit link is one Revit's own dialog would also report. Against a coordination model it is your solid against the reader's box, and every row says which.</div>
+        </div>
+      </div>
+
+      <!-- PAGE: RESULTS -->
+      <div class="page" id="pg_results">
+        <div><h2 class="pg">Results</h2></div>
+
+        <div class="kpis">
+          <div class="tile"><div class="lab">INTERFERENCES</div><div class="val acc" id="kpi_total">199</div><div class="s">after merge · 4,312 tested</div></div>
+          <div class="tile"><div class="lab">THIS MODEL</div><div class="val">73</div><div class="s">ElementIntersectsElement</div></div>
+          <div class="tile"><div class="lab">REVIT LINKS</div><div class="val">0</div><div class="s">links not in scope</div></div>
+          <div class="tile"><div class="lab">COORDINATION</div><div class="val" style="color:var(--warn)">126</div><div class="s">2 files read</div></div>
+          <div class="tile"><div class="lab">SOLID-EXACT</div><div class="val" style="color:var(--pass)">73</div><div class="s">36.7 % of rows</div></div>
+        </div>
+
+        <div class="delta"><span class="mdl2" style="color:var(--accent)">&#xE895;</span>Compared with the run of <b>2026-09-23 16:41</b>, same configuration — <span class="pill new">New 14</span> <span class="pill gone">Gone 9</span> <b>176</b> unchanged. Up to three previous runs are kept per document and configuration.</div>
+
+        <div class="warnbox"><span class="g">&#xE7BA;</span><div><b>1 warning.</b> CIV_External_Works.nwd is a Desktop Connector placeholder — listed by the document, never downloaded — so nothing in it was checked. A coordination model that comes back empty is named, never reported as clean.</div></div>
+
+        <div class="card">
+          <div class="listhead"><span class="fl">SHOW</span>
+            <div class="chips" id="chips">
+              <span class="chip on" data-f="all">All <i>199</i></span>
+              <span class="chip" data-f="host">This model <i>73</i></span>
+              <span class="chip" data-f="link">Revit links <i>0</i></span>
+              <span class="chip" data-f="nwd">Coordination <i>126</i></span>
+              <span class="chip" data-f="new">New <i>14</i></span>
+              <span class="chip gone" data-f="gone">Gone <i>9</i></span>
+            </div>
+            <span class="spacer"></span><b id="lbl_rows">199 results</b></div>
+          <div class="revlist" id="rows"></div>
+          <div class="note" style="margin-top:10px">Click a row to select and zoom to element A in Revit. A coordination-model row names the set of models that were read, not one item — the reader returns boxes without provenance, and attributing one to an item would be invention. Gone rows carry no live geometry, so Export and the CIT handoff are unavailable while that filter is active.</div>
+        </div>
+      </div>
+
+      <!-- PAGE: SETTINGS -->
+      <div class="page" id="pg_settings">
+        <div><h2 class="pg">Settings</h2>
+          <div class="sub">What you last picked is remembered per user and per project. The tool's own config file, tracked by git, holds only the shared part — default overrides and the named presets — and is never written by a run.</div></div>
+
+        <div class="card">
+          <h3>PRESETS</h3>
+          <div class="row"><span class="fl">Save current selection as</span><input class="in" style="width:240px" value="Hookup vs Steel"><button class="btn"><span class="g">&#xE74E;</span> Save preset</button></div>
+          <div class="help">3 named presets — Hookup vs Steel · MEP vs MEP · Everything vs Structure. A preset fills Set A and Set B; the source checkboxes and the coordination-model picks are remembered separately.</div>
+        </div>
+
+        <div class="card">
+          <h3>LIMITS</h3>
+          <div class="row"><span class="fl">Stop after</span><input class="in mono" style="width:80px" value="5000"><span class="fl">results</span>
+            <span class="fl" style="margin-left:18px">Time budget</span><input class="in mono" style="width:80px" value="180"><span class="fl">seconds (0 = no limit)</span></div>
+          <div class="help">The run holds Revit's UI thread. It pumps so the window stays responsive and disables its own sibling actions, but a very large scope is still a wait — hence the budget.</div>
+        </div>
+
+        <div class="card">
+          <h3>COORDINATION MODELS</h3>
+          <div class="row"><span class="fl">Skip files above</span><input class="in mono" style="width:80px" value="400"><span class="fl">MB when not yet cached</span>
+            <div class="chk on" style="margin-left:18px"><span class="box"></span>Measure each file's frame from this model's own elements</div></div>
+          <div class="help">Files above the limit that are not yet cached are skipped and reported, not silently waited on — Pre-read them first. An NWC sits in whichever frame it was exported in, so the offset is measured from the per-axis median of the reference elements that agree; when they disagree beyond tolerance no offset is applied and the log says so.</div>
+          <div class="readout">Navisworks: <span class="ok">Manage 2026 · 23.3.1460.83</span> · ICZ_NAVISWORKS_DIR not set (default install used) · cache %APPDATA%\IcZScripts\icx_cache\ · 2 envelopes, 38 MB</div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+
+  <!-- console (activity log — ships collapsed; the footer chevron opens it) -->
+  <div class="console collapsed" id="console">
+    <div class="cbody">
+      <pre id="txt_log">[16:02:08] Scope: whole model · A 3 categories (7,007 elements) · B 2 categories · sources: this model + 2 coordination models
+[16:02:08] Envelope 84.2 × 61.7 × 19.4 m (+25 mm clearance) · STR_Federated_L01-L05.nwd cached (61,204 boxes) · ARC_Envelope_Shell.nwc measured (0, 0, 0) mm from 12 reference hits
+[16:02:09] <span class="w">CIV_External_Works.nwd: Desktop Connector placeholder, never downloaded — skipped, not clean</span>
+[16:02:41] Spatial index: 7,007 probes over 63,116 boxes → 4,312 candidate pairs · 199 confirmed (73 solid-exact, 126 box-level) · 41 merged within 150 mm
+[16:02:41] Delta vs 2026-09-23 16:41 (same signature): 14 new · 9 gone · 176 unchanged · history saved (3 of 3 slots)
+[16:02:41] Read-only run — no transaction was opened.</pre>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer">
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span><span class="fdot"></span>Model loaded · workshared</span>
+    <span class="fdiv"></span>
+    <span class="fstat" id="footer_status">NWD 2/2 · model 3/3 · 63,116 items visited · 199 hits · 33.4 s</span>
+    <div class="fright">
+      <button class="chev" id="chev" title="Show or hide the activity log">&#xE70E;</button>
+      <span class="pg" id="foot_page">Interference Check · Scope</span>
+      <button class="run stop"><span class="g">&#xE71A;</span>Stop</button>
+      <button class="run" id="btn_run"><span class="g">&#xE768;</span>RUN CHECK</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+
+  // ---- rail nav ----
+  $$(".nav").forEach(function(n){
+    n.addEventListener("click", function(){
+      $$(".nav").forEach(function(x){x.classList.remove("sel");});
+      n.classList.add("sel");
+      $$(".page").forEach(function(p){p.classList.remove("on");});
+      var el = document.getElementById("pg_"+n.getAttribute("data-pg"));
+      if(el){ el.classList.add("on"); }
+      $("#foot_page").textContent = "Interference Check · " + n.getAttribute("data-title");
+    });
+  });
+  $("#burger").addEventListener("click", function(){ $("#rail").classList.toggle("collapsed"); });
+
+  // ---- theme ----
+  $("#themeBtn").addEventListener("click", function(){
+    document.body.classList.toggle("light");
+    this.innerHTML = document.body.classList.contains("light") ? "&#xE708;" : "&#xE706;";
+  });
+
+  // ---- console chevron ----
+  $("#chev").addEventListener("click", function(){
+    var c = $("#console"); c.classList.toggle("collapsed");
+    this.innerHTML = c.classList.contains("collapsed") ? "&#xE70E;" : "&#xE70D;";
+  });
+
+  // ---- scope toggles ----
+  $$(".chk").forEach(function(c){ c.addEventListener("click", function(){ c.classList.toggle("on"); }); });
+  $$(".file").forEach(function(f){ if(!f.querySelector(".off")) f.addEventListener("click", function(e){ if(e.target.tagName!=="BUTTON") f.classList.toggle("on"); }); });
+  var MODE = {
+    hard:  "Hard clash intersects real solids — a row against this model or a Revit link is one Revit's own dialog would also report. Against a coordination model it is your solid against the reader's box, and every row says which.",
+    clear: "Clearance is measured box-to-box on every source. A true distance between two solids is a far more expensive computation than intersecting them, and reporting a box gap as a solid gap would be a lie told in millimetres."
+  };
+  $("#rb_hard").addEventListener("click", function(){ $("#rb_hard").classList.add("on"); $("#rb_clear").classList.remove("on"); $("#lbl_mode").textContent = MODE.hard; });
+  $("#rb_clear").addEventListener("click", function(){ $("#rb_clear").classList.add("on"); $("#rb_hard").classList.remove("on"); $("#lbl_mode").textContent = MODE.clear; });
+
+  // ---- result rows ----
+  var ROWS = [
+    {id:"#1",  a:"Pipe DN80 — CHW-S",        b:"STR_Federated: Structural (2 models read)", src:"nwd",  ex:false, d:"new",  mm:"42"},
+    {id:"#2",  a:"Pipe DN80 — CHW-R",        b:"STR_Federated: Structural (2 models read)", src:"nwd",  ex:false, d:"",     mm:"38"},
+    {id:"#7",  a:"Cable tray 300 — LV",      b:"Beam IPE 300 (this model)",                 src:"host", ex:true,  d:"",     mm:"0"},
+    {id:"#9",  a:"Pipe DN50 — FW",           b:"Beam HEB 200 (this model)",                 src:"host", ex:true,  d:"new",  mm:"0"},
+    {id:"#12", a:"Pipe fitting — Elbow DN80",b:"STR_Federated: Structural (2 models read)", src:"nwd",  ex:false, d:"",     mm:"61"},
+    {id:"#15", a:"Cable ladder 450 — ELV",   b:"Brace L100 (this model)",                   src:"host", ex:true,  d:"",     mm:"0"},
+    {id:"#18", a:"Pipe DN100 — HWS",         b:"ARC_Envelope_Shell (1 model read)",         src:"nwd",  ex:false, d:"new",  mm:"17"},
+    {id:"#21", a:"Cable tray 300 — LV",      b:"STR_Federated: Structural (2 models read)", src:"nwd",  ex:false, d:"",     mm:"88"},
+    {id:"#4",  a:"Pipe DN65 — CHW-S",        b:"Beam IPE 300 (this model)",                 src:"host", ex:true,  d:"gone", mm:"—"},
+    {id:"#11", a:"Pipe DN80 — CHW-R",        b:"STR_Federated: Structural (2 models read)", src:"nwd",  ex:false, d:"gone", mm:"—"}
+  ];
+  var SRC = {host:"This model", link:"Revit link", nwd:"Coordination"};
+  var COUNT = {all:199, host:73, link:0, nwd:126, "new":14, gone:9};
+  var filter = "all";
+  function render(){
+    var rows = ROWS.filter(function(r){
+      if(filter === "all")  return r.d !== "gone";
+      if(filter === "new")  return r.d === "new";
+      if(filter === "gone") return r.d === "gone";
+      return r.src === filter && r.d !== "gone";
+    });
+    $("#rows").innerHTML = rows.map(function(r){
+      return '<div class="revrow'+(r.d==="gone"?' gone':'')+'"><span class="rid">'+r.id+'</span>'+
+        '<span class="rnm">'+r.a+'</span><span class="rt">'+r.b+'</span>'+
+        '<span><span class="pill '+r.src+'">'+SRC[r.src]+'</span></span>'+
+        '<span><span class="pill '+(r.ex?'exact':'approx')+'">'+(r.ex?'solid-exact':'box-level')+'</span></span>'+
+        '<span><span class="pill '+(r.d||'none')+'">'+(r.d==="new"?"New":r.d==="gone"?"Gone":"—")+'</span></span>'+
+        '<span class="mm">'+r.mm+(r.mm==="—"?"":" mm")+'</span></div>';
+    }).join("");
+    $("#lbl_rows").textContent = COUNT[filter] + " results";
+    var off = (filter === "gone");
+    $("#btn_handoff").classList.toggle("off", off);
+    $("#btn_handoff").title = off ? "Gone rows carry no live element ids — switch to All, New or a source filter" : "Hand the current result set to the Clash Importer";
+  }
+  $$("#chips .chip").forEach(function(c){ c.addEventListener("click", function(){
+    $$("#chips .chip").forEach(function(x){x.classList.remove("on");}); c.classList.add("on");
+    filter = c.getAttribute("data-f"); render();
+  }); });
+  $("#btn_handoff").addEventListener("click", function(){
+    if(this.classList.contains("off")) return;
+    $("#footer_status").textContent = "Results sent to the open Clash Importer — " + COUNT[filter] + " rows, identity mapping (this document's internal feet)";
+  });
+  render();
+})();
+</script>
+</body>
+</html>
