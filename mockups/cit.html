@@ -113,6 +113,7 @@
   .pill.reviewed{background:rgba(126,87,194,.18);color:var(--violet)}
   .pill.approved{background:rgba(76,175,80,.16);color:var(--pass)}
   .pill.resolved{background:var(--track);color:var(--text-2)}
+  .pill.none{background:transparent;border:1px dashed var(--border);color:var(--text-2)}
   .pill.placed{background:rgba(255,179,0,.16);color:var(--warn)}
   .pill.completed{background:rgba(76,175,80,.16);color:var(--pass)}
   .pill.gone{background:rgba(255,82,82,.14);color:var(--fail)}
@@ -180,10 +181,11 @@
           <div class="row"><input class="in mono grow" value="…\Coordination\Clash\L03_MEP-vs-STR.xml" readonly><button class="btn" style="width:96px"><span class="g">&#xE8E5;</span> Browse</button></div>
           <div class="row"><span class="fl">Format</span>
             <select class="sel2" style="width:260px" id="sel_format">
-              <option selected>Navisworks XML (detected)</option><option>Detect from the file</option><option>Navisworks HTML</option><option>CSV / delimited text</option><option>Excel workbook</option><option>BCF 2.x / 3.0</option>
+              <option selected>Navisworks XML (detected)</option><option>Detect from the file</option><option>Interference Check handoff (identity mapping)</option><option>Navisworks HTML</option><option>CSV / delimited text</option><option>Excel workbook</option><option>BCF 2.x / 3.0</option>
             </select></div>
           <div class="help" id="lbl_format_help">Detected from the file's content, not its extension — a renamed export still reads. Override only if the detection is wrong.</div>
           <div class="help" id="lbl_report_meta" style="margin-top:6px;color:var(--text-main)">Navisworks Clash Detective XML · 3 clash tests · 131 results · declared units mm · 86 results carry a size attribute.</div>
+          <div class="help" id="lbl_handoff" style="margin-top:6px">Also loaded: <b>199 interference result(s) from the Interference Check</b> — rows arrive in this document's internal feet, so the coordinate step below is skipped for them (<span style="color:var(--pass)">Identity mapping</span>). They carry no status and sit on the <b>(none)</b> chip.</div>
         </div>
 
         <div class="card">
@@ -226,7 +228,7 @@
         <div class="card">
           <h3>Filter</h3>
           <div class="row"><span class="fl">Clash test</span>
-            <select class="sel2" style="width:300px"><option selected>All tests</option><option>Ducts vs Structure</option><option>Pipes vs Walls</option><option>Tray vs Ducts</option></select></div>
+            <select class="sel2" style="width:300px"><option selected>All tests</option><option>Ducts vs Structure</option><option>Pipes vs Walls</option><option>Tray vs Ducts</option><option>Interference Check (handoff)</option></select></div>
           <div class="row"><span class="fl">Status</span>
             <div class="chips" id="status_chips">
               <span class="chip on" data-st="new">New <i id="c_new">0</i></span>
@@ -234,6 +236,7 @@
               <span class="chip on" data-st="reviewed">Reviewed <i id="c_reviewed">0</i></span>
               <span class="chip on" data-st="approved">Approved <i id="c_approved">0</i></span>
               <span class="chip on" data-st="resolved">Resolved <i id="c_resolved">0</i></span>
+              <span class="chip on" data-st="none" title="Rows that carry no status: every ICX handoff row, and every CSV / Excel row without a Status column">(none) <i id="c_none">0</i></span>
             </div></div>
         </div>
 
@@ -355,7 +358,9 @@
 [14:02:12] Collapsed 12 results within 150 mm → 119 clash points
 [14:02:12] 64 points already carry a marker (state token matched) · 55 new
 [14:05:40] Placed 55 markers · <a href="#">CLH-0412</a> … <a href="#">CLH-0466</a> · 0 refused · one undoable transaction
-[14:05:40] <span class="w">Clash7 (Tray vs Ducts): group header, no clash point — reported, not placed</span></pre>
+[14:05:40] <span class="w">Clash7 (Tray vs Ducts): group header, no clash point — reported, not placed</span>
+[14:11:02] Handoff received from the Interference Check (this document) · 199 rows · identity mapping — coordinate step skipped
+[14:11:02] 199 row(s) carry no status → (none) chip, ticked · 0 dropped</pre>
     </div>
   </div>
 
@@ -365,7 +370,7 @@
     <span class="fdiv"></span>
     <span id="foot_model"><span class="fdot"></span>Model loaded · workshared</span>
     <span class="fdiv"></span>
-    <span class="fstat" id="footer_status">Ready — choose a clash report to begin.</span>
+    <span class="fstat" id="footer_status">Results received from the Interference Check — 199 rows, identity mapping.</span>
     <div class="fright">
       <button class="chev" id="chev" title="Show or hide the activity log">&#xE70E;</button>
       <span class="pg" id="foot_page">Report &amp; coordinates</span>
@@ -434,9 +439,11 @@
     {n:"Clash5",  t:"Pipes vs Walls",     st:"approved", grid:"D-6 : L03", a:"Pipe DN80 — CHW-R",       b:"Wall 200 blockwork",    xyz:"21.05, 11.35, 2.70"},
     {n:"Clash6",  t:"Tray vs Ducts",      st:"new",      grid:"A-3 : L03", a:"Cable tray 300 — LV",     b:"Duct 600×300 — Supply", xyz:"3.10, 6.02, 3.05"},
     {n:"Clash8",  t:"Pipes vs Walls",     st:"resolved", grid:"E-1 : L03", a:"Pipe DN50 — FW",          b:"Wall 140 partition",    xyz:"26.40, 0.95, 2.95"},
-    {n:"Clash9",  t:"Tray vs Ducts",      st:"active",   grid:"A-4 : L03", a:"Cable ladder 450 — ELV",  b:"Duct 600×300 — Supply", xyz:"4.35, 8.20, 3.05"}
+    {n:"Clash9",  t:"Tray vs Ducts",      st:"active",   grid:"A-4 : L03", a:"Cable ladder 450 — ELV",  b:"Duct 600×300 — Supply", xyz:"4.35, 8.20, 3.05"},
+    {n:"ICX #7",  t:"Interference Check", st:"none",     grid:"B-3 : L03", a:"Cable tray 300 — LV",     b:"Beam IPE 300",          xyz:"9.62, 7.88, 3.10"},
+    {n:"ICX #18", t:"Interference Check", st:"none",     grid:"C-5 : L03", a:"Pipe DN100 — HWS",        b:"Coordination (2 models)", xyz:"17.30, 12.04, 2.85"}
   ];
-  var LABEL = {new:"New", active:"Active", reviewed:"Reviewed", approved:"Approved", resolved:"Resolved"};
+  var LABEL = {new:"New", active:"Active", reviewed:"Reviewed", approved:"Approved", resolved:"Resolved", none:"(none)"};
   var PER_ROW = 4;   // each sample row stands for ~4 of the 119 clashes in the full set
   function renderClashes(){
     var on = {}; $$("#status_chips .chip").forEach(function(c){ on[c.getAttribute("data-st")] = c.classList.contains("on"); });
@@ -446,11 +453,11 @@
         '<span class="rt">'+r.t+'</span><span><span class="pill '+r.st+'">'+LABEL[r.st]+'</span></span>'+
         '<span class="rt">'+r.grid+'</span><span class="rnm">'+r.a+' &#x2194; '+r.b+'</span><span class="xyz">'+r.xyz+'</span></div>';
     }).join("");
-    var counts = {new:0,active:0,reviewed:0,approved:0,resolved:0};
+    var counts = {new:0,active:0,reviewed:0,approved:0,resolved:0,none:0};
     CLASHES.forEach(function(r){ counts[r.st]++; });
     Object.keys(counts).forEach(function(k){ $("#c_"+k).textContent = counts[k]; });
     var total = 119 - (CLASHES.length - rows.length) * PER_ROW;
-    $("#lbl_rows_count").textContent = total + " clashes · 3 tests";
+    $("#lbl_rows_count").textContent = total + " clashes · 3 tests + 1 handoff";
     $("#kpi_place").textContent = total;
     $("#badge_results").textContent = total;
   }
