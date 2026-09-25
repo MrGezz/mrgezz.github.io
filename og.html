@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<!-- The link-preview card. og.png is this page rendered at exactly 1200x630:
+
+       /opt/pw-browsers/chromium-1194/chrome-linux/chrome --headless=new --no-sandbox --disable-gpu \
+         --hide-scrollbars --window-size=1200,717 --screenshot=og_raw.png "file://$PWD/og.html"
+       python3 -c "from PIL import Image; Image.open('og_raw.png').crop((0,0,1200,630)).save('og.png')"
+
+     (headless Chromium's viewport is the window height minus ~87 px of chrome, hence 717 then a
+     crop; any Chromium works, the flags are the same). It makes no external request and uses the
+     site's own :root tokens, so it renders the same everywhere. Nothing here names a project,
+     a model, a client or a person — that is the whole reason it is a template and not a
+     screenshot of the live page. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IcZScripts · SuiteTools — link preview card</title>
+<style>
+  :root{
+    --bg:#0B1013; --bg-2:#0F161A; --panel:#152026; --panel-2:#1C2B33; --card:#141E24;
+    --line:#283B45; --line-soft:#1C2B33; --text:#ECF4F7; --text-2:#8FA6B2; --muted:#5F7885;
+    --accent:#00BCD4; --accent-2:#4DD0E1; --violet:#7C4DFF; --danger:#FF5252;
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html,body{width:1200px; height:630px; overflow:hidden; background:var(--bg); color:var(--text);
+    font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,'Liberation Sans','DejaVu Sans',sans-serif; -webkit-font-smoothing:antialiased}
+  .card{position:relative; width:1200px; height:630px; overflow:hidden; background:var(--bg)}
+  .glow{position:absolute; width:900px; height:900px; border-radius:50%; filter:blur(120px); opacity:.42}
+  .g1{top:-460px; left:-300px; background:var(--accent)}
+  .g2{bottom:-520px; right:-260px; background:var(--violet); opacity:.32}
+  svg.field{position:absolute; inset:0; width:1200px; height:630px}
+  .inner{position:relative; z-index:1; padding:46px 64px 0 64px; height:630px; display:flex; flex-direction:column}
+  .brand{display:flex; align-items:center; gap:16px}
+  .mark{width:56px; height:56px; border-radius:14px; background:linear-gradient(135deg,var(--accent),#00838F); display:grid; place-items:center;
+    color:#fff; font-weight:800; font-size:22px; letter-spacing:.3px; box-shadow:0 10px 26px -8px rgba(0,188,212,.7), inset 0 2px 4px rgba(255,255,255,.4)}
+  .brand b{display:block; font-size:24px; font-weight:700; letter-spacing:.2px}
+  .brand span{display:block; font-size:15px; color:var(--text-2); letter-spacing:.4px; margin-top:2px}
+  .eyebrow{margin-left:auto; font-size:13px; font-weight:700; letter-spacing:1.2px; text-transform:uppercase; color:var(--accent);
+    background:rgba(0,188,212,.12); border:1px solid rgba(0,188,212,.28); padding:9px 16px; border-radius:30px}
+  h1{margin-top:32px; font-size:60px; line-height:1.06; letter-spacing:-2px; font-weight:800; max-width:1000px}
+  h1 .grad{background:linear-gradient(90deg, var(--accent), var(--violet) 55%, var(--accent-2)); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lede{margin-top:16px; font-size:20px; color:var(--text-2); max-width:1000px; line-height:1.4}
+  .stats{display:flex; gap:14px; margin-top:24px}
+  .stat{flex:1; background:rgba(20,30,36,.72); border:1px solid rgba(40,59,69,.9); border-radius:14px; padding:12px 18px 10px; backdrop-filter:blur(8px)}
+  .stat .n{font-size:30px; font-weight:800; line-height:1}
+  .stat .l{font-size:11.5px; color:var(--muted); font-weight:700; letter-spacing:.8px; text-transform:uppercase; margin-top:8px}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:18px}
+  .chip{font-size:13px; font-weight:600; color:var(--text-2); background:rgba(28,43,51,.8); border:1px solid var(--line); border-radius:8px; padding:6px 11px; white-space:nowrap}
+  .chip.hot{color:var(--accent); border-color:rgba(0,188,212,.45); background:rgba(0,188,212,.1)}
+  .foot{margin-top:auto; padding-bottom:24px; display:flex; align-items:center; gap:12px; font-size:15px; color:var(--muted); font-weight:600}
+  .foot b{color:var(--text-2); font-weight:700}
+  .foot .dot{width:6px; height:6px; border-radius:50%; background:var(--line)}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="glow g1"></div><div class="glow g2"></div>
+
+  <!-- the routing field, frozen: orthogonal runs, two clashes, three placed markers -->
+  <svg class="field" viewBox="0 0 1200 630" fill="none" aria-hidden="true">
+    <defs>
+      <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M26 0H0V26" stroke="#7FA0B4" stroke-opacity=".07" stroke-width="1"/></pattern>
+      <filter id="glowc"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
+    <rect width="1200" height="630" fill="url(#grid)"/>
+    <g stroke-width="2" stroke-linecap="round" stroke-linejoin="round" filter="url(#glowc)">
+      <polyline points="1198,91 1053,91 1053,169 897,169 897,247" stroke="#00BCD4" stroke-opacity=".55"/>
+      <polyline points="1198,325 1105,325 1105,403 975,403 975,455 871,455" stroke="#00BCD4" stroke-opacity=".5"/>
+      <polyline points="1001,629 1001,585 1079,585 1079,533 1157,533 1157,429" stroke="#7C4DFF" stroke-opacity=".55"/>
+      <polyline points="1198,585 1131,585 1131,559 1027,559" stroke="#00BCD4" stroke-opacity=".35"/>
+      <polyline points="2,455 80,455 80,507 184,507 184,559 262,559 262,629" stroke="#7C4DFF" stroke-opacity=".22"/>
+      <polyline points="2,143 54,143 54,65 132,65 132,13" stroke="#00BCD4" stroke-opacity=".35"/>
+      <polyline points="1198,221 1131,221 1131,273" stroke="#7C4DFF" stroke-opacity=".45"/>
+    </g>
+    <!-- run heads -->
+    <g fill="#00BCD4"><circle cx="897" cy="247" r="3.2"/><circle cx="871" cy="455" r="3.2"/><circle cx="1027" cy="559" r="3.2"/><circle cx="132" cy="13" r="3.2"/></g>
+    <g fill="#7C4DFF"><circle cx="1157" cy="429" r="3.2"/><circle cx="262" cy="629" r="3.2"/><circle cx="1131" cy="273" r="3.2"/></g>
+    <!-- two clashes, ring fading -->
+    <g stroke="#FF5252" fill="none"><circle cx="1053" cy="169" r="9" stroke-opacity=".9" stroke-width="2"/><circle cx="1053" cy="169" r="17" stroke-opacity=".35" stroke-width="1.5"/>
+      <circle cx="1079" cy="559" r="9" stroke-opacity=".9" stroke-width="2"/><circle cx="1079" cy="559" r="17" stroke-opacity=".35" stroke-width="1.5"/></g>
+    <!-- markers already placed -->
+    <g fill="#00BCD4" filter="url(#glowc)"><rect x="1101" y="399" width="8" height="8" rx="1.5"/><rect x="1127" y="555" width="8" height="8" rx="1.5"/><rect x="76" y="503" width="8" height="8" rx="1.5"/></g>
+  </svg>
+
+  <div class="inner">
+    <div class="brand">
+      <div class="mark">IcZ</div>
+      <div><b>IcZScripts · SuiteTools</b><span>pyRevit 6.4 · IronPython 3 · Revit 2022–2026</span></div>
+      <div class="eyebrow">BIM / MEP automation</div>
+    </div>
+
+    <h1>A custom <span class="grad">Revit automation</span><br>suite, built tool by tool</h1>
+    <p class="lede">Fifteen modeless tools on one shared library — coordination, cleanup, quantities, sheets, transmittals — and an MCP bridge that lets an agent work a live Revit session without taking the wheel.</p>
+
+    <div class="stats">
+      <div class="stat"><div class="n">15</div><div class="l">Shipping tools</div></div>
+      <div class="stat"><div class="n">6</div><div class="l">Ribbon panels</div></div>
+      <div class="stat"><div class="n">104</div><div class="l">Shared modules</div></div>
+      <div class="stat"><div class="n">140</div><div class="l">MCP bridge tools</div></div>
+    </div>
+
+    <div class="chips">
+      <span class="chip">QAQC Suite</span><span class="chip">MEP Workbench</span><span class="chip">Project Setup</span><span class="chip">Script Reader</span><span class="chip">BOQ Lookup</span><span class="chip">Family QC</span><span class="chip">Guideline</span><span class="chip">MEP Opening Tool</span><span class="chip">Clash Importer</span><span class="chip hot">Interference Check</span><span class="chip">SFX</span><span class="chip">Model Cleanup</span><span class="chip">Transmit</span><span class="chip">Sheet AutoDoc</span><span class="chip">Section Box</span>
+    </div>
+
+    <div class="foot"><b>mrgezz.github.io</b><span class="dot"></span>capabilities and architecture, in the open<span class="dot"></span>companion course: BIM &amp; AI Guide</div>
+  </div>
+</div>
+</body>
+</html>

@@ -192,6 +192,7 @@ cd mrgezz.github.io
 | `index.html` | The entire site — markup, styles and script in one file |
 | `mockups/` | Hand-authored interface previews, one per tool (`icx.html` is the newest), embedded by `index.html` |
 | `404.html` | Themed not-found page |
+| `og.html`, `og.png` | The link-preview card and the template it is rendered from — a designed 1200×630 card, never a screenshot of the page; the regeneration recipe is in the template's head comment |
 | `favicon.svg`, `robots.txt`, `sitemap.xml` | Site plumbing |
 | `.nojekyll` | Serve the tree as authored; skip Jekyll processing |
 
