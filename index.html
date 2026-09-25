@@ -28,7 +28,9 @@
 <meta name="twitter:description" content="A pyRevit suite of BIM/MEP automation tools for Autodesk Revit 2022–2026 — fifteen modeless tools across six ribbon panels, on one shared icz library of 104 modules.">
 <meta name="twitter:image" content="https://mrgezz.github.io/og.png">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script>(function(){var h=document.documentElement;h.className+=' js';try{var t=localStorage.getItem('icz-theme');if(t)h.setAttribute('data-theme',t)}catch(e){}})();</script>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" onerror="this.onerror=null;this.href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css'">
 <link id="prismTheme" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
 
 <style>
@@ -188,11 +190,8 @@ code{font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:.86em}
 .content{max-width:1040px; margin:0 auto; padding:60px 40px 100px}
 
 /* ===== Scroll Reveal Animation ===== */
-.reveal {
-  opacity: 0; transform: translateY(30px);
-  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: opacity, transform;
-}
+html.js .reveal { transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+html.js .reveal:not(.active) { opacity: 0; transform: translateY(30px); }
 .reveal.active { opacity: 1; transform: translateY(0); }
 
 /* ===== Hero ===== */
@@ -663,12 +662,15 @@ footer a:hover{color: var(--accent);}
 #heroCanvas{position:absolute; inset:-40px -40px 0; width:calc(100% + 80px); height:calc(100% + 40px); z-index:0; pointer-events:none;
   opacity:.9; mask-image:linear-gradient(180deg, #000 70%, transparent 100%); -webkit-mask-image:linear-gradient(180deg, #000 70%, transparent 100%)}
 .hero > *{position:relative; z-index:1}
-.hud{display:inline-flex; align-items:center; gap:14px; margin-top:16px; font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
-  color:var(--muted); font-family:'Cascadia Code','SF Mono',Consolas,monospace}
+.hud{display:flex; flex-wrap:wrap; align-items:center; column-gap:14px; row-gap:4px; margin-top:16px; font-size:11.5px; font-weight:700; letter-spacing:.6px; text-transform:uppercase;
+  color:var(--text-2); font-family:'Cascadia Code','SF Mono',Consolas,monospace}
 .hud b{color:var(--accent); font-weight:800}
 .hud .dng{color:var(--danger)}
 .hud .dot{width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); animation:hudblink 1.6s ease-in-out infinite}
 @keyframes hudblink{50%{opacity:.25}}
+.hud + .live-hint{margin-top:12px}
+.skip{position:absolute; left:-9999px; top:10px; z-index:99; padding:8px 14px; border-radius:8px; background:var(--accent); color:#04121a; font-weight:700}
+.skip:focus{left:16px}
 
 /* rotating "right now it can…" line */
 .rot{margin-top:22px; font-size:15px; color:var(--text-2); display:flex; align-items:center; gap:10px; flex-wrap:wrap; min-height:28px}
@@ -687,27 +689,32 @@ footer a:hover{color: var(--accent);}
 .rb-tabs{display:flex; align-items:flex-end; gap:2px; padding:8px 12px 0; border-bottom:1px solid var(--line); font-size:12.5px; overflow-x:auto}
 .rb-tab{padding:7px 13px; color:var(--muted); border-radius:6px 6px 0 0; white-space:nowrap}
 .rb-tab.on{color:var(--text); font-weight:700; background:var(--panel); box-shadow:inset 0 2px 0 var(--accent)}
-.rb-panels{display:flex; align-items:stretch; padding:10px 8px 0; overflow-x:auto; scrollbar-width:none}
+.rb-panels{display:flex; align-items:stretch; padding:10px 8px 0; overflow-x:auto; scrollbar-width:none; scroll-snap-type:x proximity; scroll-padding:8px}
 .rb-panels::-webkit-scrollbar{display:none}
+.rb.scrollable .rb-panels{mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent); -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 40px),transparent)}
+.rb.scrollable.at-end .rb-panels{mask-image:none; -webkit-mask-image:none}
+.rb-panel{scroll-snap-align:start}
 .rb-panel{display:flex; flex-direction:column; padding:0 6px; position:relative; flex:0 0 auto}
 .rb-panel + .rb-panel{border-left:1px solid var(--line-soft)}
 .rb-btns{display:flex; align-items:flex-start; gap:2px; padding:2px 4px 6px}
-.rb-ptitle{font-size:10.5px; color:var(--muted); text-align:center; padding:5px 0 8px; border-top:1px solid var(--line-soft); letter-spacing:.3px}
+.rb-ptitle{font-size:11px; color:var(--text-2); text-align:center; padding:5px 0 8px; border-top:1px solid var(--line-soft); letter-spacing:.3px}
 .rb-btn{position:relative; display:flex; flex-direction:column; align-items:center; gap:6px; width:74px; padding:8px 4px 6px; border-radius:8px; cursor:pointer;
   color:var(--text-2); border:1px solid transparent; background:transparent; font:inherit; transition:all .18s ease}
 .rb-btn i{font-size:24px; color:var(--accent); transition:transform .25s cubic-bezier(.16,1,.3,1)}
 .rb-btn span{font-size:10.5px; line-height:1.15; text-align:center; color:var(--text)}
-.rb-btn small{font-size:8px; color:var(--muted)}
+.rb-btn small{font-size:10px; color:var(--text-2)}
 .rb-btn:hover, .rb-btn:focus-visible, .rb-btn.hot{background:var(--accent-soft); border-color:color-mix(in srgb, var(--accent) 35%, transparent); outline:none}
 .rb-btn:hover i, .rb-btn.hot i{transform:translateY(-3px) scale(1.12)}
 .rb-btn.fx-pulse i{animation:rbpulse .6s ease}
 @keyframes rbpulse{0%{transform:scale(1)} 40%{transform:scale(1.35)} 100%{transform:scale(1)}}
-.rb-fly{position:absolute; top:calc(100% + 4px); left:0; z-index:32; min-width:250px; padding:4px; border-radius:8px; display:none;
+.rb-fly{position:absolute; z-index:32; min-width:250px; padding:4px; border-radius:8px; display:none;
   background:var(--panel); border:1px solid var(--line); box-shadow:0 16px 40px rgba(0,0,0,.5)}
-.rb-btn.open .rb-fly{display:block}
-.rb-fi{display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:6px; font-size:12px; color:var(--text); cursor:pointer}
+.rb-fly.show{display:block; animation:rise .16s ease both}
+.rb-btn.open small{display:inline-block; transform:rotate(180deg)}
+.rb-fi{display:flex; align-items:center; gap:10px; padding:7px 10px; border-radius:6px; font-size:12px; color:var(--text); cursor:pointer; width:100%; border:0; background:transparent; font-family:inherit; text-align:left}
+.rb-fi:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
 .rb-fi i{font-size:13px; width:18px; text-align:center}
-.rb-fi small{margin-left:auto; font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:9.5px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 6px}
+.rb-fi small{margin-left:auto; font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:11px; color:var(--text-2); border:1px solid var(--line); border-radius:4px; padding:1px 6px}
 .rb-fi:hover{background:var(--accent-soft)}
 .rb-tip{position:absolute; z-index:33; width:300px; padding:12px 14px; border-radius:8px; display:none; pointer-events:none;
   background:var(--panel); border:1px solid color-mix(in srgb, var(--accent) 40%, var(--line)); box-shadow:0 16px 40px rgba(0,0,0,.45), 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent)}
@@ -716,7 +723,7 @@ footer a:hover{color: var(--accent);}
 .rb-tip h6 i{color:var(--accent)}
 .rb-tip p{margin:0; font-size:11.5px; color:var(--text-2); line-height:1.5}
 .rb-tip .f1{margin-top:8px; padding-top:7px; border-top:1px solid var(--line-soft); font-size:10.5px; color:var(--muted)}
-.rb-hint{font-size:12px; color:var(--muted); margin-top:10px; display:flex; gap:8px; align-items:center}
+.rb-hint{font-size:12px; color:var(--text-2); margin-top:10px; display:flex; gap:8px; align-items:center}
 .rb-hint i{color:var(--accent)}
 
 /* flash a section that was jumped to */
@@ -724,7 +731,7 @@ footer a:hover{color: var(--accent);}
 section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
 
 /* topbar palette button */
-.kbtn{display:inline-flex; align-items:center; gap:10px; padding:7px 12px; border-radius:8px; border:1px solid var(--line); color:var(--muted);
+.kbtn{display:inline-flex; align-items:center; gap:10px; padding:7px 12px; border-radius:8px; border:1px solid var(--line); color:var(--text-2); white-space:nowrap;
   background:color-mix(in srgb, var(--panel) 70%, transparent); font-size:12.5px; cursor:pointer; font:inherit; transition:all .2s}
 .kbtn:hover{color:var(--text); border-color:var(--accent)}
 .kbtn kbd{font-size:10px; border:1px solid var(--line); border-radius:4px; padding:1px 6px; background:var(--bg); font-weight:700; color:var(--muted)}
@@ -750,14 +757,14 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
 .pal-it.sel i{color:var(--accent)}
 .pal-it mark{background:transparent; color:var(--accent); font-weight:700}
 .pal-empty{padding:18px; color:var(--muted); font-size:13px; text-align:center}
-.pal-foot{display:flex; gap:16px; padding:8px 16px; border-top:1px solid var(--line); font-size:11px; color:var(--muted)}
+.pal-foot{display:flex; gap:16px; padding:8px 16px; border-top:1px solid var(--line); font-size:11px; color:var(--text-2); flex-wrap:wrap}
 .pal-foot kbd{border:1px solid var(--line); border-radius:4px; padding:0 5px; font-size:10px}
 
 /* architecture: wires + readout + tour */
 #arch{position:relative}
 .arch-wires{position:absolute; inset:0; width:100%; height:100%; pointer-events:none; z-index:0; overflow:visible}
 .arch-wires path{fill:none; stroke:var(--accent); stroke-width:1.4; opacity:.75; stroke-linecap:round;
-  stroke-dasharray:var(--len); stroke-dashoffset:var(--len); animation:wire .55s cubic-bezier(.2,.8,.2,1) forwards}
+  stroke-dasharray:1; stroke-dashoffset:1; animation:wire .55s cubic-bezier(.2,.8,.2,1) forwards}
 .arch-wires path.v{stroke:var(--violet)}
 @keyframes wire{to{stroke-dashoffset:0}}
 #arch .arch-row, #arch .arch-lab, #arch .arch-base, #arch .arch-hint{position:relative; z-index:1}
@@ -770,10 +777,10 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
 
 /* timeline */
 .tl-wrap{position:relative}
-.tl-track{display:flex; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:8px 4px 18px; scrollbar-width:thin}
+.tl-track{display:flex; align-items:flex-start; gap:14px; overflow-x:auto; scroll-snap-type:x mandatory; padding:8px 4px 18px; scrollbar-width:thin}
 .tl-card{flex:0 0 300px; scroll-snap-align:start; padding:16px 18px; cursor:pointer; position:relative}
 .tl-card .r{font-family:'Cascadia Code','SF Mono',Consolas,monospace; font-size:11px; color:var(--accent); font-weight:700; letter-spacing:.5px}
-.tl-card .d{font-size:11px; color:var(--muted); margin-left:8px}
+.tl-card .d{font-size:11px; color:var(--text-2); margin-left:8px}
 .tl-card h4{margin:8px 0 6px; font-size:14.5px; color:var(--text); line-height:1.35}
 .tl-card p{margin:0; font-size:12.5px; color:var(--text-2); line-height:1.5}
 .tl-card .more{display:none; margin-top:10px; font-size:12.5px; color:var(--text-2); border-top:1px solid var(--line-soft); padding-top:10px}
@@ -805,7 +812,8 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
 .term-note{font-size:11.5px; color:var(--muted); padding:8px 14px 10px; border-top:1px solid var(--line-soft)}
 
 /* tilt + spotlight */
-.tilt{transform-style:preserve-3d; will-change:transform}
+.tilt{transform-style:preserve-3d}
+.tilt-live{will-change:transform}
 .tilt::after{content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition:opacity .3s;
   background:radial-gradient(360px circle at var(--mx,50%) var(--my,50%), color-mix(in srgb, var(--accent) 14%, transparent), transparent 60%)}
 .tilt:hover::after{opacity:1}
@@ -830,7 +838,7 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
 .mod-sort{display:inline-flex; gap:6px; margin-left:auto}
 .modcard .uses .u{cursor:pointer}
 .modcard .uses .u:hover{color:var(--accent); border-color:var(--accent)}
-.modcard .cnt{position:absolute; top:12px; right:14px; font-size:10px; font-weight:800; color:var(--muted); font-family:'Cascadia Code','SF Mono',Consolas,monospace}
+.modcard .cnt{position:absolute; top:12px; right:14px; font-size:11px; font-weight:800; color:var(--text-2); font-family:'Cascadia Code','SF Mono',Consolas,monospace}
 
 /* easter egg burst */
 .burst{position:fixed; width:8px; height:8px; border-radius:2px; background:var(--accent); pointer-events:none; z-index:90; box-shadow:0 0 10px var(--accent)}
@@ -839,16 +847,34 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
 
 /* reduced motion: keep it calm */
 @media (prefers-reduced-motion: reduce){
-  #progress, .rot .w, .hud .dot, .arch-wires path, .tilt, .hero h1 .grad, .hero-float-wrap{animation:none !important; transition:none !important}
+  html{scroll-behavior:auto}
+  *, *::before, *::after{animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important}
+  .arch-wires path{stroke-dasharray:none; stroke-dashoffset:0}
+  html.js .reveal:not(.active){opacity:1; transform:none}
   .tilt{transform:none !important}
+  .hud .dot, .rot .w{animation:none !important}
 }
 @media (max-width:700px){
   .rb-btn{width:62px} .rb-btn i{font-size:20px}
   .tl-card{flex-basis:260px} .tl-card.open{flex-basis:300px}
+  .topbar{gap:8px; padding:12px 14px} .topbar .crumbs{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .hero h1{font-size:2.2rem; letter-spacing:-.5px}
+  .rot{align-items:flex-start} .rot .w{white-space:normal; overflow-wrap:anywhere; border-right:0}
+  .hud{font-size:10.5px}
+}
+@media (hover:none){
+  #keysBtn, .kbtn kbd{display:none} .kbtn span{display:inline}
+  .rb-panels{scrollbar-width:thin}
+}
+@media (max-width:960px){
+  /* the column layout aligns items flex-start, so .main would shrink-to-fit the ribbon strip's min-content and overflow the phone */
+  .main{align-self:stretch; width:100%}
+  .rb-tabs, .rb-panels{min-width:0}
 }
 </style>
 </head>
 <body>
+<a class="skip" href="#aa">Skip to the tools</a>
 <div id="progress" aria-hidden="true"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="pal" role="dialog" aria-label="Jump to anything">
@@ -996,21 +1022,11 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
         <div class="ribbon-wrap">
           <div class="ribbon-lab"><i class="fa-solid fa-cube" style="color:var(--accent)"></i> The SuiteTools tab, as Revit shows it <a href="mockups/ribbon.html" target="_blank" rel="noopener"><i class="fa-solid fa-up-right-from-square"></i> Section Box flyout showcase</a></div>
           <div class="rb" id="ribbon">
-            <div class="rb-tabs"><span class="rb-tab">Architecture</span><span class="rb-tab">Structure</span><span class="rb-tab">Systems</span><span class="rb-tab">Insert</span><span class="rb-tab">Annotate</span><span class="rb-tab">Analyze</span><span class="rb-tab">Collaborate</span><span class="rb-tab">View</span><span class="rb-tab">Manage</span><span class="rb-tab">Add-Ins</span><span class="rb-tab on">SuiteTools</span><span class="rb-tab">Modify</span></div>
+            <div class="rb-tabs" id="rbTabs"><span class="rb-tab">Architecture</span><span class="rb-tab">Structure</span><span class="rb-tab">Systems</span><span class="rb-tab">Insert</span><span class="rb-tab">Annotate</span><span class="rb-tab">Analyze</span><span class="rb-tab">Collaborate</span><span class="rb-tab">View</span><span class="rb-tab">Manage</span><span class="rb-tab">Add-Ins</span><span class="rb-tab on">SuiteTools</span><span class="rb-tab">Modify</span></div>
             <div class="rb-panels">
               <div class="rb-panel"><div class="rb-btns">
                 <button class="rb-btn" data-go="aa" data-title="QAQC Suite" data-icon="fa-layer-group" data-tip="Modeless model-maintenance and QA/QC workbench for MEP models — a phased parameter pipeline with a pre-scan review grid, health scoring and colour mapping."><i class="fa-solid fa-layer-group"></i><span>QAQC<br>Suite</span></button>
-                <button class="rb-btn" data-go="fit" data-fly data-title="MEP Workbench" data-icon="fa-screwdriver-wrench" data-tip="Modeless workbench for MEP cleanup, routing and parameter maintenance — nine pages on a grouped rail: Diagnose, Fabricate, Document. Its element-level edits are also on this pulldown as single buttons, so each can take a keyboard shortcut." data-foot="Click to open the pulldown"><i class="fa-solid fa-screwdriver-wrench"></i><span>MEP<br>Workbench</span><small>&#9660;</small>
-                  <div class="rb-fly">
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-screwdriver-wrench"></i>MEP Workbench <small>window</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-circle-stop"></i>Cap Open Ends <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-link"></i>Connect Open Ends <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-code-merge"></i>Join Two <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-link-slash"></i>Disconnect Selection <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-scissors"></i>Split Joint <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-grip-lines"></i>Make Parallel <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="fit"><i class="fa-solid fa-rotate"></i>Rotate Axis <small>shortcut</small></div>
-                  </div></button>
+                <button class="rb-btn" data-go="fit" data-fly aria-haspopup="menu" aria-expanded="false" data-title="MEP Workbench" data-icon="fa-screwdriver-wrench" data-tip="Modeless workbench for MEP cleanup, routing and parameter maintenance — nine pages on a grouped rail: Diagnose, Fabricate, Document. Its element-level edits are also on this pulldown as single buttons, so each can take a keyboard shortcut." data-foot="Click to open the pulldown"><i class="fa-solid fa-screwdriver-wrench"></i><span>MEP<br>Workbench</span><small>&#9660;</small></button>
                 <button class="rb-btn" data-go="psu" data-title="Project Setup" data-icon="fa-sliders" data-tip="Project-level housekeeping in one modeless workbench — twelve setup stations behind a read-only audit cover sheet, each scanning first and committing through the one footer button."><i class="fa-solid fa-sliders"></i><span>Project<br>Setup</span></button>
                 <button class="rb-btn" data-go="scriptreader" data-title="Script Reader" data-icon="fa-terminal" data-tip="Script library browser, editor and interactive IronPython console. Runs .py scripts from configurable library folders inside a valid Revit API context, modeless and external-event dispatched."><i class="fa-solid fa-terminal"></i><span>Script<br>Reader</span></button>
               </div><div class="rb-ptitle">IcZ</div></div>
@@ -1019,7 +1035,7 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
               </div><div class="rb-ptitle">Parameter</div></div>
               <div class="rb-panel"><div class="rb-btns">
                 <button class="rb-btn" data-go="familyqc" data-title="Family QC" data-icon="fa-cube" data-tip="Family-definition health check — seventeen checks on the family open in the editor, or eight across a whole folder of .rfa files without opening one. A health percentage, an A–F grade, and every finding."><i class="fa-solid fa-cube"></i><span>Family<br>QC</span></button>
-                <button class="rb-btn" data-go="guide" data-title="IcZ Guideline" data-icon="fa-book-open" data-tip="The project standards library inside Revit: browse, preview, annotate and edit reference documents — PDF, Excel, Word, Markdown, images — without leaving the model."><i class="fa-solid fa-book-open"></i><span>IcZ<br>Guideline</span></button>
+                <button class="rb-btn" data-go="guide" data-title="Guideline" data-icon="fa-book-open" data-tip="The project standards library inside Revit: browse, preview, annotate and edit reference documents — PDF, Excel, Word, Markdown, images — without leaving the model."><i class="fa-solid fa-book-open"></i><span>Guideline</span></button>
               </div><div class="rb-ptitle">QualityCheck</div></div>
               <div class="rb-panel"><div class="rb-btns">
                 <button class="rb-btn" data-go="cit" data-title="Clash Importer" data-icon="fa-location-crosshairs" data-tip="Import a clash report — Navisworks XML or HTML, CSV, Excel, BCF — and place a marker family at every clash point on a verified coordinate basis. Each marker remembers its clash, so a re-import reconciles instead of duplicating."><i class="fa-solid fa-location-crosshairs"></i><span>Clash<br>Importer</span></button>
@@ -1027,28 +1043,39 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
                 <button class="rb-btn" data-go="wot" data-title="MEP Opening Tool" data-icon="fa-vector-square" data-tip="MEP penetration and opening tool across host and linked files: find every crossing, place and mark the openings, audit the ones already there, and see what changed since the last run."><i class="fa-solid fa-vector-square"></i><span>MEP Opening<br>Tool</span></button>
               </div><div class="rb-ptitle">Report</div></div>
               <div class="rb-panel"><div class="rb-btns">
-                <button class="rb-btn" data-go="sfx" data-title="SFX" data-icon="fa-grip-lines" data-tip="Structural Framing Fix — disallows framing joins while preserving the as-joined physical length; regrowth is compensated into Start/End Extension so faces stay put."><i class="fa-solid fa-grip-lines"></i><span>SFX</span></button>
+                <button class="rb-btn" data-go="sfx" data-title="Framing Fix" data-icon="fa-grip-lines" data-tip="Structural Framing Fix — disallows framing joins while preserving the as-joined physical length; regrowth is compensated into Start/End Extension so faces stay put."><i class="fa-solid fa-grip-lines"></i><span>Framing<br>Fix</span></button>
               </div><div class="rb-ptitle">Structural</div></div>
               <div class="rb-panel"><div class="rb-btns">
                 <button class="rb-btn" data-go="cd" data-title="Model Cleanup" data-icon="fa-broom" data-tip="Nine cleanup passes in one modeless workbench — ghosts, overkill lines, connections, the system layer, nested cases, orphans and duplicate families — armed individually, committed as one undoable act."><i class="fa-solid fa-broom"></i><span>Model<br>Cleanup</span></button>
                 <button class="rb-btn" data-go="issueone" data-title="Transmit" data-icon="fa-file-export" data-tip="One transmittal, every format. DWG, PDF, Navisworks, IFC, images and Excel in a single run, with crisp embedded logos, clean schedule tables, consistent naming and a ready-to-send sheet index."><i class="fa-solid fa-file-export"></i><span>Transmit</span></button>
                 <button class="rb-btn" data-go="mepauto" data-title="Sheet AutoDoc" data-icon="fa-drafting-compass" data-tip="Data-driven sheet generation on the Universal Layout Engine: one detail sheet per staged element — plan, sections, 3D, tags, an optional schedule — docked to anchors defined in a profile, not in code."><i class="fa-solid fa-drafting-compass"></i><span>Sheet<br>AutoDoc</span></button>
-                <button class="rb-btn" data-go="sectionbox" data-fly data-title="Section Box" data-icon="fa-cube" data-tip="Subject-aware section boxes for 3D views: the Create window, or the one-click Quick Box, Quick Section Box, Grow, Shrink and Toggle — each an individual pushbutton you can bind to a keyboard shortcut." data-foot="Click to open the pulldown"><i class="fa-solid fa-cube"></i><span>Section<br>Box</span><small>&#9660;</small>
-                  <div class="rb-fly">
-                    <div class="rb-fi" data-go="sectionbox"><i class="fa-solid fa-cube"></i>Section Box… <small>window</small></div>
-                    <div class="rb-fi" data-go="sectionbox"><i class="fa-solid fa-bolt"></i>Quick Box <small>B X</small></div>
-                    <div class="rb-fi" data-go="sectionbox"><i class="fa-solid fa-window-maximize"></i>Quick Section Box <small>dialog</small></div>
-                    <div class="rb-fi" data-go="sectionbox"><i class="fa-solid fa-up-right-and-down-left-from-center"></i>Grow Box <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="sectionbox"><i class="fa-solid fa-down-left-and-up-right-to-center"></i>Shrink Box <small>shortcut</small></div>
-                    <div class="rb-fi" data-go="sectionbox"><i class="fa-solid fa-toggle-on"></i>Toggle Box <small>shortcut</small></div>
-                  </div></button>
+                <button class="rb-btn" data-go="sectionbox" data-fly aria-haspopup="menu" aria-expanded="false" data-title="Section Box" data-icon="fa-cube" data-tip="Subject-aware section boxes for 3D views: the Create window, or the one-click Quick Box, Quick Section Box, Grow, Shrink and Toggle — each an individual pushbutton you can bind to a keyboard shortcut." data-foot="Click to open the pulldown"><i class="fa-solid fa-cube"></i><span>Section<br>Box</span><small>&#9660;</small></button>
               </div><div class="rb-ptitle">Tools</div></div>
             </div>
+            <template id="fly-fit">
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-screwdriver-wrench"></i>MEP Workbench <small>window</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-circle-stop"></i>Cap Open Ends <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-link"></i>Connect Open Ends <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-code-merge"></i>Join Two <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-link-slash"></i>Disconnect Selection <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-scissors"></i>Split Joint <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-grip-lines"></i>Make Parallel <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="fit"><i class="fa-solid fa-rotate"></i>Rotate Axis <small>shortcut</small></button>
+            </template>
+            <template id="fly-sectionbox">
+                    <button type="button" class="rb-fi" role="menuitem" data-go="sectionbox"><i class="fa-solid fa-cube"></i>Section Box… <small>window</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="sectionbox"><i class="fa-solid fa-bolt"></i>Quick Box <small>B X</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="sectionbox"><i class="fa-solid fa-window-maximize"></i>Quick Section Box <small>dialog</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="sectionbox"><i class="fa-solid fa-up-right-and-down-left-from-center"></i>Grow Box <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="sectionbox"><i class="fa-solid fa-down-left-and-up-right-to-center"></i>Shrink Box <small>shortcut</small></button>
+                    <button type="button" class="rb-fi" role="menuitem" data-go="sectionbox"><i class="fa-solid fa-toggle-on"></i>Toggle Box <small>shortcut</small></button>
+            </template>
+            <div class="rb-fly" id="rbFly" role="menu" aria-label="Pulldown"></div>
             <div class="rb-tip" id="rbTip"></div>
           </div>
-          <div class="rb-hint"><i class="fa-solid fa-hand-pointer"></i> Hover a button for its real ribbon tooltip, click it to jump to the tool. The two pulldowns open. The lit button follows you down the page.</div>
+          <div class="rb-hint" id="rbHint"><i class="fa-solid fa-hand-pointer"></i> Hover a button for a one-line summary, click it to jump to the tool. The two pulldowns open. The lit button follows you down the page.</div>
         </div>
-        <div class="hud"><span class="dot"></span> routing field <span>·</span> runs <b id="hudRuns">16</b> <span>·</span> clashes found <b id="hudClash" class="dng">0</b> <span>·</span> markers placed <b id="hudMark">0</b> <span>·</span> your cursor is an obstacle</div>
+        <div class="hud"><span class="dot"></span> routing field <span>·</span> runs <b id="hudRuns">16</b> <span>·</span> clashes found <b id="hudClash" class="dng">0</b> <span>·</span> markers placed <b id="hudMark">0</b> <span>·</span> <span id="hudCursor">your cursor is an obstacle</span></div>
         <p class="live-hint"><i class="fa-solid fa-hand-pointer"></i> Every tool window further down is a live, clickable HTML mockup — hover, toggle and scroll inside the frames, or pop them out full size. Press <kbd style="border:1px solid var(--line);border-radius:4px;padding:0 5px">?</kbd> for the keyboard.</p>
         <div class="note glass-card"><i class="fa-solid fa-graduation-cap"></i><div class="nt"><b>New to Revit automation?</b> The companion <a href="https://bim-with-ai.ugezz94.workers.dev" target="_blank" rel="noopener"><b>BIM &amp; AI Guide</b></a> is a free course from zero Dynamo and zero code to pyRevit, the Revit API and Navisworks coordination — with an AI assistant as the pair-programmer. Every deck reads in the browser; nothing to install. <a href="#learn">What is in it &darr;</a></div></div>
       </section>
@@ -1327,7 +1354,7 @@ section.doc.flash .sec-glyph{animation:secflash 1.1s ease-out}
             <div class="step"><span class="st">Scan Health</span><span class="sd">One-click triage sweep of every phase scanner — a full-fidelity read of what each gate would change.</span></div>
             <div class="step"><span class="st">Preview</span><span class="sd">Element-level dry run per gate — every proposed edit listed with isolate + zoom; the same resolver that previews is the one that runs.</span></div>
             <div class="step"><span class="st">Apply six stages</span><span class="sd">Cleanup · CMMN · SPEC · Flags · Classification · Worksets, each stage isolated.</span></div>
-            <div class="step"><span class="st">Issue Certificate</span><span class="sd">Stamps the inspection FIT or HELD (zero critical findings, LOI ≥ 90) and writes an HTML certificate plus an .xlsx findings workbook.</span></div>
+            <div class="step"><span class="st">Issue Certificate</span><span class="sd">Stamps the inspection FIT FOR ISSUE or HOLD · n GATES (zero critical findings, LOI ≥ 90) and writes an HTML certificate plus an .xlsx findings workbook.</span></div>
           </div>
 
           <div class="code-label-wrap">
@@ -1378,18 +1405,18 @@ health.score(results)                           # live Model Health — no TaskD
             <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — Scan Health → Preview → Apply</div>
             <div class="op-grid">
               <div class="op-group"><span>QC phase pipeline</span></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-broom"></i></div><h5>Cleanup · Phases 0–2</h5><p>Reconnects open MEP connectors within 20 mm, removes coincident duplicate elements and zero-length ducts, and snaps over-slope runs back to vertical — run first so the network is continuous for the SPEC phases.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-broom"></i></div><h5>Cleanup · Phases 0–2</h5><p>Reconnects open MEP connectors within 20 mm, removes coincident duplicate elements (structural only — MEP duplicates are Model Cleanup's Ghost Purge) and zero-length ducts, and snaps over-slope runs back to vertical — run first so the network is continuous for the SPEC phases.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-id-card"></i></div><h5>CMMN Identity · Phase 3</h5><p>Parses the model file name against your naming convention and writes the CMMN status, building and TOOL_ID parameters. Set the tokens in Settings, then Apply.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-tags"></i></div><h5>SPEC Parameters · Phases 4a–4f</h5><p>Assigns SPEC_SYSTEM (with chemical-box and clamp inheritance), then SPEC_SIZE, SPEC_QUANTITY and the bilingual SPEC_ARTICLE classes — the procurement backbone, driven by editable prefix/route tables.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-flag"></i></div><h5>Flags · Phases 5–6</h5><p>Sets IFX_INSULATION on insulated runs and IFX_POC_Element once POC tagging is final — the flags that drive insulation schedules and downstream filters.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-sitemap"></i></div><h5>IFC Classification · Phase 7</h5><p>Writes the IFC entity/type parameters from the classification table so the model exports with correct IFC typing.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-object-group"></i></div><h5>Workset Orchestration · Phase 8</h5><p>Distributes every element to its target workset, derived from the SPEC_SYSTEM value written back in Phase 4a.</p></div>
               <div class="op-group"><span>Standing audits</span></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-tag"></i></div><h5>Tag Audit</h5><p>Flags active-view elements with no tag or more than one, per category — run per sheet at issue time. Report-only.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-tag"></i></div><h5>Tag Audit</h5><p>Elements with no tag or more than one, per category, over the active view, the views on sheets or every graphical view — deduplicated across views. Tick the untagged categories and Tag selected places them as undoable transactions.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>LOI Scorecard</h5><p>Scores the model against your Autodesk Model Checker LOI ruleset — read straight from the .xml, no add-in needed — and lists every failing element worst-first.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-heart-pulse"></i></div><h5>Model Health</h5><p>Counts hygiene indicators — warnings, unpinned links, imported DWGs, in-place families, unused templates — into a weighted 0–100 score.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-filter"></i></div><h5>View Filters</h5><p>Decodes every view filter's rules into plain data and flags the ones applied to no view or template.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ruler-combined"></i></div><h5>Dim Coverage</h5><p>Lists undimensioned elements in the active view, per category — report-only, with click-to-zoom.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ruler-combined"></i></div><h5>Dim Coverage</h5><p>Undimensioned elements per category over the same three scopes, summed per view — report-only, with click-to-zoom.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-palette"></i></div><h5>Colorize by Value</h5><p>Colours the active view's elements by a parameter (e.g. SPEC_SYSTEM) with a legend and one-click reset — spatial QA the piecharts can't give.</p></div>
             </div>
           </div>
@@ -1404,7 +1431,7 @@ health.score(results)                           # live Model Health — no TaskD
           <div class="sec-glyph"><i class="fa-solid fa-screwdriver-wrench"></i></div>
           <div class="sec-titles">
             <h2>MEP Workbench <span class="tag code">FIT</span> <span class="tag">IcZ.panel</span></h2>
-            <div class="sub">Nine MEP pages on a grouped rail — Diagnose, Fabricate, Document — in one modeless workbench: audit, connectivity, flex, routing, prefab, modify, coordinates, param sync. Five pages carry a gear that flips to a Settings &amp; Info view with editable defaults persisted to JSON. The fittings check now runs seven rules, A to G, including duplicate-family consolidation and a routing-preference sanction check, and every writing page has a read-only Preview twin.</div>
+            <div class="sub">Nine MEP pages on a grouped rail — Diagnose, Fabricate, Document — in one modeless workbench: audit, connectivity, flex, routing, prefab, modify, coordinates, param sync. Five pages carry a gear that flips to a Settings &amp; Info view with editable defaults persisted to JSON. The fittings check now runs seven rules, A to G, including duplicate-family consolidation and a routing-preference sanction check, and every writing page except Modify has a read-only Preview twin.</div>
           </div>
         </div>
         <div class="sec-body">
@@ -1434,7 +1461,7 @@ health.score(results)                           # live Model Health — no TaskD
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-wave-square"></i> Pipe / Duct → Flex</h4>
-              <p>Rebuilds rigid runs as flex — Replace (swap with reconnect) or Containment (lay alongside). Vertex count (2–9), sag, smoothing, diameter and workset overrides are tunable, with five sub-operations: convert, audit, simplify, split and parallel fan-out.</p>
+              <p>Rebuilds rigid runs as flex — Replace (swap with reconnect) or Containment (lay alongside). Vertex count (2–9), sag, smoothing, diameter and workset overrides are tunable, with six operations: convert, audit, simplify, split, riser and parallel lanes — five of them on the compiled core.</p>
             </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-arrows-left-right-to-line"></i> Copy Params Between Systems</h4>
@@ -1554,7 +1581,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-layer-group"></i></div><h5>Levels</h5><p>Consolidate and rehost elements across levels with automated offset compensation. Optionally delete redundant levels — views are safely rehosted before removal.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-diagram-project"></i></div><h5>Link Paths</h5><p>Audit every link, separating broken links — repath proposed by filename search under configured roots — from stale links reloaded in place. Shared coordinates acquire from a named survey link.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-clone"></i></div><h5>View Templates</h5><p>Apply pattern-to-template rules with a check-list preview, transfer templates from other open documents, and report or enforce controlled parameters.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Shared Params &amp; Standards</h5><p>Audit bound shared parameters against the firm registry, batch-bind from a shared-parameter file, and apply only the unit / object-style mismatches you leave checked.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Shared Params &amp; Standards</h5><p>Audit bound shared parameters against the firm registry, batch-bind from a shared-parameter file, and apply only the unit / object-style mismatches you leave checked; line and fill patterns are audited too, and the station builds the standardised Navisworks coordination view with its appearance filters.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-people-arrows"></i></div><h5>Space ⇄ Room QA</h5><p>Pair MEP spaces against rooms from the architectural model, classify number and name drift, and dry-run one rolled-back sample write before committing the batch sync.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-file-word"></i></div><h5>BEP Rule Import</h5><p>Parse tables straight out of a BEP .docx, map columns, preview the rules, then import them into the link-routing config — or export them to JSON.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-list"></i></div><h5>Sheets <span class="tag new">new</span></h5><p>Diffs the xlsx drawing register against the model's sheets: MISSING rows create sheets with the chosen title block, RENAME rows update names, EXTRA sheets are reported and never deleted — one undoable transaction.</p></div>
@@ -1676,12 +1703,12 @@ with SubTransaction(doc) as st:
     st.Commit() if clash_cleared(candidate) else st.RollBack()</code></pre>
           <p class="illus"><i class="fa-solid fa-circle-info"></i> Illustrative — the guard pattern shared across the repair stations.</p>
           <div class="usage">
-            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — arm stations, Read Model, Preview, then Run</div>
+            <div class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — arm stations, Read Model, read the manifest, then Run</div>
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ghost"></i></div><h5>Ghost Purge</h5><p>Detects overlapping duplicate elements (MEP + structural), keeps the connected copy and deletes the floating ghost.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-plug"></i></div><h5>Connection Fix</h5><p>Seals open MEP connector pairs within 20 mm — run after Ghost Purge on the cleaned model.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-diagram-project"></i></div><h5>Nested Fix</h5><p>Finds hosts with intersecting same-type nested sub-components — a hidden duplicate Ghost Purge can't see — and clears the redundant one per family rule.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Read, Preview, Run</h5><p>Arm or bypass each of the nine stations, READ MODEL for a read-only health sweep, PREVIEW for a dry-run count, then run as one undoable group — Ctrl+Z reverts every armed station, and the tray keeps a per-station run receipt.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Read, Manifest, Run</h5><p>Arm or bypass each of the nine stations, READ MODEL for a read-only sweep (the same button cancels it), read the commit manifest — Will delete, Dependent cascade, Will change, Held · report only, Model after — then RUN CLEANUP as one undoable group. Ctrl+Z reverts every armed station, and the tray keeps a per-station receipt; findings and actions are counted separately, and a held row says why.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Configuration</h5><p>Tune overlap buckets, connect tolerance, excluded categories, per-family nested rules, fallback system types and purge extras from an in-window overlay sheet — persisted to <code>cd_config.json</code>; Save clears all caches.</p></div>
             </div>
           </div>
@@ -1864,12 +1891,12 @@ with SubTransaction(doc) as st:
           </div>
           <div class="techtags">
             <span class="ttag">Revit API</span><span class="ttag">IronPython</span><span class="ttag">WPF / XAML</span>
-            <span class="ttag alt">Size parsing</span><span class="ttag alt">Lookup index</span><span class="ttag alt">SQL-ready data</span>
+            <span class="ttag alt">Size parsing</span><span class="ttag alt">Lookup index</span><span class="ttag alt">Catalogue v2 / v3</span>
           </div>
           <ul class="feat">
             <li class="glass-card"><i class="fa-solid fa-database"></i><div class="ft"><b>Automated BOQ Engine:</b> Classifies elements through a three-stage pipeline — material, fitting type, size — against the project's BOQ catalogue and writes <code>SPEC_DESIGNATION</code> (atomic BOQ number) and <code>SPEC_DESCRIPTION</code> across 17 MEP categories. <span class="win">Eliminates hours of manual referencing and instantly produces accurate Bills of Quantities.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-ruler"></i><div class="ft"><b>Smart Size Parsing:</b> Reads messy inch strings and fractions (e.g. <code>1 1/2"</code>) and resolves them to metric Nominal Widths, with a fallback to Revit's native calculated size. <span class="win">Handles the real-world mess in supplier data.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-arrow-up-right-dots"></i><div class="ft"><b>Scales With The Catalog:</b> A formatted data table drives the lookup, designed to migrate to SQL once the catalog grows past a few thousand rows. <span class="win">Starts simple, grows without a rewrite.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-arrow-up-right-dots"></i><div class="ft"><b>Catalogue Versions, Not Code:</b> The catalogue is a validated JSON edited in the window, with a <code>.bak</code> of the last good file. A Units table (v2) makes the bill unit-aware; a Rates table (v3) adds Rate, Total and a currency grand total; and each project remembers its own catalogue and BOM library. <span class="win">The standard lives in data the project owns, not in the tool.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-file-invoice"></i><div class="ft"><b>Unit-Aware Bill &amp; XLSX Export:</b> Rolls the takeoff up by BOQ code, each code in its own catalogue unit (m, St, m²), with Revit-style Schedule Properties — Fields, Filter, Sorting/Grouping, Formatting, Appearance — and an XLSX export that mirrors the on-screen schedule. <span class="win">A deliverable bill, not just filled parameters.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-table"></i><div class="ft"><b>Native Schedule, Rates &amp; Write-Back <span class="tag new">new</span>:</b> <b>Create / Update Schedule</b> builds a multi-category <code>BOQ – Bill</code> ViewSchedule grouped by designation and filtered to classified elements — a second click updates it, appending fields the bill now carries and never removing yours. A catalogue that carries a Rates table adds Rate and Total columns and a cost grand total. On Reconcile, <b>Apply Library Values</b> writes the library's value back to ticked rows in one undoable transaction, and a write that Revit silently drops is reported as failed, never counted. <span class="win">The bill lands in Revit's own schedule, and the audit can fix what it finds.</span></div></li>
           </ul>
@@ -2019,7 +2046,7 @@ with SubTransaction(doc) as st:
             <div class="op-grid">
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass"></i></div><h5>Report &amp; Coordinates</h5><p>Browse to the report — the format is detected and named — set the units if it declares none, choose Shared / survey, Project internal or Manual offset, and the duplicate-collapse distance (default 150&nbsp;mm). READ REPORT parses, establishes and verifies the mapping, and shows the base-point figures it used.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-table-list"></i></div><h5>Clashes</h5><p>A KPI strip — to place, mapped, collapsed, clash tests, with a size — filters by clash test and status, and one row per clash with its grid location, the two clashing items and the internal point it mapped to. Click a row to zoom there; Export writes the filtered set to .xlsx with both coordinate systems.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-location-dot"></i></div><h5>Place Markers</h5><p>Pick the family and type — the page says up front whether it can be placed at all — optionally write a size, and place. "Only clashes that have no marker yet" is on by default, so a re-imported report tops up rather than duplicates. Everything placed lands in a review grid grouped by clash test.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-location-dot"></i></div><h5>Place Markers</h5><p>Pick the family and type — the page says up front whether it can be placed at all — optionally write a size, and place. The suite ships its own marker family, loaded in one undoable click when the model lacks it, and the family you chose last is remembered per project. "Only clashes that have no marker yet" is on by default, so a re-imported report tops up rather than duplicates. Everything placed lands in a review grid grouped by clash test.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-check-double"></i></div><h5>Status</h5><p>The report joined to the markers already in the model. Tick rows and Mark completed, Reopen or Delete markers; export the whole reconciliation to .xlsx, or write completed topics back to a new BCF.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Settings</h5><p>The Mark prefix (<code>CLH-</code>, kept apart from the Opening Tool's <code>WOT-</code>), the state parameter, the size-parameter name lists shared with the Opening Tool, and the report attribute keys sizes are read from — persisted to <code>cit_config.json</code>.</p></div>
               <div class="op-card"><div class="op-ic"><i class="fa-solid fa-shield-halved"></i></div><h5>Activity Log</h5><p>A run console carrying every warning, every skipped clash and every reason. It ships collapsed; routine progress never forces it open, but a warning, a refusal or a failed mapping does — the report's clash count and the tool's marker count are always reconcilable.</p></div>
@@ -2798,20 +2825,20 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
           <div class="sec-glyph"><i class="fa-solid fa-plug-circle-bolt"></i></div>
           <div class="sec-titles">
             <h2>Revit MCP Bridge <span class="tag code">revit-launch</span> <span class="tag code">navisworks-launch</span> <span class="tag">_mcp/</span></h2>
-            <div class="sub">Local MCP servers that attach to a Revit — and now a Navisworks — session you already have open, so an AI agent can read the model, drive the suite's own windows, and see what it rendered — without ever taking the wheel. Dry-run by default, one undoable transaction when it commits, and it never saves your file.</div>
+            <div class="sub">Local MCP servers that attach to a Revit — and now a Navisworks — session you already have open, so an AI agent can read the model, drive the suite's own windows, and see what it rendered — without ever taking the wheel. Dry-run by default, one undoable transaction when it commits, and it never saves your Revit file — the Navisworks side has exactly one save, confirm-gated, to a path you name.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="techtags">
             <span class="ttag">Model Context Protocol</span><span class="ttag">JSON-RPC 2.0</span><span class="ttag">pyRevit routes</span><span class="ttag">Named pipe</span>
-            <span class="ttag alt">Zero dependencies</span><span class="ttag alt">140 tools by default · 161 with every gate</span><span class="ttag alt">Dry-run default</span><span class="ttag alt">Revit 2022–26</span><span class="ttag alt">Navisworks 2022+</span>
+            <span class="ttag alt">No npm install for the bridges</span><span class="ttag alt">140 tools by default · 161 with every gate</span><span class="ttag alt">Dry-run default</span><span class="ttag alt">Revit 2022–26</span><span class="ttag alt">Navisworks 2022+</span>
           </div>
-          <p>Nine local MCP servers back this suite's development. Six answer questions — the Revit API corpora for 2022–2027 together with the Dynamo node corpus, the pyRevit library docs, the IronPython engine and the assemblies it loads, the in-house project memory (notes are the truth, the SQLite store a rebuildable index), a retrieval server over the local document estate that ranks passages and never generates an answer, and skill packs served as read-only instructions. One drives a local ComfyUI. Two <b>operate on a running application</b>: <code>revit-launch</code> on Revit, and since September <code>navisworks-launch</code> on Navisworks Manage / Simulate. Each is a single Node file speaking MCP over stdio with no runtime dependencies; each discovers its session rather than assuming it.</p>
+          <p>Nine local MCP servers back this suite's development. Six answer questions — the Revit API corpora for 2022–2027 together with the Dynamo node corpus, the pyRevit library docs, the IronPython engine and the assemblies it loads, the in-house project memory (notes are the truth, the SQLite store a rebuildable index), a retrieval server over the local document estate that ranks passages and never generates an answer, and skill packs served as read-only instructions. One drives a local ComfyUI. Two <b>operate on a running application</b>: <code>revit-launch</code> on Revit, and since September <code>navisworks-launch</code> on Navisworks Manage / Simulate. The two bridges and the three knowledge servers are single Node files speaking MCP over stdio with no npm dependencies; the memory server carries one (its in-process embedder), the document server borrows it and keeps a Python venv for PDF text, and the ComfyUI server is the upstream <code>comfy-mcp</code> launched directly. Each bridge discovers its session rather than assuming it.</p>
           <ul class="feat">
-            <li class="glass-card"><i class="fa-solid fa-user-lock"></i><div class="ft"><b>Attaches By Default; Four Gates You Own:</b> Out of the box the bridge attaches to a session you already opened. Four independent gates answer four different questions — may it drive the Revit <em>process</em> (off), may it <em>model</em> in the session (on), may it drive <em>Dynamo</em> live (off) — and a gated tool is absent from the tool list <em>and</em> refuses in-band if called from a stale cache, so it never spawns or reaches a wire. It <em>can</em> launch, and getting that wrong once cost real time: passing the model on the command line races add-in initialisation and takes the host down, so the launcher starts Revit bare, waits for the routes server to actually answer, and only then opens the document. <span class="win">Session lifetime is a switch you own, defaulted to off — not a capability the tool quietly assumes.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-user-lock"></i><div class="ft"><b>Attaches By Default; Three Gates You Own:</b> Out of the box the bridge attaches to a session you already opened. Three independent gates answer three different questions — may it drive the Revit <em>process</em> (off), may it <em>model</em> in the session (on), may it drive <em>Dynamo</em> live (off) — and a gated tool is absent from the tool list <em>and</em> refuses in-band if called from a stale cache, so it never spawns or reaches a wire. It <em>can</em> launch, and getting that wrong once cost real time: passing the model on the command line races add-in initialisation and takes the host down, so the launcher starts Revit bare, waits for the routes server to actually answer, and only then opens the document. <span class="win">Session lifetime is a switch you own, defaulted to off — not a capability the tool quietly assumes.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-clipboard-check"></i><div class="ft"><b>Dry Run Is The Default — And It's Measured, Not Predicted:</b> Without an explicit commit the work <em>really executes</em> inside a transaction that is then rolled back, so the outcome you read was measured against a model that never changed. On a delete, Revit reports every element it would remove <em>including the dependents it takes with them</em>. Navisworks cannot roll a transaction back, so there the dry run commits under its own label, undoes it only if the next undo record is its own, verifies the stacks, and reports <code>undo.reverted</code> as a measured true or false. <span class="win">The full cascade is visible before anything is destroyed.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-shield-halved"></i><div class="ft"><b>One Undoable Transaction, And Nothing Is Ever Saved:</b> A committed write is a single named <code>Transaction</code>, so Ctrl+Z reverses it; destructive operations need an explicit confirmation on top of the commit flag. No route calls Save, Save As or Synchronize, and the code channel refuses a payload that does — the scan strips comments and requires an actual call, so a docstring mentioning it never false-refuses. <span class="win">The worst case a mistake reaches is an unsaved, undoable in-session change — what lands on disk stays your decision.</span></div></li>
-            <li class="glass-card"><i class="fa-solid fa-diagram-project"></i><div class="ft"><b>Three Transports, One Prefix:</b> The 90 modelling commands run over two transports behind one <code>revit_cmd_*</code> name — 64 execute in the first-party <code>IcZ.Bridge</code> add-in over a named pipe per process, which needs no pyRevit at all and serves several Revits at once; 26 run inside the pyRevit session over the discovered routes port. The two sets are disjoint and the harness asserts it in both directions, so the shared prefix can never let one channel silently shadow the other. Liveness is the pipe, never the pid — Windows recycles pids, and a bridge that had exited two days earlier once read alive because Office had been handed its number. <span class="win">A capability is advertised exactly where it works, and nowhere else.</span></div></li>
+            <li class="glass-card"><i class="fa-solid fa-diagram-project"></i><div class="ft"><b>Two Transports, One Prefix:</b> The 90 modelling commands run over two transports behind one <code>revit_cmd_*</code> name — 64 execute in the first-party <code>IcZ.Bridge</code> add-in over a named pipe per process, which needs no pyRevit at all and serves several Revits at once; 26 run inside the pyRevit session over the discovered routes port. The two sets are disjoint and the harness asserts it in both directions, so the shared prefix can never let one channel silently shadow the other. Liveness is the pipe, never the pid — Windows recycles pids, and a bridge that had exited two days earlier once read alive because Office had been handed its number. <span class="win">A capability is advertised exactly where it works, and nowhere else.</span></div></li>
             <li class="glass-card"><i class="fa-solid fa-image"></i><div class="ft"><b>It Can See What It Did:</b> A ribbon census, tool windows opened and closed with the proof being a measured window delta, a pyRevit reload proven by a changed session id, a live WPF visual-tree probe that reports rendered brushes and geometry, PNG captures of a view or a rendered window written to disk for the agent to read back — and <code>revit_smoke</code>, which turns the sequences a human used to click through into named, repeatable scenarios with their side effects declared up front. <span class="win">"Does it actually look right" stops being a screenshot request and becomes a check the agent runs itself.</span></div></li>
           </ul>
           <div class="usage">
@@ -2850,8 +2877,12 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
               <div class="tchips"><code class="tchip">revit_cmd_get_current_view_elements</code><code class="tchip">revit_cmd_ai_element_filter</code><code class="tchip">revit_cmd_analyze_model_statistics</code><code class="tchip">revit_cmd_create_point_based_element</code><code class="tchip">revit_cmd_create_level</code><code class="tchip">revit_cmd_create_grid</code><code class="tchip">revit_cmd_create_dimensions</code><code class="tchip">revit_cmd_tag_all_rooms</code><code class="tchip">revit_cmd_operate_element</code><code class="tchip">revit_cmd_delete_element</code><code class="tchip">… 80 more</code><code class="tchip">revit_data_query</code><code class="tchip">revit_data_store_project</code><code class="tchip">revit_data_store_rooms</code></div>
             </div>
             <div class="tgrp">
-              <div class="tgrp-h"><b>Session, UI &amp; visual parity</b><span class="tnum">11</span><em>Drives the ribbon, clicks named controls, runs smoke scenarios, and reads back pixels.</em></div>
-              <div class="tchips"><code class="tchip">revit_ribbon</code><code class="tchip">revit_tool_open</code><code class="tchip">revit_tool_close</code><code class="tchip">revit_pyrevit_reload</code><code class="tchip">revit_dialog_watch</code><code class="tchip">revit_smoke</code><code class="tchip">revit_view_list</code><code class="tchip">revit_capture_view</code><code class="tchip">revit_capture_window</code><code class="tchip">revit_capture_pages</code><code class="tchip">revit_ui_invoke</code></div>
+              <div class="tgrp-h"><b>Session, UI &amp; visual parity</b><span class="tnum">12</span><em>Drives the ribbon, clicks named controls, runs smoke scenarios, reads back pixels, and lists or enables tool groups at run time.</em></div>
+              <div class="tchips"><code class="tchip">revit_ribbon</code><code class="tchip">revit_tool_open</code><code class="tchip">revit_tool_close</code><code class="tchip">revit_pyrevit_reload</code><code class="tchip">revit_dialog_watch</code><code class="tchip">revit_smoke</code><code class="tchip">revit_view_list</code><code class="tchip">revit_capture_view</code><code class="tchip">revit_capture_window</code><code class="tchip">revit_capture_pages</code><code class="tchip">revit_ui_invoke</code><code class="tchip">revit_tools</code></div>
+            </div>
+            <div class="tgrp">
+              <div class="tgrp-h"><b>Desktop &amp; any window</b><span class="tnum">4</span><em>A screen capture, pointer and keyboard, and the controls of any window — the pieces the smoke scenarios are built from.</em></div>
+              <div class="tchips"><code class="tchip">revit_screen</code><code class="tchip">revit_computer</code><code class="tchip">revit_ui_controls</code><code class="tchip">revit_ui_control</code></div>
             </div>
             <div class="tgrp">
               <div class="tgrp-h"><b>Knowledge &amp; Dynamo</b><span class="tnum">14</span><em>Read a corpus on disk, need no Revit, and are therefore never gated — an under-advertised capability is a disabled one.</em></div>
@@ -2862,8 +2893,8 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
               <div class="tchips"><code class="tchip">revit_iczbridge_status</code><code class="tchip">revit_iczbridge_call</code><code class="tchip">revit_d23d_* ×5</code><code class="tchip">revit_parity_review</code></div>
             </div>
               <div class="tgrp">
-                <div class="tgrp-h"><b class="off">Gated off by default</b><span class="tnum off">21</span><em>Absent from the list and refusing in-band unless the gate is set in the server's config: the 7 process-lifecycle tools, the 3 live Dynamo tools, and the meta-tool's optional groups.</em></div>
-                <div class="tchips"><code class="tchip off">revit_launch</code><code class="tchip off">revit_restart</code><code class="tchip off">revit_force_restart</code><code class="tchip off">revit_dismiss_unsaved</code><code class="tchip off">revit_clear_dialogs</code><code class="tchip off">revit_licensing_status</code><code class="tchip off">revit_job_status</code><code class="tchip off">revit_dynamo_* live ×3</code></div>
+                <div class="tgrp-h"><b class="off">Gated off by default</b><span class="tnum off">21</span><em>Absent from the list and refusing in-band unless the gate is set in the server's config: the 7 process-lifecycle tools and the 14 live Dynamo tools.</em></div>
+                <div class="tchips"><code class="tchip off">revit_launch</code><code class="tchip off">revit_restart</code><code class="tchip off">revit_force_restart</code><code class="tchip off">revit_dismiss_unsaved</code><code class="tchip off">revit_clear_dialogs</code><code class="tchip off">revit_licensing_status</code><code class="tchip off">revit_job_status</code><code class="tchip off">revit_dynamo_* live ×14</code></div>
               </div>
             </div>
             <p style="margin:14px 0 0; font-size:12.5px; color:var(--text-2)">Counts are the ones the server's own harness asserts <em>exactly</em> — a vanished tool is a failure, not a shrug — re-read from the r149 workspace on 2026-09-25. The channel split above is by role; the harness counts by gate.</p>
@@ -2931,9 +2962,9 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
 
 <button id="toTop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
 <script>
 (function(){
   const $ = s => document.querySelector(s);
@@ -2986,11 +3017,14 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   const root = document.documentElement, themeBtn = $('#themeBtn'), prismLink = $('#prismTheme');
   const PRISM_DARK = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css";
   const PRISM_LIGHT = "https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css";
+  const themeFrame = (f, t) => { try { const d = f.contentDocument; if (!d || !d.documentElement) return; d.documentElement.setAttribute('data-theme', t); if (d.body) d.body.classList.toggle('light', t === 'light'); } catch (e) {} };
   function setTheme(t){
     root.setAttribute('data-theme', t);
     themeBtn.innerHTML = t === 'light' ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
     prismLink.href = t === 'light' ? PRISM_LIGHT : PRISM_DARK;
+    document.querySelectorAll('.frame.live iframe').forEach(f => themeFrame(f, t));   /* same-origin mockups follow the page */
   }
+  window.iczThemeFrame = f => themeFrame(f, root.getAttribute('data-theme') || 'dark');
   let theme = 'dark';
   try { theme = localStorage.getItem('icz-theme') || theme; } catch(e){}
   setTheme(theme);
@@ -3035,7 +3069,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       if (en.isIntersecting){
         navLinks.forEach(a => a.classList.remove('active'));
         const link = byId[en.target.id];
-        if (link){ link.classList.add('active'); crumb.textContent = link.textContent.replace(/\s+[A-Z]{2,6}$/,'').trim(); }
+        if (link){ link.classList.add('active'); crumb.textContent = (link.dataset.tip || link.textContent).trim(); }
       }
     });
   }, { rootMargin: '-45% 0px -50% 0px', threshold: 0 });
@@ -3044,7 +3078,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   /* ---- Scroll Reveal ---- */
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('active'); });
-  }, { rootMargin: '0px 0px -5% 0px', threshold: 0.05 });
+  }, { rootMargin: '0px 0px -5% 0px', threshold: 0 });
   document.querySelectorAll('.reveal').forEach(reveal => revealObserver.observe(reveal));
 
   /* ---- Animated count-up stats ---- */
@@ -3065,39 +3099,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   }, { threshold: 0.5 });
   document.querySelectorAll('.stat .n[data-count]').forEach(el => countObserver.observe(el));
 
-  /* ---- Architecture diagram interactivity ---- */
-  const arch = $('#arch');
-  if (arch) {
-    const tools = Array.from(arch.querySelectorAll('.node.tool'));
-    const mods  = Array.from(arch.querySelectorAll('.node.mod'));
-    const clearArch = () => { arch.classList.remove('dim'); arch.querySelectorAll('.node').forEach(n => n.classList.remove('lit')); };
-
-    tools.forEach(t => {
-      const uses = (t.dataset.uses || '').split(/\s+/).filter(Boolean);
-      const light = () => {
-        clearArch(); arch.classList.add('dim'); t.classList.add('lit');
-        uses.forEach(m => { const el = document.getElementById('m-' + m); if (el) el.classList.add('lit'); });
-      };
-      t.addEventListener('mouseenter', light);
-      t.addEventListener('focus', light);
-      t.addEventListener('mouseleave', clearArch);
-      t.addEventListener('blur', clearArch);
-      t.tabIndex = 0;
-    });
-
-    mods.forEach(m => {
-      const name = m.dataset.mod;
-      const light = () => {
-        clearArch(); arch.classList.add('dim'); m.classList.add('lit');
-        tools.forEach(t => { if ((t.dataset.uses || '').split(/\s+/).includes(name)) t.classList.add('lit'); });
-      };
-      m.addEventListener('mouseenter', light);
-      m.addEventListener('focus', light);
-      m.addEventListener('mouseleave', clearArch);
-      m.addEventListener('blur', clearArch);
-      m.tabIndex = 0;
-    });
-  }
+  /* ---- Architecture diagram: wired, pinned and toured by the interactive layer below ---- */
 
   /* ---- Module explorer: filter + search ---- */
   const modgrid = $('#modgrid'), modSearch = $('#modSearch'), modEmpty = $('#modEmpty'), modCount = $('#modCount');
@@ -3235,7 +3237,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       fr.style.height = Math.round(h * s) + 'px';
     });
   };
-  window.addEventListener('resize', fitFrames);
+  let fitRaf = 0; window.addEventListener('resize', () => { cancelAnimationFrame(fitRaf); fitRaf = requestAnimationFrame(fitFrames); });
   window.addEventListener('load', fitFrames);
   window.addEventListener('orientationchange', () => setTimeout(fitFrames, 120));
   if (PHONE()) {                              /* the desktop hint promises interaction phones don't get */
@@ -3260,6 +3262,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   /* an embed only knows its size once its own document (and fonts) are in */
   document.querySelectorAll('.frame.live iframe').forEach(f => {
     f.addEventListener('load', () => {
+      if (window.iczThemeFrame) window.iczThemeFrame(f);
       fitFrames();
       try { f.contentDocument.fonts.ready.then(fitFrames); } catch (e) {}
     });
@@ -3396,23 +3399,28 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       for (const m of marks) { m.t = Math.min(m.t + 1, 30); const s = 3 + (m.t / 30) * 4; ctx.fillStyle = A; ctx.globalAlpha = .9; ctx.shadowColor = A; ctx.shadowBlur = 10; ctx.fillRect(m.x * CELL + CELL / 2 - s / 2, m.y * CELL + CELL / 2 - s / 2, s, s); }
       ctx.shadowBlur = 0; ctx.globalAlpha = 1;
     }
+    let lastDraw = 0, inView = false;
     function frame(t){
       if (!running) return;
+      if (t - lastDraw < 32) { requestAnimationFrame(frame); return; }   /* the sim ticks at ~10 Hz; 30 fps is plenty for the rings */
+      lastDraw = t;
       if (t - last > 95) { last = t; tick++; stepAgents(); }
       draw(); requestAnimationFrame(frame);
     }
-    const start = () => { if (running) return; running = true; last = 0; requestAnimationFrame(frame); };
+    const start = () => { if (running || !inView || document.hidden) return; running = true; last = 0; requestAnimationFrame(frame); };
     const stop = () => { running = false; };
     reset();
     if (RM) { for (let i = 0; i < 60; i++) stepAgents(); draw(); }
     else {
-      const io = new IntersectionObserver(es => es.forEach(e => e.isIntersecting && !document.hidden ? start() : stop()), { threshold: .05 });
+      const io = new IntersectionObserver(es => es.forEach(e => { inView = e.isIntersecting; inView ? start() : stop(); }), { threshold: .05 });
       io.observe(cv);
       document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
       const hero = cv.parentElement;
       hero.addEventListener('pointermove', e => { const r = cv.getBoundingClientRect(); mouse = { x: e.clientX - r.left, y: e.clientY - r.top }; }, { passive: true });
-      hero.addEventListener('pointerleave', () => mouse = null);
-      let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(reset, 150); });
+      hero.addEventListener('pointerdown', e => { const r = cv.getBoundingClientRect(); mouse = { x: e.clientX - r.left, y: e.clientY - r.top }; }, { passive: true });
+      hero.addEventListener('pointerleave', () => { if (!TOUCH) mouse = null; });
+      if (TOUCH) { const hc = $('#hudCursor'); if (hc) hc.textContent = 'tap to drop an obstacle'; }
+      let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { const w = cv.getBoundingClientRect().width; if (Math.abs(w - W) > 2) reset(); else size(); }, 150); });
       const mo = new MutationObserver(draw); mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     }
   }
@@ -3439,32 +3447,59 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   /* ---- interactive ribbon ---- */
   const rb = $('#ribbon');
   if (rb) {
-    const tip = $('#rbTip');
-    const showTip = (btn) => {
-      if (!tip || !btn.dataset.tip) return;
-      tip.innerHTML = `<h6><i class="fa-solid ${btn.dataset.icon}"></i> ${btn.dataset.title}</h6><p>${btn.dataset.tip}</p><div class="f1">${btn.dataset.foot || 'Click to read about this tool'}</div>`;
+    const tip = $('#rbTip'), fly = $('#rbFly'), tabs = $('#rbTabs'), panels = rb.querySelector('.rb-panels');
+    const place = (el, btn, width) => {           /* position an overlay under a button, inside the ribbon */
       const r = btn.getBoundingClientRect(), rr = rb.getBoundingClientRect();
-      let left = r.left - rr.left; if (left + 300 > rr.width) left = Math.max(0, rr.width - 304);
-      tip.style.left = left + 'px'; tip.style.top = (r.bottom - rr.top + 6) + 'px'; tip.classList.add('show');
+      let left = r.left - rr.left; if (left + width > rr.width) left = Math.max(0, rr.width - width - 4);
+      el.style.left = left + 'px'; el.style.top = (r.bottom - rr.top + 6) + 'px';
     };
-    const hideTip = () => tip && tip.classList.remove('show');
+    let tipFor = null;
+    const showTip = (btn) => {
+      if (!tip || !btn.dataset.tip || fly.classList.contains('show')) return;
+      tip.innerHTML = `<h6><i class="fa-solid ${btn.dataset.icon}"></i> ${btn.dataset.title}</h6><p>${btn.dataset.tip}</p><div class="f1">${btn.dataset.foot || (TOUCH ? 'Tap again to read about this tool' : 'Click to read about this tool')}</div>`;
+      place(tip, btn, 300); tip.classList.add('show'); tipFor = btn;
+    };
+    const hideTip = () => { if (tip) tip.classList.remove('show'); tipFor = null; };
+    let openBtn = null;
+    const closeFly = () => { if (!openBtn) return; fly.classList.remove('show'); fly.innerHTML = ''; openBtn.classList.remove('open'); openBtn.setAttribute('aria-expanded', 'false'); openBtn = null; };
+    const openFly = (btn) => {
+      closeFly(); hideTip();
+      const t = document.getElementById('fly-' + btn.dataset.go); if (!t) return;
+      fly.innerHTML = ''; fly.appendChild(t.content.cloneNode(true));
+      place(fly, btn, 260); fly.style.top = (panels.getBoundingClientRect().bottom - rb.getBoundingClientRect().top + 4) + 'px'; fly.classList.add('show'); btn.classList.add('open'); btn.setAttribute('aria-expanded', 'true'); openBtn = btn;
+      const first = fly.querySelector('.rb-fi'); if (first) first.focus();
+    };
+    fly.addEventListener('click', e => { const fi = e.target.closest('.rb-fi'); if (!fi) return; const go = fi.dataset.go; closeFly(); jump(go); });
+    fly.addEventListener('keydown', e => {
+      const items = $$('#rbFly .rb-fi'), i = items.indexOf(document.activeElement);
+      if (e.key === 'ArrowDown') { e.preventDefault(); (items[i + 1] || items[0]).focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); (items[i - 1] || items[items.length - 1]).focus(); }
+      else if (e.key === 'Home') { e.preventDefault(); items[0].focus(); }
+      else if (e.key === 'End') { e.preventDefault(); items[items.length - 1].focus(); }
+      else if (e.key === 'Escape') { const b = openBtn; closeFly(); if (b) b.focus(); }
+    });
     $$('#ribbon .rb-btn').forEach(btn => {
-      btn.addEventListener('mouseenter', () => { if (!btn.classList.contains('open')) showTip(btn); });
+      btn.addEventListener('mouseenter', () => { if (!TOUCH) showTip(btn); });
       btn.addEventListener('focus', () => showTip(btn));
       btn.addEventListener('mouseleave', hideTip); btn.addEventListener('blur', hideTip);
-      btn.addEventListener('click', e => {
-        if (btn.dataset.fly !== undefined && !e.target.closest('.rb-fi')) {
-          const open = btn.classList.toggle('open'); hideTip();
-          $$('#ribbon .rb-btn.open').forEach(o => { if (o !== btn) o.classList.remove('open'); });
-          if (open) return;
-        }
-        const fi = e.target.closest('.rb-fi');
-        const target = fi ? fi.dataset.go : btn.dataset.go;
-        if (target) { btn.classList.remove('open'); btn.classList.add('fx-pulse'); setTimeout(() => btn.classList.remove('fx-pulse'), 600); jump(target); }
+      btn.addEventListener('click', () => {
+        if (btn.dataset.fly !== undefined) { if (openBtn === btn) closeFly(); else openFly(btn); return; }
+        if (TOUCH && tipFor !== btn) { showTip(btn); return; }   /* first tap reads, second tap jumps */
+        hideTip(); btn.classList.add('fx-pulse'); setTimeout(() => btn.classList.remove('fx-pulse'), 600); jump(btn.dataset.go);
       });
     });
-    document.addEventListener('click', e => { if (!e.target.closest('#ribbon')) $$('#ribbon .rb-btn.open').forEach(o => o.classList.remove('open')); });
-    // the ribbon lights the tool whose section is on screen
+    document.addEventListener('click', e => { if (!e.target.closest('#ribbon')) { closeFly(); if (TOUCH) hideTip(); } });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && openBtn) { const b = openBtn; closeFly(); b.focus(); } });
+    /* the active tab and the whole strip stay reachable on narrow screens */
+    const affordance = () => {
+      const on = tabs && tabs.querySelector('.rb-tab.on'); if (on && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = Math.max(0, on.offsetLeft - 12);
+      const can = panels.scrollWidth > panels.clientWidth + 2; rb.classList.toggle('scrollable', can);
+      rb.classList.toggle('at-end', !can || panels.scrollLeft + panels.clientWidth >= panels.scrollWidth - 2);
+    };
+    panels.addEventListener('scroll', () => rb.classList.toggle('at-end', panels.scrollLeft + panels.clientWidth >= panels.scrollWidth - 2), { passive: true });
+    window.addEventListener('resize', affordance); affordance(); setTimeout(affordance, 400);
+    if (TOUCH) { const h = $('#rbHint'); if (h) h.innerHTML = '<i class="fa-solid fa-hand-pointer"></i> Swipe the ribbon · tap a button to read what it does · tap again to jump. The two pulldowns open.'; }
+    /* the ribbon lights the tool whose section is on screen */
     const byGo = {}; $$('#ribbon .rb-btn[data-go]').forEach(b => byGo[b.dataset.go] = b);
     const hot = new IntersectionObserver(es => es.forEach(en => { const b = byGo[en.target.id]; if (b) b.classList.toggle('hot', en.isIntersecting); }), { rootMargin: '-40% 0px -50% 0px' });
     Object.keys(byGo).forEach(id => { const s = document.getElementById(id); if (s) hot.observe(s); });
@@ -3490,7 +3525,8 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       const q = palIn.value.trim().toLowerCase();
       shown = q ? items.map(it => ({ it, sc: score(it.hay, q) })).filter(x => x.sc >= 0).sort((a, b) => b.sc - a.sc).slice(0, 14).map(x => x.it) : items.filter(it => it.k === 'section' || it.k === 'tool').slice(0, 14);
       sel = Math.min(sel, Math.max(0, shown.length - 1));
-      palList.innerHTML = shown.length ? shown.map((it, i) => `<div class="pal-it${i === sel ? ' sel' : ''}" data-i="${i}"><i class="${it.icon}"></i><b>${it.t}</b><em>${it.s}</em><span class="k">${it.k}</span></div>`).join('') : '<div class="pal-empty">Nothing matches. Try a tool code (AA, WOT), a module (openings) or an MCP tool (revit_exec).</div>';
+      const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+      palList.innerHTML = shown.length ? shown.map((it, i) => `<div class="pal-it${i === sel ? ' sel' : ''}" data-i="${i}" role="option" aria-selected="${i === sel}"><i class="${it.icon}"></i><b>${esc(it.t)}</b><em>${esc(it.s)}</em><span class="k">${it.k}</span></div>`).join('') : '<div class="pal-empty">Nothing matches. Try a tool code (AA, WOT), a module (openings) or an MCP tool (revit_exec).</div>';
       const cur = palList.querySelector('.sel'); if (cur) cur.scrollIntoView({ block: 'nearest' });
     };
     const open = () => { pal.classList.add('show'); palIn.value = ''; sel = 0; render(); setTimeout(() => palIn.focus(), 30); };
@@ -3520,15 +3556,14 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
     const wire = (from, tos, cls) => {
       const R = arch.getBoundingClientRect(), fr = from.getBoundingClientRect();
       const fx = fr.left - R.left + fr.width / 2, fy = fr.top - R.top + fr.height, frag = document.createDocumentFragment();
-      tos.slice(0, 48).forEach((to, i) => {
-        const tr = to.getBoundingClientRect(); const tx = tr.left - R.left + tr.width / 2, ty = tr.top - R.top;
+      tos.filter(to => to.offsetParent !== null).slice(0, 48).forEach((to, i) => {
+        const tr = to.getBoundingClientRect(); if (!tr.width) return; const tx = tr.left - R.left + tr.width / 2, ty = tr.top - R.top;
         const up = ty < fy; const y0 = up ? fr.top - R.top : fy, y1 = up ? tr.top - R.top + tr.height : ty;
         const d = `M${fx},${y0} C${fx},${(y0 + y1) / 2} ${tx},${(y0 + y1) / 2} ${tx},${y1}`;
-        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); if (cls) p.setAttribute('class', cls);
+        const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', d); p.setAttribute('pathLength', '1'); if (cls) p.setAttribute('class', cls);
         frag.appendChild(p); p.style.animationDelay = (i * 12) + 'ms';
       });
       svg.appendChild(frag);
-      svg.querySelectorAll('path').forEach(p => p.style.setProperty('--len', p.getTotalLength().toFixed(0)));
     };
     const lightTool = (t) => {
       svg.innerHTML = ''; arch.classList.add('dim'); arch.querySelectorAll('.node').forEach(n => n.classList.remove('lit'));
@@ -3544,11 +3579,12 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       wire(m, ts, 'v');
       if (read) read.innerHTML = `<code>icz.${name}</code> is imported by <b>${ts.length}</b> of ${tools.length} tools${ts.length ? ': ' + ts.map(t => t.querySelector('.nc').textContent).join(' · ') : ''}`;
     };
-    tools.forEach(t => { t.addEventListener('mouseenter', () => !pinned && lightTool(t)); t.addEventListener('focus', () => !pinned && lightTool(t)); t.addEventListener('mouseleave', () => !pinned && clear()); t.addEventListener('blur', () => !pinned && clear());
-      t.addEventListener('click', () => { stopTour(); if (pinned === t) { pinned.classList.remove('pin'); pinned = null; clear(); } else { if (pinned) pinned.classList.remove('pin'); pinned = t; t.classList.add('pin'); lightTool(t); } }); });
-    mods.forEach(m => { m.addEventListener('mouseenter', () => !pinned && lightMod(m)); m.addEventListener('focus', () => !pinned && lightMod(m)); m.addEventListener('mouseleave', () => !pinned && clear()); m.addEventListener('blur', () => !pinned && clear());
+    [...tools, ...mods].forEach(n => { n.tabIndex = 0; n.setAttribute('role', 'button'); n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); n.click(); } }); });
+    tools.forEach(t => { t.addEventListener('mouseenter', () => !pinned && !tour && lightTool(t)); t.addEventListener('focus', () => !pinned && lightTool(t)); t.addEventListener('mouseleave', () => !pinned && clear()); t.addEventListener('blur', () => !pinned && clear());
+      t.addEventListener('click', () => { stopTour(); if (pinned === t) { pinned.classList.remove('pin'); pinned = null; clear(); } else { if (pinned) pinned.classList.remove('pin'); pinned = t; t.classList.add('pin'); lightTool(t); } t.setAttribute('aria-pressed', String(pinned === t)); }); });
+    mods.forEach(m => { m.addEventListener('mouseenter', () => !pinned && !tour && lightMod(m)); m.addEventListener('focus', () => !pinned && lightMod(m)); m.addEventListener('mouseleave', () => !pinned && clear()); m.addEventListener('blur', () => !pinned && clear());
       m.addEventListener('click', () => { stopTour(); if (pinned === m) { pinned.classList.remove('pin'); pinned = null; clear(); } else { if (pinned) pinned.classList.remove('pin'); pinned = m; m.classList.add('pin'); lightMod(m); } }); });
-    function stopTour(){ if (tour) { clearInterval(tour); tour = 0; if (tourBtn) tourBtn.innerHTML = '<i class="fa-solid fa-play"></i> Tour the tools'; } }
+    function stopTour(){ if (tour) { clearInterval(tour); tour = 0; if (tourBtn) tourBtn.innerHTML = '<i class="fa-solid fa-play"></i> Tour the tools'; if (!pinned) clear(); } }
     if (tourBtn) tourBtn.addEventListener('click', () => {
       if (tour) { stopTour(); clear(); return; }
       if (pinned) { pinned.classList.remove('pin'); pinned = null; }
@@ -3570,17 +3606,22 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
       cur = (i + cards.length) % cards.length;
       cards.forEach((c, j) => c.classList.toggle('cur', j === cur));
       if (bar) { bar.style.width = (100 / cards.length) + '%'; bar.style.left = (cur * 100 / cards.length) + '%'; }
-      if (scroll) cards[cur].scrollIntoView({ inline: 'start', block: 'nearest', behavior: RM ? 'auto' : 'smooth' });
+      if (prev) prev.setAttribute('aria-label', 'Previous round'); if (next) next.setAttribute('aria-label', 'Next round');
+      if (scroll) track.scrollTo({ left: cards[cur].offsetLeft - track.offsetLeft, behavior: RM ? 'auto' : 'smooth' });
     };
-    cards.forEach((c, i) => c.addEventListener('click', e => { if (e.target.tagName === 'A') return; c.classList.toggle('open'); show(i); stop(); }));
+    cards.forEach((c, i) => { c.setAttribute('role', 'button'); c.setAttribute('aria-expanded', 'false');
+      const toggle = () => { const open = c.classList.toggle('open'); c.setAttribute('aria-expanded', String(open)); show(i); stop(); };
+      c.addEventListener('click', e => { if (e.target.tagName === 'A') return; toggle(); });
+      c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } }); });
     const stop = () => { if (timer) { clearInterval(timer); timer = 0; if (auto) auto.checked = false; } };
     const play = () => { stop(); timer = setInterval(() => show(cur + 1), 3200); if (auto) auto.checked = true; };
     if (prev) prev.addEventListener('click', () => { stop(); show(cur - 1); });
     if (next) next.addEventListener('click', () => { stop(); show(cur + 1); });
     if (auto) auto.addEventListener('change', () => auto.checked ? play() : stop());
     let st; track.addEventListener('scroll', () => { clearTimeout(st); st = setTimeout(() => { const l = track.scrollLeft; let best = 0, bd = 1e9; cards.forEach((c, i) => { const d = Math.abs(c.offsetLeft - track.offsetLeft - l); if (d < bd) { bd = d; best = i; } }); show(best, false); }, 80); }, { passive: true });
-    show(cards.length - 1, false);
-    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) stop(); })); io.observe(track);
+    show(cards.length - 1, false); track.scrollLeft = cards[cards.length - 1].offsetLeft - track.offsetLeft;   /* newest stop in view, bar agrees */
+    const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) stop(); }), { threshold: .6 }); io.observe(track);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) stop(); });
   }
 
   /* ---- MCP terminal demo (illustrative payloads) ---- */
@@ -3627,7 +3668,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
 
 # what lands on disk stays your decision`,
       navis: `# the Navisworks half: a transaction cannot roll back, so the revert is measured
-→ navis_clash_run { "test": "MEP vs STR", "confirm": false }
+→ navis_clash_run { "tests": [ "MEP vs STR" ] }
 ← {
   "dry_run": true,
   "results": { "new": 14, "active": 176, "resolved": 9, "total": 199 },
@@ -3643,6 +3684,7 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   "posture": "dry run",
   "steps": [ { "ribbon_census": "ok", "tab": "SuiteTools", "panel": "Report", "button": "Interference Check", "large_image": true } ],
   "side_effects": "none",
+  "verdict": "confirmed",
   "elapsed_ms": 412
 }`
     };
@@ -3665,16 +3707,19 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
   if (!TOUCH && !RM) {
     const cards = $$('.feat > .glass-card, .op-card, .stat, .subcard, .tl-card, .modcard');
     cards.forEach(c => c.classList.add('tilt'));
-    let active = null;
+    let active = null, rect = null, pend = null, raf = 0;
+    const rest = () => { if (active) { active.style.transform = ''; active.classList.remove('tilt-live'); } active = null; rect = null; };
+    const paint = () => { raf = 0; if (!active || !pend || !rect) return;
+      const px = (pend.x - rect.left) / rect.width, py = (pend.y - rect.top) / rect.height;
+      active.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); active.style.setProperty('--my', (py * 100).toFixed(1) + '%');
+      active.style.transform = `perspective(900px) rotateX(${((.5 - py) * 6).toFixed(2)}deg) rotateY(${((px - .5) * 7).toFixed(2)}deg) translateY(-3px)`; };
     document.addEventListener('pointermove', e => {
-      const c = e.target.closest('.tilt'); if (c !== active) { if (active) active.style.transform = ''; active = c; }
-      if (!c) return;
-      const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
-      c.style.setProperty('--mx', (px * 100).toFixed(1) + '%'); c.style.setProperty('--my', (py * 100).toFixed(1) + '%');
-      const ry = (px - .5) * 7, rx = (.5 - py) * 6;
-      c.style.transform = `perspective(900px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateY(-3px)`;
+      const c = e.target.closest('.tilt');
+      if (c !== active) { rest(); active = c; if (c) { c.classList.add('tilt-live'); rect = c.getBoundingClientRect(); } }
+      if (!c) return; pend = { x: e.clientX, y: e.clientY }; if (!raf) raf = requestAnimationFrame(paint);
     }, { passive: true });
-    document.addEventListener('pointerleave', () => { if (active) { active.style.transform = ''; active = null; } });
+    document.addEventListener('pointerleave', rest);
+    window.addEventListener('scroll', () => { if (active) rect = active.getBoundingClientRect(); }, { passive: true });
   }
 
   /* ---- module explorer extras: consumer counts, sort, chip → tool ---- */
@@ -3683,10 +3728,11 @@ key    = eid(element.Id)               # int, on any Revit version</code></pre>
     const codes = { AA: 'aa', FIT: 'fit', PSU: 'psu', SR: 'scriptreader', CD: 'cd', EXP: 'issueone', DOC: 'mepauto', SB: 'sectionbox', RO1: 'ro1', GUIDE: 'guide', WOT: 'wot', CIT: 'cit', ICX: 'icx', FQC: 'familyqc', SFX: 'sfx' };
     $$('.modcard').forEach(c => { const n = c.querySelector('.u.all') ? 15 : Array.from(c.querySelectorAll('.u')).filter(u => codes[u.textContent.trim()]).length; c.dataset.n = n; if (!n) return; const b = document.createElement('span'); b.className = 'cnt'; b.title = n + ' consuming tools'; b.textContent = '×' + n; c.appendChild(b); });
     grid.addEventListener('click', e => { const u = e.target.closest('.u'); if (!u) return; const id = codes[u.textContent.trim()]; if (id) jump(id); else if (u.classList.contains('all')) jump('architecture'); });
-    $$('.mod-sort .filter-chip').forEach(b => b.addEventListener('click', () => {
-      $$('.mod-sort .filter-chip').forEach(x => x.classList.remove('active')); b.classList.add('active');
+    $$('.mod-sort .sort-chip').forEach(b => b.addEventListener('click', () => {
+      $$('.mod-sort .sort-chip').forEach(x => x.classList.remove('active')); b.classList.add('active');
       const cards = $$('.modcard'); const empty = $('#modEmpty');
-      cards.sort((a, c) => b.dataset.sort === 'n' ? (+c.dataset.n - +a.dataset.n) || a.textContent.localeCompare(c.textContent) : a.querySelector('h4').textContent.localeCompare(c.querySelector('h4').textContent));
+      const nm = x => x.querySelector('h4').textContent.trim();
+      cards.sort((a, c) => b.dataset.sort === 'n' ? (+c.dataset.n - +a.dataset.n) || nm(a).localeCompare(nm(c)) : nm(a).localeCompare(nm(c)));
       cards.forEach(c => grid.insertBefore(c, empty));
     }));
   }
