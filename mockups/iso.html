@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISO — Pipe Iso</title>
+<style>
+  :root{
+    --page:#06090b;
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33; --readout:#101a20;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33; --violet:#B49BE0;
+    --paper:#FFFFFF; --paper-2:#E8EEF1; --ink:#16242B; --ink-2:#44606E; --p-acc:#00697C; --p-sel:#00BCD4;
+  }
+  body.light{
+    --page:#cfd8dc;
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE; --readout:#F2F5F7;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE; --violet:#5E35B1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--page);font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  .window{position:relative;width:1220px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .mdl2,.g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .mono{font-family:Consolas,monospace}
+  /* titlebar */
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .burger{color:var(--text-2);font-size:15px;cursor:pointer}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.2px;color:var(--text-main);font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:3px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:12px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}.dot.c{background:#FF5F57;color:#7A1410}
+  /* body */
+  .main{display:flex;height:700px}
+  .rail{width:262px;background:var(--nav);border-right:1px solid var(--border);padding:2px 12px 12px;overflow-y:auto;flex:none;transition:width .12s}
+  .rail.collapsed{width:0;padding:0;overflow:hidden;border-right:0}
+  .rail > div, .rail > button{min-width:236px}
+  .cap{font-size:9px;font-weight:700;letter-spacing:.06em;color:var(--text-2);margin:14px 0 5px 2px}
+  .cap:first-child{margin-top:10px}
+  .hint{font-size:10.5px;line-height:1.4;color:var(--text-2)}
+  .card2{background:var(--input-bg);border:1px solid var(--border);border-radius:7px;padding:7px 9px}
+  .card2 .lbl{font-size:11.5px;font-weight:600;color:var(--text-main);line-height:1.35}
+  .card2 .hint{margin-top:3px}
+  .pair{display:grid;gap:7px;margin-top:7px}
+  .pair.p2{grid-template-columns:1fr 1fr}
+  .pair.p3{grid-template-columns:1fr 1fr 30px}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:0 6px;height:28px;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;justify-content:center;font-family:inherit;white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-size:11px;color:var(--accent)}
+  .btn.xb .g{color:var(--text-2);font-size:10px}
+  .sel2,.in{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:4px;padding:0 8px;font-size:11.5px;font-family:inherit;height:28px;width:100%}
+  .in{height:24px;font-family:Consolas,monospace;font-size:11px}
+  .in:disabled{opacity:.5}
+  .frow{display:grid;grid-template-columns:1fr 96px;align-items:center;gap:6px;margin-top:6px;font-size:11px;color:var(--text-main)}
+  .frow.dm{grid-template-columns:1fr 76px auto}
+  .frow.dm .in{text-align:right}
+  .chk{display:flex;align-items:center;gap:8px;font-size:11.5px;cursor:pointer;color:var(--text-main);margin-top:6px;user-select:none}
+  .chk .box{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative;flex:none}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:10px;text-align:center;line-height:14px}
+  .chk.ports{font-size:11px;margin-top:3px}
+  .dim{opacity:.45;pointer-events:none}
+  /* content */
+  .content{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--window-bg);position:relative}
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin:11px 13px 9px}
+  .tile{background:var(--input-bg);border:1px solid var(--border);border-radius:7px;padding:7px 10px;min-width:0}
+  .tile .lab{font-size:10px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .val{font-size:13.5px;font-weight:700;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-main)}
+  .work{flex:1;min-height:0;display:grid;grid-template-columns:1fr 300px;gap:9px;margin:0 13px 11px}
+  .pane{background:var(--card);border:1px solid var(--border);border-radius:7px;display:flex;flex-direction:column;min-height:0;min-width:0}
+  .ph{display:flex;align-items:center;gap:12px;padding:8px 10px 4px;min-width:0}
+  .ph b{font-size:9px;letter-spacing:.06em;color:var(--text-2);white-space:nowrap}
+  .ph .hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .paper{flex:1;min-height:0;margin:0 8px 8px;background:var(--paper);border:1px solid var(--border);border-radius:4px;overflow:hidden;position:relative}
+  .paper svg{width:100%;height:100%;display:block}
+  .busy .paper svg{opacity:.25}
+  /* sheet drawing */
+  .pp{stroke:var(--ink);stroke-width:1.6;fill:none}
+  .sy{stroke:var(--ink);stroke-width:1.1;fill:var(--paper-2);stroke-linejoin:round}
+  .sy.nf{fill:none}
+  .sd{fill:var(--ink)}
+  .dl{stroke:var(--ink-2);stroke-width:.7;fill:none}
+  .ld{stroke:var(--ink-2);stroke-width:.6;fill:none}
+  .st{fill:var(--ink-2);font-size:8.4px;text-anchor:middle;dominant-baseline:central;font-family:Consolas,"Segoe UI",monospace}
+  .ar{fill:var(--p-acc)}
+  .lb{fill:var(--paper);stroke:var(--ink);stroke-width:.9}
+  .lt{fill:var(--ink);font-size:7.8px;font-weight:700;text-anchor:middle;dominant-baseline:central;font-family:"Segoe UI",Arial,sans-serif}
+  .el{fill:var(--p-acc);font-size:8.2px;font-weight:700;font-family:Consolas,"Segoe UI",monospace;dominant-baseline:central}
+  .nm{fill:var(--ink);font-size:7.6px;font-weight:600;font-family:"Segoe UI",Arial,sans-serif;dominant-baseline:central}
+  .ct{fill:var(--ink);font-size:8px;font-weight:700;font-family:"Segoe UI",Arial,sans-serif;dominant-baseline:central}
+  .bs{fill:var(--ink);font-size:7px;font-family:Consolas,"Segoe UI",monospace;dominant-baseline:central}
+  .bh{fill:var(--ink);font-size:7.2px;font-weight:700;font-family:"Segoe UI",Arial,sans-serif;dominant-baseline:central}
+  .bn{fill:var(--ink-2);font-size:6.4px;font-family:"Segoe UI",Arial,sans-serif;dominant-baseline:central}
+  .bl{stroke:var(--ink-2);stroke-width:.6}
+  .halo{stroke:var(--p-sel);fill:var(--p-sel);opacity:0;pointer-events:none}
+  line.halo{fill:none;stroke-width:10;stroke-linecap:round}
+  .hit{cursor:pointer}
+  .hit .fat{stroke:transparent;stroke-width:10;fill:none;pointer-events:stroke}
+  .hit.sel .halo{opacity:.38}
+  .hit:hover .halo{opacity:.18}
+  .hit.sel:hover .halo{opacity:.38}
+  /* bill of material */
+  .bomwrap{flex:1;min-height:0;overflow:auto;padding:0 6px 6px}
+  .bt{display:grid;grid-template-columns:28px minmax(0,1fr) 86px 52px;font-size:11px}
+  .bt > div{padding:3px 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .bt .h{font-size:10px;font-weight:700;color:var(--text-2);background:var(--panel2);padding:5px 5px}
+  .bt .h:first-child{border-radius:4px 0 0 4px}.bt .h:nth-child(4){border-radius:0 4px 4px 0;text-align:right}
+  .bt .r{cursor:pointer;color:var(--text-main)}
+  .bt .r.n{font-family:Consolas,monospace;text-align:right}
+  .bt .r.l{font-family:Consolas,monospace;font-weight:700}
+  .bt .r.s{color:var(--text-2)}
+  .bt .r.hv{background:var(--hover)}
+  .bt .r.sel{background:var(--nav-sel);color:var(--text-main)}
+  .bt .r.sel.l{box-shadow:inset 3px 0 0 var(--accent)}
+  .bt .gap{grid-column:1/-1;height:4px;padding:0;cursor:default}
+  .empty{display:none;position:absolute;inset:0;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:20px}
+  /* banner */
+  .banner{position:absolute;top:8px;left:50%;transform:translateX(-50%);max-width:440px;padding:7px 14px;border-radius:6px;font-size:11.5px;display:none;align-items:center;gap:10px;background:var(--accent);color:var(--accent-fg);z-index:5;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+  .banner.warn{background:var(--warn);color:#241a00}
+  .banner.error{background:var(--fail);color:#fff}
+  .banner .g{font-size:10px;cursor:pointer}
+  /* footer */
+  .footer{position:relative;display:flex;align-items:center;gap:12px;background:var(--titlebar);border-top:1px solid var(--border);padding:6px 14px;font-size:11px;color:var(--text-2);height:48px}
+  .prog{position:absolute;left:0;right:0;top:0;height:2px;background:transparent;overflow:hidden;display:none}
+  .prog i{position:absolute;top:0;bottom:0;width:30%;background:var(--accent);animation:slide 1s linear infinite}
+  @keyframes slide{from{left:-30%}to{left:100%}}
+  .busy-run .prog{display:block}
+  .hallmark{white-space:nowrap}
+  .hallmark .mdl2{color:var(--accent);margin-right:5px}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .fdiv{width:1px;height:14px;background:var(--border);flex:none}
+  .fdot{width:7px;height:7px;border-radius:50%;background:var(--pass);display:inline-block;margin-right:8px;vertical-align:middle}
+  .fmodel{white-space:nowrap;font-size:11px;color:var(--text-2)}
+  .fstat{flex:1;min-width:0;font-size:11px;line-height:1.3;color:var(--text-2);display:flex;align-items:center;gap:8px}
+  .fstat .mdl2{color:var(--accent);font-size:12px;flex:none}
+  .fstat span.t{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .fpage{white-space:nowrap;font-size:11px;color:var(--text-2);max-width:220px;overflow:hidden;text-overflow:ellipsis}
+  .fbtn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);font-weight:600;font-size:11.5px;border-radius:6px;height:36px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;white-space:nowrap}
+  .fbtn:hover{background:var(--hover)}
+  .fbtn .g{font-size:12px;color:var(--accent)}
+  .fbtn.off{opacity:.45;cursor:default;pointer-events:none}
+  .run{background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;letter-spacing:.03em;border:none;border-radius:6px;width:130px;height:36px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:inherit}
+  .run .g{font-size:13px}
+  .run.off{opacity:.5;cursor:default;pointer-events:none}
+  /* confirm dialog */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:10}
+  .scrim.on{display:flex}
+  .dlg{width:440px;background:var(--card);border:1px solid var(--border);border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .dlg h4{font-size:12.5px;font-weight:600;padding:12px 16px;border-bottom:1px solid var(--border);color:var(--text-main)}
+  .dlg p{font-size:11.5px;line-height:1.55;padding:14px 16px 6px;color:var(--text-main)}
+  .dlg p + p{padding-top:6px;padding-bottom:14px;color:var(--text-2)}
+  .dlg .acts{display:flex;justify-content:flex-end;gap:9px;padding:10px 16px 14px;background:var(--panel2)}
+  .dlg .btn{height:28px;padding:0 18px;min-width:72px}
+  .dlg .btn.ok{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+
+<div class="window" id="win">
+  <!-- titlebar -->
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger" title="Show or hide the settings">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE8A1;</span>
+    <span class="tb-name">Pipe Iso</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path" id="lbl_file">Tower-A_MEP_Coordination.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="themeBtn" title="Toggle light / dark theme">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- settings rail -->
+    <div class="rail" id="rail">
+      <div class="cap">START OF THE RUN</div>
+      <div class="card2"><div class="lbl" id="lbl_start">Pump, end suction · 100 mm</div><div class="hint" id="lbl_start_hint">Element id 402117.</div></div>
+      <div class="pair p2">
+        <button class="btn" id="btn_pick_start" title="Click the start element in the Revit view. The window stays open."><span class="g">&#xE721;</span>Pick in Revit</button>
+        <button class="btn" id="btn_sel_start" title="Use the one element selected in Revit as the start.">Use selection</button>
+      </div>
+
+      <div class="cap">END OF THE RUN</div>
+      <div class="card2"><div class="lbl" id="lbl_end">Every end downstream</div><div class="hint" id="lbl_end_hint">With no end, every branch downstream of the start is drawn on one sheet. Pick an end for one run.</div></div>
+      <div class="pair p3">
+        <button class="btn" id="btn_pick_end" title="Click the end element in the Revit view."><span class="g">&#xE721;</span>Pick</button>
+        <button class="btn" id="btn_sel_end" title="Use the one element selected in Revit as the end.">Selection</button>
+        <button class="btn xb" id="btn_clear_end" title="No end: draw every branch downstream"><span class="g">&#xE894;</span></button>
+      </div>
+
+      <div class="cap">FOLLOW THROUGH</div>
+      <div id="ports">
+        <div class="chk ports on" data-port="0"><span class="box"></span>Port 1: Carbon Steel 100 mm</div>
+        <div class="chk ports on" data-port="1"><span class="box"></span>Port 2  (open)</div>
+      </div>
+      <div class="hint" style="margin-top:4px">Untick a port of the start that should not be followed (the way back upstream, for one).</div>
+
+      <div class="cap">SHEET</div>
+      <select class="sel2" id="cmb_sheet" title="The project's own title blocks first (Create View puts each drafting view on a sheet in it), then standard papers for a model without one. The content area is the sheet less its margins.">
+        <option value="tb4" selected>Title_Block_A4 : Landscape</option>
+        <option value="tb3">Title_Block_A3 : Landscape</option>
+        <option value="tb1">Title_Block_A1 : Landscape</option>
+        <option value="p1">A1</option><option value="p2">A2</option><option value="p3">A3</option><option value="p4">A4</option>
+      </select>
+      <div class="frow"><span>Sheet number prefix</span><input class="in" id="txt_sheet_no" value="ISO-" title="Sheets are numbered prefix + 01, 02 ...; a number already in the model is skipped."></div>
+      <div class="hint" id="lbl_sheet_hint" style="margin-top:4px">A drafting view per sheet, each on a Revit sheet in this title block, numbered from the prefix.</div>
+
+      <div class="cap">VIEW</div>
+      <select class="sel2" id="cmb_rotation" title="Which way the plan is turned before the isometric projection: where north and east point on paper.">
+        <option value="0" selected>North up-right, east down-right</option>
+        <option value="90">North up-left, east up-right</option>
+        <option value="180">North down-left, east up-left</option>
+        <option value="270">North down-right, east down-left</option>
+      </select>
+      <div class="chk on" data-opt="dims" style="margin-top:8px"><span class="box"></span>Pipe cut-length dimensions</div>
+      <div class="chk on" data-opt="elev"><span class="box"></span>Elevation callouts on risers</div>
+      <div class="chk on" data-opt="arrows"><span class="box"></span>Flow arrows</div>
+      <div class="chk on" data-opt="symbols"><span class="box"></span>Fitting and valve symbols</div>
+      <div class="chk on" id="chk_branches" data-opt="branches" title="Off: only the trunk - the first way on at every tee - is drawn."><span class="box"></span>Draw the branches too (no end picked)</div>
+      <div class="frow dm" style="margin-top:8px"><span>Elevation datum</span><input class="in" id="txt_datum" value="0" title="Height of the model's internal origin above the datum the EL callouts count from. 0 = the internal origin itself."><span>mm</span></div>
+      <div class="chk on" data-opt="openpdf" style="margin-top:8px"><span class="box"></span>Open the PDF after export</div>
+      <div class="chk on" data-opt="openview"><span class="box"></span>Open the drafting view after creating it</div>
+      <div class="hint" style="margin-top:12px">Draw reads the run and shows the sheet. Export PDF prints the sheets through Revit in the title block picked (a plain page without one); Create View adds the drafting views and sheets to the model in one undoable transaction.</div>
+    </div>
+
+    <!-- content -->
+    <div class="content" id="content">
+      <div class="banner" id="banner"><span id="banner_text"></span><span class="g" id="banner_x">&#xE8BB;</span></div>
+      <div class="kpis">
+        <div class="tile"><div class="lab">SCALE</div><div class="val" id="kpi_scale" title="Not to scale: legs are drawn between 14 and 70 mm; the true geometry would have fitted 1:50.">&#x2014;</div></div>
+        <div class="tile"><div class="lab">PIPES</div><div class="val" id="kpi_pipes">&#x2014;</div></div>
+        <div class="tile"><div class="lab">LENGTH</div><div class="val" id="kpi_length">&#x2014;</div></div>
+        <div class="tile"><div class="lab">FITTINGS / ACCESSORIES</div><div class="val" id="kpi_fittings">&#x2014;</div></div>
+        <div class="tile"><div class="lab">ELEMENTS READ</div><div class="val" id="kpi_elements">&#x2014;</div></div>
+      </div>
+      <div class="work">
+        <div class="pane" id="pane_prev">
+          <div class="ph"><b>SHEET PREVIEW</b><span class="hint">The content area of the first sheet, not to scale, exactly as the PDF page and the drafting view carry it. Click a symbol or a pipe to show it in Revit.</span></div>
+          <div class="paper" id="paper"><svg id="cv_iso" viewBox="0 0 560 540" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Isometric drawing of the pipe run, sheet 1"></svg></div>
+          <div class="empty" id="empty_state"><div class="mdl2" style="font-size:30px;color:var(--accent);margin-bottom:10px">&#xE8A1;</div><div style="font-size:13.5px;font-weight:600">A piping isometric from the model</div><div class="hint" style="font-size:11px;margin-top:6px;max-width:380px">Pick where the run starts, optionally where it ends, then Draw. The sheet appears here at the scale it will print at.</div></div>
+        </div>
+        <div class="pane">
+          <div class="ph"><b>BILL OF MATERIAL</b></div>
+          <div class="bomwrap"><div class="bt" id="grid_bom"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer" id="footer">
+    <div class="prog"><i></i></div>
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span class="fmodel"><span class="fdot"></span>Model loaded · workshared</span>
+    <span class="fdiv"></span>
+    <div class="fstat"><span class="mdl2">&#xE9F5;</span><span class="t" id="footer_status" title="">Ready.</span></div>
+    <span class="fpage" id="foot_page">Title block · 2 sheet(s)</span>
+    <button class="fbtn" id="btn_pdf" title="Print the sheets through Revit in the title block picked (a plain page when there is none)"><span class="g">&#xE74E;</span>EXPORT PDF</button>
+    <button class="fbtn" id="btn_view" title="Create a drafting view per sheet in the model, each on a Revit sheet in the chosen title block - one undoable transaction; asks first"><span class="g">&#xE8A5;</span>CREATE VIEW</button>
+    <button class="run" id="btn_run" title="Read the run from the start and draw the sheet"><span class="g">&#xE768;</span>DRAW</button>
+  </div>
+
+  <!-- confirm -->
+  <div class="scrim" id="scrim">
+    <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dlg_t">
+      <h4 id="dlg_t">Create in the model</h4>
+      <p id="dlg_msg"></p>
+      <p>One transaction; Ctrl+Z in Revit takes it all back.</p>
+      <div class="acts"><button class="btn" id="dlg_no">No</button><button class="btn ok" id="dlg_yes">Yes</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+  var W = 560, H = 540;
+  var K = 0.022, MINL = 14, MAXL = 70;            // model mm -> drawn units, clamp: legs are not to scale
+  var DIRS = [[0.866,-0.5],[-0.866,-0.5],[-0.866,0.5],[0.866,0.5]];   // up-right, up-left, down-left, down-right
+  var IDX = {N:0,W:1,S:2,E:3};
+  function dv(d,k){ if(d==="U") return [0,-1]; if(d==="D") return [0,1]; return DIRS[(k+IDX[d])%4]; }
+  function n1(v){ return (Math.round(v*10)/10).toString(); }
+  function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+  function grp3(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,","); }
+
+  /* ---- the run: a synthetic network, steps in flow order (lengths in mm) ---- */
+  function P(d,len,size,grp){ return {t:"pipe",d:d,len:len,size:size,grp:grp||"trunk"}; }
+  var MAIN = [
+    {t:"equip",name:"Pump, end suction",size:"100 mm",grp:"trunk",out:"N"},
+    P("N",700,"100 mm"),
+    {t:"valve",v:"gate",d:"N",len:250,size:"100 mm",grp:"trunk"},
+    {t:"elbow",size:"100 mm",grp:"trunk"},
+    P("E",2000,"100 mm"),
+    {t:"elbow",size:"100 mm",grp:"trunk"},
+    P("U",3300,"100 mm"),
+    {t:"elbow",size:"100 mm",grp:"trunk"},
+    P("N",800,"100 mm"),
+    {t:"reducer",d:"N",len:150,size:"100-80 mm",grp:"trunk"},
+    P("N",1100,"80 mm"),
+    {t:"valve",v:"check",d:"N",len:200,size:"80 mm",grp:"trunk"},
+    P("N",1500,"80 mm"),
+    {t:"tee",size:"80-50 mm",grp:"trunk"},
+    P("N",1500,"80 mm","cont"),
+    {t:"elbow",size:"80 mm",grp:"cont"},
+    P("E",900,"80 mm","cont"),
+    {t:"elbow",size:"80 mm",grp:"s2"},
+    P("N",2600,"80 mm","s2"),
+    {t:"elbow",size:"80 mm",grp:"s2"},
+    P("E",900,"80 mm","s2")
+  ];
+  var BRANCH = [
+    P("D",1600,"50 mm","branch"),
+    {t:"equip",name:"Coil, cooling",size:"50 mm",grp:"branch"}
+  ];
+  var ELEMENTS_READ = MAIN.length + BRANCH.length;
+  var SYSTEM = "Chilled Water Supply";
+  var START_TXT = "Pump, end suction · 100 mm", END_TXT = "Coil, cooling · 50 mm";
+
+  var cache = {};
+  function walk(steps,p,z,k,list,dir){
+    steps.forEach(function(s){
+      var e = {id:list.length,t:s.t,grp:s.grp,size:s.size,name:s.name,v:s.v};
+      if(s.t==="pipe"||s.t==="valve"||s.t==="reducer"){
+        dir = s.d; var u = dv(dir,k);
+        var dl = s.t==="pipe" ? Math.min(MAXL,Math.max(MINL,s.len*K)) : (s.t==="valve" ? 9 : 8);
+        e.a = p.slice(); e.b = [p[0]+u[0]*dl, p[1]+u[1]*dl]; e.u = u; e.d = s.d; e.len = s.len;
+        e.za = z; z += (s.d==="U" ? s.len : (s.d==="D" ? -s.len : 0)); e.zb = z;
+        e.vertical = (s.d==="U"||s.d==="D"); e.broken = (s.t==="pipe" && s.len*K>MAXL);
+        p = e.b;
+      } else if(s.t==="equip"){
+        if(s.out) dir = s.out;
+        e.p = p.slice(); e.u = dv(dir,k); e.z = z;
+      } else { e.p = p.slice(); e.z = z; }
+      list.push(e);
+      if(s.t==="tee") cache.tee = {p:p.slice(),z:z};
+    });
+    return dir;
+  }
+  function layout(k){
+    if(cache["k"+k]) return cache["k"+k];
+    var list = [];
+    walk(MAIN,[0,0],450,k,list,"N");
+    walk(BRANCH,cache.tee.p,cache.tee.z,k,list,"D");
+    cache["k"+k] = list; return list;
+  }
+
+  /* ---- state ---- */
+  var S = {rot:0,dims:true,elev:true,arrows:true,symbols:true,branches:true,datum:0,sheet:"tb4",
+           endOn:false,endPicked:false,ports:[true,true],drawn:true,sel:[],created:false,openpdf:true,openview:true};
+  var busy = false, lastDraw = null;
+  function hasTB(){ return /^tb/.test(S.sheet); }
+  function nSheets(){ if(S.endOn) return 1; return (S.sheet==="tb4"||S.sheet==="p4") ? 2 : 1; }
+  function sheetLabel(){ var o = $("#cmb_sheet"); return o.options[o.selectedIndex].text; }
+  function incl(e){ if(S.endOn) return e.grp==="trunk"||e.grp==="branch"; if(!S.branches && e.grp==="branch") return false; return true; }
+  function kindOf(e){ return e.t==="pipe"?0:(e.t==="valve"?2:(e.t==="equip"?3:1)); }
+  function descOf(e){
+    if(e.t==="pipe") return "PIPE, Carbon Steel";
+    if(e.t==="valve") return e.v==="gate" ? "Valve, gate" : "Valve, check";
+    if(e.t==="equip") return e.name;
+    return e.t==="elbow" ? "Elbow, 90°" : (e.t==="reducer" ? "Reducer, concentric" : "Tee, reducing");
+  }
+  function makeBom(mem,ns){
+    var map = {}, rows = [];
+    mem.forEach(function(e){
+      var d = descOf(e), key = kindOf(e)+"|"+d+"|"+e.size, r = map[key];
+      if(!r){ r = map[key] = {kind:kindOf(e),desc:d,size:e.size,qty:0,len:0,ids:[],sheets:{}}; rows.push(r); }
+      r.qty++; if(e.t==="pipe") r.len += e.len; r.ids.push(e.id);
+      r.sheets[(ns===2 && e.grp==="s2") ? 2 : 1] = 1;
+    });
+    rows.sort(function(a,b){
+      return a.kind-b.kind || (a.desc<b.desc?-1:(a.desc>b.desc?1:0)) || (a.size<b.size?-1:(a.size>b.size?1:0));
+    });
+    rows.forEach(function(r,i){
+      r.letter = String.fromCharCode(65+i);
+      r.q = r.kind===0 ? (r.len/1000).toFixed(2)+" m" : String(r.qty);
+      r.sh = Object.keys(r.sheets).sort().join(", ");
+    });
+    return rows;
+  }
+
+  /* ---- geometry helpers ---- */
+  function segHit(a,b,c,d){
+    function cr(p,q,r){ return (q[0]-p[0])*(r[1]-p[1])-(q[1]-p[1])*(r[0]-p[0]); }
+    var d1=cr(a,b,c), d2=cr(a,b,d), d3=cr(c,d,a), d4=cr(c,d,b);
+    return ((d1>0&&d2<0)||(d1<0&&d2>0)) && ((d3>0&&d4<0)||(d3<0&&d4>0));
+  }
+  function segRect(s,x,y,w,h){
+    var dx=s[1][0]-s[0][0], dy=s[1][1]-s[0][1], L=Math.sqrt(dx*dx+dy*dy), n=Math.max(2,Math.ceil(L/2));
+    for(var i=0;i<=n;i++){
+      var px=s[0][0]+dx*i/n, py=s[0][1]+dy*i/n;
+      if(px>=x&&px<=x+w&&py>=y&&py<=y+h) return true;
+    }
+    return false;
+  }
+  function Placer(segs,b){ this.s=segs; this.r=[]; this.b=b; }
+  Placer.prototype.ok = function(x,y,w,h){
+    var m=2, b=this.b, i;
+    if(x<b.x||y<b.y||x+w>b.x+b.w||y+h>b.y+b.h) return false;
+    for(i=0;i<this.r.length;i++){ var q=this.r[i];
+      if(x-m<q.x+q.w && x+w+m>q.x && y-m<q.y+q.h && y+h+m>q.y) return false; }
+    for(i=0;i<this.s.length;i++){ if(segRect(this.s[i],x-m,y-m,w+2*m,h+2*m)) return false; }
+    return true;
+  };
+  Placer.prototype.put = function(ax,ay,w,h,dirs,rs){
+    var ri,di,d,ex,cx,cy,x,y;
+    for(ri=0;ri<rs.length;ri++){ for(di=0;di<dirs.length;di++){
+      d=dirs[di]; ex=Math.abs(d[0])*w/2+Math.abs(d[1])*h/2;
+      cx=ax+d[0]*(rs[ri]+ex); cy=ay+d[1]*(rs[ri]+ex); x=cx-w/2; y=cy-h/2;
+      if(this.ok(x,y,w,h)){ this.r.push({x:x,y:y,w:w,h:h}); return {x:x,y:y,w:w,h:h,cx:cx,cy:cy,moved:ri>0}; }
+    } }
+    d=dirs[0]; ex=Math.abs(d[0])*w/2+Math.abs(d[1])*h/2;
+    cx=ax+d[0]*(rs[0]+ex); cy=ay+d[1]*(rs[0]+ex); x=cx-w/2; y=cy-h/2;
+    this.r.push({x:x,y:y,w:w,h:h}); return {x:x,y:y,w:w,h:h,cx:cx,cy:cy,moved:false};
+  };
+  var R8 = [[-0.707,-0.707],[0.707,-0.707],[-1,0],[1,0],[0,-1],[-0.707,0.707],[0.707,0.707],[0,1]];
+  var RS = [4,9,15,22,30,40];
+
+  function wrap(text,n){
+    var words=text.split(" "), lines=[], cur="";
+    words.forEach(function(w){ var t=(cur+" "+w).trim(); if(t.length>n && cur){ lines.push(cur); cur=w; } else cur=t; });
+    if(cur) lines.push(cur); return lines;
+  }
+  var NOTES = [
+    "NOT TO SCALE. Dimensions are straight pipe cut lengths in mm, fitting lengths excluded; a broken leg is drawn shorter than it is.",
+    "Elevations (EL) in mm as Revit reports them, plus the datum shift entered, if any. Flow arrows point away from the start.",
+    "Item letters refer to the bill of material; a count precedes a letter where several of one item sit at a point."
+  ];
+
+  /* ---- one sheet as SVG text ---- */
+  function drawSheet(n){
+    var k = S.rot/90, all = layout(k), ns = nSheets();
+    var mem = all.filter(incl), bom = makeBom(mem,ns);
+    var letterOf = {}; bom.forEach(function(r){ r.ids.forEach(function(i){ letterOf[i]=r.letter; }); });
+    var inc = mem.filter(function(e){ return ns===1 || ((e.grp==="s2")===(n===2)); });
+    var stripH = 28 + bom.length*9.4 + 4, stripTop = H - stripH;
+    var area = {x:14,y:8,w:W-28-(ns===2?44:0),h:stripTop-8-10};
+    var pts = []; inc.forEach(function(e){ if(e.a) pts.push(e.a,e.b); else pts.push(e.p); });
+    var mnx=1e9,mny=1e9,mxx=-1e9,mxy=-1e9;
+    pts.forEach(function(p){ mnx=Math.min(mnx,p[0]); mxx=Math.max(mxx,p[0]); mny=Math.min(mny,p[1]); mxy=Math.max(mxy,p[1]); });
+    function doFit(ar){
+      var pad=34, bw=Math.max(mxx-mnx,1), bh=Math.max(mxy-mny,1);
+      var f=Math.min((ar.w-2*pad)/bw,(ar.h-2*pad)/bh,3.2);
+      return {f:f, ox:ar.x+ar.w/2-((mnx+mxx)/2)*f, oy:ar.y+ar.h/2-((mny+mxy)/2)*f};
+    }
+    function hitNR(ft){ return pts.some(function(p){ var x=ft.ox+p[0]*ft.f, y=ft.oy+p[1]*ft.f; return x<86&&y<76; }); }
+    var fit = doFit(area);
+    if(hitNR(fit)){
+      var fa = doFit({x:area.x+66,y:area.y,w:area.w-66,h:area.h}), fb = doFit({x:area.x,y:area.y+54,w:area.w,h:area.h-54});
+      var ca = hitNR(fa), cb = hitNR(fb);
+      fit = (!ca && (cb || fa.f>=fb.f)) ? fa : (!cb ? fb : (fa.f>=fb.f ? fa : fb));
+    }
+    function X(p){ return [fit.ox+p[0]*fit.f, fit.oy+p[1]*fit.f]; }
+    var cx0=0, cy0=0, cn=0;
+    inc.forEach(function(e){
+      if(e.a){ e.A=X(e.a); e.B=X(e.b); cx0+=e.A[0]+e.B[0]; cy0+=e.A[1]+e.B[1]; cn+=2; }
+      else { e.Pp=X(e.p); cx0+=e.Pp[0]; cy0+=e.Pp[1]; cn++; }
+    });
+    var C = [cx0/cn, cy0/cn];
+
+    var segs = [], gEl = [], gDim = [], gArr = [], gLab = [], gStrip = [];
+    var f1 = function(v){ return (Math.round(v*10)/10); };
+    function line(a,b,cls){ return '<line class="'+cls+'" x1="'+f1(a[0])+'" y1="'+f1(a[1])+'" x2="'+f1(b[0])+'" y2="'+f1(b[1])+'"/>'; }
+    function poly(ps,cls){ return '<polygon class="'+cls+'" points="'+ps.map(function(p){return f1(p[0])+","+f1(p[1]);}).join(" ")+'"/>'; }
+    function add(a,b,s){ return [a[0]+b[0]*s,a[1]+b[1]*s]; }
+    var pipeSegs = [];
+    inc.forEach(function(e){ if(e.t==="pipe") pipeSegs.push({e:e,s:[e.A,e.B]}); });
+    var nodeAnchor = {};          // id -> [x,y] where its lettered box attaches
+    var extra = [];               // equipment name labels
+
+    inc.forEach(function(e){
+      var g = '<g class="hit" data-i="'+e.id+'">', A=e.A, B=e.B, u, p, M;
+      if(e.a){
+        u = [B[0]-A[0],B[1]-A[1]]; var L=Math.sqrt(u[0]*u[0]+u[1]*u[1]); u=[u[0]/L,u[1]/L]; p=[-u[1],u[0]];
+        M = [(A[0]+B[0])/2,(A[1]+B[1])/2]; e.U=u; e.Lh=L;
+        g += line(A,B,"halo");
+        if(e.t==="pipe"){
+          g += line(A,B,"pp");
+          if(e.broken){
+            g += line(add(M,u,-3.2),add(M,u,3.2),"pp").replace('class="pp"','class="pp" style="stroke:var(--paper);stroke-width:4"');
+            [-3.6,3.6].forEach(function(s){ g += line(add(add(M,u,s-1.4),p,5),add(add(M,u,s+1.4),p,-5),"dl"); });
+          }
+          g += line(A,B,"fat");
+          segs.push([A,B]);
+        } else {
+          g += line(A,add(A,u,0.01),"pp");
+          var w, tail;
+          if(e.t==="valve"){
+            w = Math.max(5.2,L*0.33);
+            if(S.symbols){
+              g += '<path class="sy" d="M'+f1((add(A,p,w))[0])+' '+f1((add(A,p,w))[1])+'L'+f1(M[0])+' '+f1(M[1])+'L'+f1((add(A,p,-w))[0])+' '+f1((add(A,p,-w))[1])+'ZM'+
+                f1((add(B,p,w))[0])+' '+f1((add(B,p,w))[1])+'L'+f1(M[0])+' '+f1(M[1])+'L'+f1((add(B,p,-w))[0])+' '+f1((add(B,p,-w))[1])+'Z"/>';
+              g += line(A,add(A,u,0.5),"pp");
+              if(e.v==="gate"){
+                var sdir = p[1]<-0.2 ? p : (p[1]>0.2 ? [-p[0],-p[1]] : (p[0]>0?p:[-p[0],-p[1]]));
+                var st = add(M,sdir,w+7);
+                g += line(M,st,"pp").replace('class="pp"','class="pp" style="stroke-width:1"');
+                g += line(add(st,u,-3.4),add(st,u,3.4),"pp").replace('class="pp"','class="pp" style="stroke-width:1.2"');
+                segs.push([M,st],[add(st,u,-3.4),add(st,u,3.4)]);
+              } else {
+                g += '<circle class="sd" cx="'+f1(M[0])+'" cy="'+f1(M[1])+'" r="2.3"/>';
+              }
+            } else {
+              g += line(add(M,p,-4),add(M,p,4),"pp");
+            }
+            segs.push([A,B],[add(M,p,-w),add(M,p,w)]);
+          } else {
+            if(S.symbols){
+              g += poly([add(A,p,5.6),add(B,p,3.4),add(B,p,-3.4),add(A,p,-5.6)],"sy");
+            } else { g += line(add(M,p,-4),add(M,p,4),"pp"); }
+            segs.push([A,B],[add(A,p,-5.6),add(A,p,5.6)]);
+          }
+          g += '<circle class="halo" cx="'+f1(M[0])+'" cy="'+f1(M[1])+'" r="13"/>';
+          nodeAnchor[e.id] = M;
+        }
+      } else {
+        var Pp = e.Pp;
+        if(e.t==="equip"){
+          var uu = e.u, pp2 = [-uu[1],uu[0]];
+          if(e.name.indexOf("Pump")===0){
+            var c = add(Pp,uu,-9), r = 9;
+            g += '<circle class="halo" cx="'+f1(c[0])+'" cy="'+f1(c[1])+'" r="15"/>';
+            g += '<circle class="sy" cx="'+f1(c[0])+'" cy="'+f1(c[1])+'" r="'+r+'"/>';
+            g += poly([add(c,uu,5),add(add(c,uu,-3),pp2,4),add(add(c,uu,-3),pp2,-4)],"sd");
+            g += line(add(Pp,pp2,4.5),add(Pp,pp2,-4.5),"pp");
+            segs.push([add(c,[1,0],-r),add(c,[1,0],r)],[add(c,[0,1],-r),add(c,[0,1],r)],[add(c,[0.707,0.707],-r),add(c,[0.707,0.707],r)],[add(c,[0.707,-0.707],-r),add(c,[0.707,-0.707],r)]);
+            nodeAnchor[e.id] = c; extra.push({e:e,c:c,pump:true});
+          } else {
+            var c2 = add(Pp,uu,8);
+            g += '<rect class="halo" x="'+f1(c2[0]-17)+'" y="'+f1(c2[1]-11)+'" width="34" height="22" rx="4"/>';
+            g += '<rect class="sy" x="'+f1(c2[0]-13)+'" y="'+f1(c2[1]-7)+'" width="26" height="14" rx="1.5"/>';
+            g += '<polyline class="pp" style="stroke-width:1" points="'+[-9,-6,-3,0,3,6,9].map(function(dx,i){ return f1(c2[0]+dx)+","+f1(c2[1]+(i===0||i===6?0:(i%2?-4:4))); }).join(" ")+'"/>';
+            segs.push([[c2[0]-13,c2[1]-7],[c2[0]+13,c2[1]-7]],[[c2[0]-13,c2[1]+7],[c2[0]+13,c2[1]+7]],[[c2[0]-13,c2[1]-7],[c2[0]-13,c2[1]+7]],[[c2[0]+13,c2[1]-7],[c2[0]+13,c2[1]+7]]);
+            nodeAnchor[e.id] = c2; extra.push({e:e,c:c2,pump:false});
+          }
+        } else {
+          g += '<circle class="halo" cx="'+f1(Pp[0])+'" cy="'+f1(Pp[1])+'" r="11"/>';
+          if(e.t==="tee") g += '<circle class="sd" cx="'+f1(Pp[0])+'" cy="'+f1(Pp[1])+'" r="2"/>';
+          nodeAnchor[e.id] = Pp;
+        }
+      }
+      gEl.push(g+'</g>');
+    });
+
+    /* dimensions (pipe cut lengths) */
+    if(S.dims){
+      pipeSegs.forEach(function(ps){
+        var e=ps.e, A=e.A, B=e.B, u=e.U, nrm=[-u[1],u[0]], mid=[(A[0]+B[0])/2,(A[1]+B[1])/2], off=11;
+        var away = ((mid[0]-C[0])*nrm[0]+(mid[1]-C[1])*nrm[1]) >= 0 ? 1 : -1;
+        function score(sg){
+          var nn=[nrm[0]*sg,nrm[1]*sg], A2=add(A,nn,off), B2=add(B,nn,off), sc=0;
+          pipeSegs.forEach(function(o){ if(o.e!==e){ if(segHit(A2,B2,o.s[0],o.s[1])) sc+=3; }
+            [o.s[0],o.s[1]].forEach(function(q){ var t=((q[0]-A2[0])*u[0]+(q[1]-A2[1])*u[1]), d=Math.abs((q[0]-A2[0])*nn[0]+(q[1]-A2[1])*nn[1]);
+              if(o.e!==e && t>-2 && t<e.Lh+2 && d<6) sc+=2; }); });
+          return sc + (sg===away?0:0.5);
+        }
+        var sg = score(away) <= score(-away) ? away : -away, nn=[nrm[0]*sg,nrm[1]*sg];
+        var A2=add(A,nn,off), B2=add(B,nn,off), m2=[(A2[0]+B2[0])/2,(A2[1]+B2[1])/2];
+        var s = '<g>'+line(add(A,nn,3),add(A,nn,off+3),"dl")+line(add(B,nn,3),add(B,nn,off+3),"dl")+line(A2,B2,"dl");
+        [A2,B2].forEach(function(q){ var t=[u[0]-nn[0],u[1]-nn[1]]; s += line(add(q,t,-2.2),add(q,t,2.2),"dl").replace('class="dl"','class="dl" style="stroke-width:1.1"'); });
+        var ang = Math.atan2(u[1],u[0])*180/Math.PI; if(ang>90) ang-=180; if(ang<=-90) ang+=180;
+        var tc = add(m2,nn,5.4);
+        s += '<text class="st" x="'+f1(tc[0])+'" y="'+f1(tc[1])+'" transform="rotate('+f1(ang)+' '+f1(tc[0])+' '+f1(tc[1])+')">'+Math.round(e.len)+'</text></g>';
+        gDim.push(s);
+        segs.push([A2,B2],[add(A,nn,3),add(A,nn,off+3)],[add(B,nn,3),add(B,nn,off+3)]);
+        var tl = String(Math.round(e.len)).length*5.2, tcs = add(m2,nn,5.4);
+        segs.push([add(tcs,u,-tl/2),add(tcs,u,tl/2)]);
+      });
+    }
+    /* flow arrows */
+    if(S.arrows){
+      pipeSegs.forEach(function(ps){
+        var e=ps.e, t=e.broken?0.27:0.5, Q=[e.A[0]+(e.B[0]-e.A[0])*t, e.A[1]+(e.B[1]-e.A[1])*t], u=e.U, pp=[-u[1],u[0]];
+        gArr.push(poly([add(Q,u,5),add(add(Q,u,-3),pp,3.2),add(add(Q,u,-3),pp,-3.2)],"ar"));
+        segs.push([Q,Q]);
+      });
+    }
+
+    /* labels */
+    var pl = new Placer(segs,{x:4,y:4,w:W-8,h:stripTop-8});
+    function leader(ax,ay,r){ var qx=Math.max(r.x,Math.min(ax,r.x+r.w)), qy=Math.max(r.y,Math.min(ay,r.y+r.h)); return '<line class="ld" x1="'+f1(ax)+'" y1="'+f1(ay)+'" x2="'+f1(qx)+'" y2="'+f1(qy)+'"/><circle class="sd" cx="'+f1(ax)+'" cy="'+f1(ay)+'" r="1.4"/>'; }
+    // equipment names
+    extra.forEach(function(x){
+      var txt = x.e.name, w = txt.length*4.7+2, h = 9, c = x.c;
+      var dirs = x.pump ? [[0.707,0.707],[0,1],[-0.707,0.707],[-1,0]] : [[1,0],[0.707,0.707],[0.707,-0.707],[0,1]];
+      var r = pl.put(c[0],c[1],w,h,dirs.concat(R8),[x.pump?11:16,18,26,36,48,60]);
+      gLab.push((r.moved?leader(c[0],c[1],r):'')+'<text class="nm" x="'+f1(r.x+1)+'" y="'+f1(r.cy)+'">'+esc(txt)+'</text>');
+    });
+    // elevation callouts
+    if(S.elev){
+      var seen = {};
+      inc.forEach(function(e){
+        if(e.t!=="pipe"||!e.vertical) return;
+        [[e.A,e.za],[e.B,e.zb]].forEach(function(q){
+          var key = Math.round(q[0][0])+"/"+Math.round(q[0][1]); if(seen[key]) return; seen[key]=1;
+          var txt = "EL "+(((q[1]-S.datum)>=0)?"+":"−")+Math.abs(Math.round(q[1]-S.datum)), w = txt.length*5.0+2, h = 10;
+          var dirs = [[-1,0],[-0.707,-0.707],[-0.707,0.707],[1,0],[0.707,-0.707],[0.707,0.707],[0,-1],[0,1]];
+          var r = pl.put(q[0][0],q[0][1],w,h,dirs,[5,9,15,22,30]);
+          gLab.push((r.moved?leader(q[0][0],q[0][1],r):'<circle class="sd" cx="'+f1(q[0][0])+'" cy="'+f1(q[0][1])+'" r="1.6"/>')+'<text class="el" x="'+f1(r.x+1)+'" y="'+f1(r.cy)+'">'+txt+'</text>');
+        });
+      });
+    }
+    // lettered boxes
+    inc.forEach(function(e){
+      if(e.t==="pipe") return;
+      var a = nodeAnchor[e.id]; if(!a) return;
+      var dirs = R8;
+      if(e.a){ var p=[-e.U[1],e.U[0]]; dirs = [p[1]<0?p:[-p[0],-p[1]], p[1]<0?[-p[0],-p[1]]:p].concat(R8); }
+      var r = pl.put(a[0],a[1],11,11,dirs,RS);
+      gLab.push('<g class="hit" data-i="'+e.id+'">'+(r.moved?leader(a[0],a[1],r):'')+'<rect class="lb" x="'+f1(r.x)+'" y="'+f1(r.y)+'" width="11" height="11" rx="1.5"/><text class="lt" x="'+f1(r.cx)+'" y="'+f1(r.cy+0.4)+'">'+letterOf[e.id]+'</text></g>');
+    });
+    // continuation marks
+    if(ns===2){
+      if(n===1){
+        var lastP = null; inc.forEach(function(e){ if(e.t==="pipe" && e.grp==="cont") lastP = e; });
+        var tip = lastP.B, u = lastP.U, pp = [-u[1],u[0]];
+        gLab.push(poly([add(tip,u,10),add(tip,pp,5),add(tip,pp,-5)],"ar"));
+        [-4,-1].forEach(function(s){ gLab.push(line(add(add(tip,u,s),pp,5),add(add(tip,u,s),pp,-5),"dl")); });
+        var txt = "CONT. ON SHEET 2", r = pl.put(tip[0],tip[1],txt.length*5.1+2,11,[u].concat(R8),[14,20,28,36]);
+        gLab.push((r.moved?leader(tip[0],tip[1],r):'')+'<text class="ct" x="'+f1(r.x+1)+'" y="'+f1(r.cy)+'">'+txt+'</text>');
+      } else {
+        var first = inc[0], st = first.Pp || first.A, txt2 = "FROM SHEET 1";
+        var r2 = pl.put(st[0],st[1],txt2.length*5.1+2,11,R8,[8,14,22,30]);
+        gLab.push('<circle class="sd" cx="'+f1(st[0])+'" cy="'+f1(st[1])+'" r="2.4"/><text class="ct" x="'+f1(r2.x+1)+'" y="'+f1(r2.cy)+'">'+txt2+'</text>');
+      }
+    }
+    // north arrow
+    var nU = DIRS[k], nc = [38,40], nt = add(nc,nU,-15), nh = add(nc,nU,15), npp = [-nU[1],nU[0]];
+    gLab.push(line(nt,nh,"pp").replace('class="pp"','class="pp" style="stroke-width:1.2"')+poly([add(nh,nU,3),add(add(nh,nU,-6),npp,3.6),add(add(nh,nU,-6),npp,-3.6)],"sd")+'<text class="ct" x="'+f1(add(nh,nU,12)[0])+'" y="'+f1(add(nh,nU,12)[1])+'" text-anchor="middle" style="font-size:10px">N</text>');
+
+    /* bill of material strip + notes */
+    var cols = [12,30,150,212,250], y0 = stripTop;
+    gStrip.push(line([10,y0],[W-10,y0],"bl"));
+    gStrip.push('<text class="bh" x="12" y="'+f1(y0+9)+'">BILL OF MATERIAL  (sheet '+n+' of '+ns+')</text>');
+    var heads = ["PT","Description","Size","Qty"].concat(ns>1?["On sheet"]:[]);
+    heads.forEach(function(h,i){ gStrip.push('<text class="bh" x="'+cols[i]+'" y="'+f1(y0+19)+'">'+h+'</text>'); });
+    gStrip.push(line([12,y0+24],[ns>1?288:248,y0+24],"bl"));
+    bom.forEach(function(r,i){
+      var yy = y0+24+(i+0.5)*9.4+3;
+      [r.letter,r.desc,r.size,r.q].concat(ns>1?[r.sh]:[]).forEach(function(v,j){ gStrip.push('<text class="bs" x="'+cols[j]+'" y="'+f1(yy)+'">'+esc(v)+'</text>'); });
+    });
+    gStrip.push('<text class="bh" x="304" y="'+f1(y0+9)+'">NOTES</text>');
+    var ny = y0+19;
+    NOTES.forEach(function(t,i){ wrap((i+1)+". "+t,64).forEach(function(ln){ gStrip.push('<text class="bn" x="304" y="'+f1(ny)+'">'+esc(ln)+'</text>'); ny += 7.6; }); ny += 2; });
+
+    var svg = gEl.join("")+gDim.join("")+gArr.join("")+gLab.join("")+gStrip.join("");
+    // drafting-view counts: lines, arcs and text notes the same primitives would write
+    var tmp = document.createElementNS("http://www.w3.org/2000/svg","svg"); tmp.innerHTML = svg;
+    var lines = 0, texts = 0;
+    $$("line,polyline,polygon,rect,circle",tmp).forEach(function(q){
+      var c = q.getAttribute("class")||""; if(/\bhalo\b|\bfat\b/.test(c)) return;
+      var tg = q.tagName.toLowerCase();
+      if(tg==="line"||tg==="circle") lines++;
+      else if(tg==="rect") lines += 4;
+      else { var np = (q.getAttribute("points")||"").trim().split(/\s+/).length; lines += (tg==="polygon") ? np : np-1; }
+    });
+    $$("path",tmp).forEach(function(){ lines += 6; });
+    texts = $$("text",tmp).length;
+    return {svg:svg,lines:lines,texts:texts,bom:bom,mem:mem,ns:ns};
+  }
+
+  /* ---- render everything that depends on the drawing ---- */
+  function render(){
+    var d = drawSheet(1); lastDraw = d;
+    $("#cv_iso").innerHTML = d.svg;
+    var pipes = 0, len = 0, fit = 0, acc = 0;
+    d.mem.forEach(function(e){ if(e.t==="pipe"){ pipes++; len += e.len; } else if(e.t==="valve") acc++; else if(e.t!=="equip") fit++; });
+    d.pipes = pipes; d.len = len/1000; d.fit = fit; d.acc = acc;
+    $("#kpi_scale").textContent = "NTS · "+d.ns+" sheet"+(d.ns===1?"":"s");
+    var fitScale = {tb4:50,p4:50,tb3:20,p3:20,p2:20,tb1:10,p1:10}[S.sheet];
+    $("#kpi_scale").title = "Not to scale: legs are drawn between "+MINL+" and "+MAXL+" mm; the true geometry would have fitted 1:"+fitScale+".";
+    $("#kpi_pipes").textContent = grp3(pipes);
+    $("#kpi_length").textContent = d.len.toFixed(2)+" m";
+    $("#kpi_fittings").textContent = fit+" / "+acc;
+    $("#kpi_elements").textContent = grp3(ELEMENTS_READ);
+    // bill of material table
+    var h = '<div class="h">PT</div><div class="h">Description</div><div class="h">Size</div><div class="h">Qty</div>';
+    d.bom.forEach(function(r,i){
+      var a = ' data-r="'+i+'"';
+      h += '<div class="r l"'+a+'>'+r.letter+'</div><div class="r"'+a+' title="'+esc(r.desc)+'">'+esc(r.desc)+'</div><div class="r s"'+a+'>'+esc(r.size)+'</div><div class="r n"'+a+'>'+r.q+'</div>';
+    });
+    $("#grid_bom").innerHTML = h;
+    // selection that no longer exists is dropped
+    var ids = d.mem.map(function(e){ return e.id; });
+    S.sel = S.sel.filter(function(i){ return ids.indexOf(i)>=0; });
+    applySel();
+    refreshLabels();
+    setEnabled(true);
+  }
+  function setEnabled(on){
+    $("#btn_pdf").classList.toggle("off",!on); $("#btn_view").classList.toggle("off",!on);
+    $("#empty_state").style.display = "none";
+  }
+  function refreshLabels(){
+    var n = nSheets();
+    $("#foot_page").textContent = (hasTB()?"Title block":"Paper")+(S.drawn?" · "+n+" sheet(s)":"");
+    $("#txt_sheet_no").disabled = !hasTB();
+    $("#lbl_sheet_hint").textContent = hasTB()
+      ? "A drafting view per sheet, each on a Revit sheet in this title block, numbered from the prefix."
+      : "The model has this paper only on the PDF; Create View makes drafting views without sheets.";
+    $("#lbl_end").textContent = S.endPicked ? END_TXT : "Every end downstream";
+    $("#lbl_end_hint").textContent = S.endPicked
+      ? "Element id 402359. One run, start to end; a run longer than the sheet is split over sheets."
+      : "With no end, every branch downstream of the start is drawn on one sheet. Pick an end for one run.";
+    $("#chk_branches").classList.toggle("dim",S.endPicked);
+  }
+  function applySel(){
+    $$("#cv_iso .hit").forEach(function(g){ g.classList.toggle("sel", S.sel.indexOf(+g.getAttribute("data-i"))>=0); });
+    var rows = lastDraw ? lastDraw.bom : [];
+    $$("#grid_bom .r").forEach(function(c){
+      var r = rows[+c.getAttribute("data-r")];
+      var on = r && S.sel.length && r.ids.some(function(i){ return S.sel.indexOf(i)>=0; });
+      c.classList.toggle("sel",!!on);
+    });
+  }
+  function select(ids){
+    S.sel = ids.slice(); applySel();
+    status("Showing "+ids.length+" element(s) in Revit.");
+  }
+
+  /* ---- footer, banner, busy ---- */
+  function status(t){ var s = $("#footer_status"); s.textContent = t; s.title = t; }
+  var bt = null;
+  function banner(t,lv){
+    var b = $("#banner"); $("#banner_text").textContent = t; b.className = "banner"+(lv&&lv!=="info"?" "+lv:""); b.style.display = "flex";
+    clearTimeout(bt); bt = setTimeout(function(){ b.style.display = "none"; },6000);
+  }
+  $("#banner_x").addEventListener("click",function(){ $("#banner").style.display = "none"; });
+  function setBusy(on){
+    busy = on; $("#footer").classList.toggle("busy-run",on);
+    $("#btn_run").classList.toggle("off",on);
+  }
+  function setName(){
+    return "ISO - "+SYSTEM+(S.endOn?" - Pump, end suction to Coil, cooling":"");
+  }
+
+  function summary(){
+    var d = lastDraw, warn = "";
+    return grp3(d.mem.length)+" element(s) on the run: "+d.pipes+" pipe(s) over "+d.len.toFixed(1)+" m, "+d.fit+" fitting(s), "+d.acc+" accessory(ies); "+d.ns+" sheet(s), not to scale."+warn;
+  }
+  /* ---- Draw ---- */
+  function doDraw(){
+    if(busy) return;
+    if(!S.ports[0]){ status("The run holds nothing to draw."); banner("The run holds nothing to draw.","warn"); return; }
+    setBusy(true); status("Reading the run from the start …");
+    setTimeout(function(){ status("Laying out the sheet …"); },500);
+    setTimeout(function(){
+      S.endOn = S.endPicked; S.drawn = true; S.created = false; S.sel = [];
+      render(); setBusy(false);
+      status(summary());
+    },1150);
+  }
+  $("#btn_run").addEventListener("click",doDraw);
+
+  /* ---- Create View ---- */
+  var yesFn = null;
+  function ask(msg,fn){ $("#dlg_msg").textContent = msg; yesFn = fn; $("#scrim").classList.add("on"); $("#dlg_yes").focus(); }
+  function closeAsk(){ $("#scrim").classList.remove("on"); }
+  $("#dlg_no").addEventListener("click",function(){ closeAsk(); status("Nothing created."); });
+  $("#dlg_yes").addEventListener("click",function(){ closeAsk(); if(yesFn) yesFn(); });
+  document.addEventListener("keydown",function(e){ if(e.key==="Escape" && $("#scrim").classList.contains("on")){ closeAsk(); status("Nothing created."); } });
+  $("#btn_view").addEventListener("click",function(){
+    if(busy) return;
+    if(!S.drawn){ status("Draw first."); return; }
+    var d = lastDraw, pre = $("#txt_sheet_no").value || "ISO-", ns = d.ns;
+    var what = hasTB()
+      ? ns+" drafting view(s), each on a new sheet in “"+sheetLabel()+"” numbered "+pre+"01 onward"
+      : ns+" drafting view(s) (no title block in the model, so no sheets)";
+    ask("“"+setName()+"”: "+d.pipes+" pipes, "+d.fit+" fittings, "+d.acc+" accessories -> "+what+".",function(){
+      setBusy(true); $("#btn_view").classList.add("off"); status("Creating the drafting views …");
+      setTimeout(function(){
+        var lines = 0, texts = 0, i; for(i=1;i<=ns;i++){ var s = drawSheet(i); lines += s.lines; texts += s.texts; }
+        render(); setBusy(false); S.created = true;
+        var nums = []; for(i=1;i<=ns;i++) nums.push(pre+(i<10?"0":"")+i);
+        var msg = ns+" drafting view(s) ("+grp3(lines)+" line(s), "+texts+" text note(s))"+(hasTB()?" on sheet(s) "+nums.join(", "):"")+". Ctrl+Z in Revit undoes it.";
+        status(msg); banner(msg,"info");
+      },1250);
+    });
+  });
+
+  /* ---- Export PDF ---- */
+  $("#btn_pdf").addEventListener("click",function(){
+    if(busy) return;
+    if(!S.drawn){ status("Draw first."); return; }
+    var ns = lastDraw.ns, file = "Iso_"+SYSTEM.replace(/ /g,"_")+".pdf";
+    setBusy(true); $("#btn_pdf").classList.add("off");
+    status(hasTB() ? "Printing the sheets through Revit …" : "Writing the plain pages …");
+    setTimeout(function(){
+      setBusy(false); $("#btn_pdf").classList.remove("off");
+      var msg = hasTB()
+        ? "Printed "+ns+" sheet(s) through Revit in “"+sheetLabel()+"”: "+file+(S.created ? " (the sheets you created)" : " (temporary sheets - the model keeps nothing)")
+        : "Written, "+ns+" plain page(s), no title block: "+file;
+      status(msg); banner("Pages written to the chosen folder.","info");
+    },1200);
+  });
+
+  /* ---- picks ---- */
+  function pickStart(){
+    if(busy) return; status("Click the start element in the Revit view. The window stays open.");
+    setTimeout(function(){ $("#lbl_start").textContent = START_TXT; status("Start: "+START_TXT+". Now Draw."); },700);
+  }
+  $("#btn_pick_start").addEventListener("click",pickStart);
+  $("#btn_sel_start").addEventListener("click",function(){ status("Start: "+START_TXT+". Now Draw."); });
+  function pickEnd(){
+    if(busy) return; status("Click the end element in the Revit view.");
+    setTimeout(function(){ S.endPicked = true; refreshLabels(); status("End: "+END_TXT+". Now Draw."); },700);
+  }
+  $("#btn_pick_end").addEventListener("click",pickEnd);
+  $("#btn_sel_end").addEventListener("click",function(){ S.endPicked = true; refreshLabels(); status("End: "+END_TXT+". Now Draw."); });
+  $("#btn_clear_end").addEventListener("click",function(){ S.endPicked = false; refreshLabels(); status("No end: every branch downstream is drawn. Now Draw."); });
+
+  /* ---- settings ---- */
+  $$("#rail .chk").forEach(function(c){
+    c.addEventListener("click",function(){
+      c.classList.toggle("on"); var on = c.classList.contains("on");
+      var o = c.getAttribute("data-opt"), pi = c.getAttribute("data-port");
+      if(pi!==null){ S.ports[+pi] = on; return; }
+      S[o] = on;
+      if(S.drawn && /^(dims|elev|arrows|symbols|branches)$/.test(o)) render();
+    });
+  });
+  $("#cmb_sheet").addEventListener("change",function(){ S.sheet = this.value; if(S.drawn) render(); else refreshLabels(); });
+  $("#cmb_rotation").addEventListener("change",function(){ S.rot = +this.value; if(S.drawn) render(); });
+  function datumSet(){ var v = parseFloat(String($("#txt_datum").value).replace(",",".")); S.datum = isNaN(v)?0:v; $("#txt_datum").value = String(S.datum); if(S.drawn) render(); }
+  $("#txt_datum").addEventListener("change",datumSet);
+  $("#txt_datum").addEventListener("keydown",function(e){ if(e.key==="Enter") datumSet(); });
+
+  /* ---- preview and BOM interaction ---- */
+  $("#cv_iso").addEventListener("click",function(e){
+    var g = e.target.closest ? e.target.closest(".hit") : null; if(!g) return;
+    select([+g.getAttribute("data-i")]);
+  });
+  $("#grid_bom").addEventListener("click",function(e){
+    var c = e.target.closest(".r"); if(!c) return;
+    select(lastDraw.bom[+c.getAttribute("data-r")].ids);
+  });
+  $("#grid_bom").addEventListener("mouseover",function(e){
+    var c = e.target.closest(".r"); $$("#grid_bom .r.hv").forEach(function(x){ x.classList.remove("hv"); });
+    if(c) $$('#grid_bom .r[data-r="'+c.getAttribute("data-r")+'"]').forEach(function(x){ x.classList.add("hv"); });
+  });
+  $("#grid_bom").addEventListener("mouseleave",function(){ $$("#grid_bom .r.hv").forEach(function(x){ x.classList.remove("hv"); }); });
+
+  /* ---- shell ---- */
+  $("#burger").addEventListener("click",function(){ $("#rail").classList.toggle("collapsed"); });
+  $("#themeBtn").addEventListener("click",function(){
+    document.body.classList.toggle("light");
+    this.innerHTML = document.body.classList.contains("light") ? "&#xE708;" : "&#xE706;";
+  });
+
+  render();
+  status(summary());
+  window.__iso = {drawSheet:drawSheet,S:S,render:render};
+})();
+</script>
+</body>
+</html>

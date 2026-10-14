@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLR — Pressure Loss</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.12);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33; --readout:#101a20;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33; --violet:#B49BE0;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.10);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE; --readout:#F2F5F7;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE; --violet:#5E35B1;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  body.light{background:#cfd8dc}
+  .window{position:relative;width:1220px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .mono{font-family:Consolas,monospace}
+  button{font-family:inherit}
+  /* titlebar */
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .burger{color:var(--text-2);font-size:15px;cursor:pointer}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.2px;color:var(--text-main);font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:3px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:12px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}.dot.c{background:#FF5F57;color:#7A1410}
+  /* body */
+  .main{display:flex;height:730px}
+  .rail{width:262px;background:var(--nav);border-right:1px solid var(--border);padding:2px 12px 14px;overflow-y:auto;overflow-x:hidden;transition:width .12s;flex:none;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  .rail.collapsed{width:0;padding:0;border-right-width:0}
+  .rail .inner{width:237px}
+  .rcap{font:600 9px Consolas,monospace;letter-spacing:.14em;color:var(--text-2);margin:12px 0 5px 2px}
+  .rcap:first-child{margin-top:12px}
+  .hint{font-size:10.5px;line-height:1.45;color:var(--text-2);margin-top:5px}
+  .hint.warn{color:var(--warn)}
+  .startcard{background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
+  .startcard b{font-size:11.5px;font-weight:600;display:block;overflow-wrap:anywhere}
+  .startcard .hint{margin-top:3px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}
+  .fld{display:flex;align-items:center;gap:6px;margin-top:6px}
+  .fld .fl{flex:1;font-size:11px;color:var(--text-2)}
+  .fld .fl.w{flex:none;width:auto}
+  .fld.gap{margin-top:8px}
+  .in,.sel2{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:4px;padding:3px 8px;font-size:11.5px;font-family:inherit;height:26px;min-width:0}
+  .in:focus,.sel2:focus{outline:1px solid var(--accent);border-color:var(--accent)}
+  .in.num{text-align:right;font-family:Consolas,monospace}
+  .sel2{width:100%}
+  .rail .sel2{font-size:11px;padding:3px 4px}
+  .sel2.sm{width:74px;flex:none}
+  .sel2:disabled,.in:disabled{opacity:.5}
+  .btn{background:var(--panel2);border:1px solid var(--border);color:var(--text-main);border-radius:5px;padding:0 12px;height:28px;font-size:11.5px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;justify-content:center;white-space:nowrap}
+  .btn:hover{background:var(--hover)}
+  .btn .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:12px;color:var(--accent)}
+  .btn.tall{height:30px}
+  .btn.off{opacity:.45;cursor:default;pointer-events:none}
+  .btn.acc{background:var(--accent);color:var(--accent-fg);border-color:var(--accent);font-weight:600;padding:0 18px}
+  .btn.acc:hover{filter:brightness(1.08)}
+  .btn.mini{height:24px;padding:0 9px;font-size:11px}
+  .chk{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;cursor:pointer;color:var(--text-main);margin-top:8px;line-height:1.35}
+  .chk .box{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative;flex:none;margin-top:1px}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:10px;text-align:center;line-height:14px}
+  .chk.dim{opacity:.45;pointer-events:none}
+  .chk.inline{display:inline-flex;margin-top:0}
+  .hide{display:none!important}
+  /* content */
+  .content{flex:1;min-width:0;display:flex;flex-direction:column;background:var(--window-bg);position:relative}
+  .tabs{display:flex;gap:6px;padding:11px 13px 8px}
+  .nav{border:1px solid var(--border);background:var(--input-bg);color:var(--text-2);border-radius:99px;padding:0 16px;height:28px;font-size:12px;cursor:pointer}
+  .nav:hover{background:var(--hover);color:var(--text-main)}
+  .nav.sel{background:var(--accent);border-color:var(--accent);color:var(--accent-fg);font-weight:600}
+  .kpis{display:grid;grid-template-columns:1.25fr 1.5fr 1.3fr .95fr .6fr .85fr;gap:9px;margin:0 13px 9px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 12px;min-width:0}
+  .tile .lab{font-size:9px;letter-spacing:.05em;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tile .val{font-size:19px;font-weight:700;margin-top:3px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tile .val.acc{color:var(--accent)}
+  .tile.busy .val{opacity:.35}
+  .pages{flex:1;min-height:0;margin:0 13px 12px;position:relative}
+  .page{position:absolute;inset:0;display:none}
+  .page.on{display:flex}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:8px;min-height:0;min-width:0;display:flex;flex-direction:column}
+  .page.col{flex-direction:column;gap:9px}
+  .scroll{overflow:auto;min-height:0;flex:1;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  .chead{display:flex;align-items:center;gap:12px;padding:8px 10px 6px}
+  .chead .cap{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text-2)}
+  .chead .hint{margin:0;flex:1;min-width:0}
+  .chead .sp{flex:1}
+  /* checks */
+  .checks{padding:8px 6px 8px 10px;max-height:212px;overflow:auto;flex:none;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
+  .ck{display:flex;gap:10px;align-items:flex-start;padding:5px 2px;font-size:11.5px;line-height:1.5}
+  .ck + .ck{border-top:1px solid var(--border)}
+  .ck .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:13px;width:16px;text-align:center;flex:none;margin-top:1px}
+  .ck.fail .g{color:var(--fail)}.ck.warn .g{color:var(--warn)}.ck.info .g,.ck.tip .g{color:var(--accent)}
+  .ck .tx{flex:1;min-width:0}
+  .ck .tx b{font-weight:600}
+  .ck .ids{font:10.5px Consolas,monospace;color:var(--accent);cursor:pointer;white-space:nowrap;background:none;border:none;padding:0 4px}
+  .ck .ids:hover{text-decoration:underline}
+  .ck .x{font-size:16px;line-height:1;color:var(--text-2);cursor:pointer;background:none;border:none;padding:3px 5px;border-radius:4px}
+  .ck .x:hover{background:var(--hover);color:var(--text-main)}
+  .ck.hidden{color:var(--text-2);font-size:11px;padding:4px 2px}
+  .ck.hidden button{background:none;border:none;color:var(--accent);cursor:pointer;font-size:11px}
+  .ck.hidden button:hover{text-decoration:underline}
+  .sum{display:grid;grid-template-columns:1fr 300px;gap:9px;flex:1;min-height:0}
+  .pairs{padding:8px 12px 10px}
+  .pair{padding:5px 0;border-bottom:1px solid var(--border)}
+  .pair:last-child{border-bottom:none}
+  .pair .k{font-size:10px;color:var(--text-2)}
+  .pair .v{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:1px;overflow-wrap:anywhere}
+  .pair .v small{font-weight:400;color:var(--text-2);font-size:11px}
+  .diag{padding:0 8px 8px;display:block}
+  svg text{font-family:"Segoe UI",system-ui,sans-serif}
+  .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:8px}
+  .empty .big{font-size:30px;color:var(--accent)}
+  .empty b{font-size:13.5px;font-weight:600}
+  .empty p{font-size:11.5px;color:var(--text-2);max-width:460px;line-height:1.5}
+  .empty.hide{display:none}
+  /* tables */
+  table.gt{border-collapse:separate;border-spacing:0;width:100%;font-size:11px}
+  .gt th{position:sticky;top:0;z-index:1;background:var(--card);text-align:right;font-weight:600;font-size:10px;color:var(--text-2);padding:6px 6px;border-bottom:1px solid var(--border);vertical-align:bottom;line-height:1.25}
+  .gt td{padding:5px 6px;border-bottom:1px solid var(--border);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .gt th.l,.gt td.l{text-align:left}
+  .gt td.id{font-family:Consolas,monospace;color:var(--accent)}
+  .gt td.tx{color:var(--text-2);max-width:124px;overflow:hidden;text-overflow:ellipsis}
+  .gt tr.row{cursor:pointer}
+  .gt tr.row:hover td{background:var(--hover)}
+  .gt tr.sel td{background:var(--nav-sel)}
+  .gt tr.sel td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+  .gt tr.crit td:first-child{color:var(--accent);font-weight:700}
+  .gt td.w{color:var(--warn)}
+  .tag{font-size:9.5px;border-radius:99px;padding:1px 8px;font-weight:600;display:inline-block;margin-left:7px;background:var(--nav-sel);color:var(--accent);vertical-align:1px}
+  .tag.w{background:rgba(255,179,0,.16);color:var(--warn)}
+  body.light .tag.w{background:rgba(245,127,23,.14)}
+  .pathbar{display:flex;align-items:center;gap:8px;padding:8px 10px 4px}
+  .pathbar .fl{font-size:11px;color:var(--text-2)}
+  .prof{margin:2px 10px 6px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;height:98px;flex:none;overflow:hidden}
+  .prof svg{display:block;width:100%;height:100%}
+  /* coefficients */
+  .setup{padding:0 12px 14px}
+  .scap{font-size:12px;font-weight:600;margin:16px 0 6px}
+  .scap.first{margin-top:4px}
+  .scap.warn{color:var(--warn)}
+  .sline{display:flex;align-items:center;gap:10px;margin-top:5px;font-size:11.5px}
+  .sline .nm{width:320px;flex:none}
+  .sline .nm.mono{width:auto;flex:1}
+  .sline .in{width:100px;text-align:right;font-family:Consolas,monospace}
+  .rrow{display:grid;grid-template-columns:176px 1fr 104px 72px 78px;gap:6px;align-items:center;margin-top:5px}
+  .rrow.head{font-size:10px;color:var(--text-2);margin-top:8px}
+  .rrow .in,.rrow .sel2{width:100%}
+  .rrow .lb{font-size:11.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rrow .acts{display:flex;gap:2px}
+  .ib{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:11px;width:24px;height:24px;border-radius:4px;border:1px solid transparent;background:none;color:var(--text-2);cursor:pointer}
+  .ib:hover{background:var(--hover);color:var(--text-main);border-color:var(--border)}
+  .srow{display:grid;grid-template-columns:176px 1fr 130px;gap:6px;align-items:center;margin-top:5px}
+  .srow .in,.srow .sel2{width:100%}
+  .srow .lb{font-size:11.5px}
+  /* banner + dialog */
+  .banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);max-width:540px;background:var(--accent);color:var(--accent-fg);border-radius:6px;padding:7px 8px 7px 14px;font-size:11.5px;line-height:1.4;display:none;align-items:center;gap:10px;z-index:7;box-shadow:0 6px 22px rgba(0,0,0,.35)}
+  .banner.on{display:flex}
+  .banner.warn{background:var(--warn)}.banner.error{background:var(--fail)}
+  .banner button{background:none;border:none;color:inherit;font-size:17px;line-height:1;cursor:pointer;padding:4px 6px}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:20}
+  .scrim.on{display:flex}
+  .dlg{width:430px;max-width:92%;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .dlg h4{font-size:13px;font-weight:600}
+  .dlg p{font-size:11.5px;color:var(--text-2);line-height:1.5;margin:6px 0 10px}
+  .rad{display:flex;align-items:center;gap:9px;font-size:12px;cursor:pointer;padding:5px 2px}
+  .rad .rb{width:14px;height:14px;border-radius:50%;border:1px solid var(--border);background:var(--input-bg);position:relative;flex:none}
+  .rad.on .rb{border-color:var(--accent)}
+  .rad.on .rb::after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--accent)}
+  .dlg .foot{display:flex;justify-content:flex-end;gap:9px;margin-top:14px}
+  /* footer */
+  .footer{position:relative;display:flex;align-items:center;gap:12px;background:var(--titlebar);border-top:1px solid var(--border);padding:7px 13px;font-size:11px;color:var(--text-2);height:52px}
+  .footer .hallmark .mdl2{color:var(--accent);margin-right:5px}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span{font-weight:300}
+  .fdiv{width:1px;height:14px;background:var(--border);flex:none}
+  .fdot{width:7px;height:7px;border-radius:50%;background:var(--pass);display:inline-block;margin-right:7px;vertical-align:middle}
+  .fstatus{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+  .fstatus .mdl2{color:var(--accent);font-size:12px}
+  .fstatus span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .footer .pg{color:var(--text-2);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .prog{position:absolute;left:0;right:0;top:0;height:2px;overflow:hidden;display:none}
+  .prog.on{display:block}
+  .prog i{display:block;height:100%;width:30%;background:var(--accent);animation:sl 1s linear infinite}
+  @keyframes sl{from{margin-left:-30%}to{margin-left:100%}}
+  .run{background:var(--accent);color:var(--accent-fg);font-weight:700;font-size:12px;letter-spacing:.03em;border:none;border-radius:6px;width:150px;height:36px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 0 16px color-mix(in srgb,var(--accent) 40%,transparent);flex:none}
+  .run .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:13px}
+  .run.off{opacity:.55;pointer-events:none}
+  .runx{background:var(--panel2);color:var(--text-main);border:1px solid var(--border);font-weight:600;font-size:12px;border-radius:6px;height:36px;padding:0 14px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;flex:none}
+  .runx:hover{background:var(--hover)}
+  .runx .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol";font-size:12px;color:var(--accent)}
+  .runx.off{opacity:.45;pointer-events:none}
+</style>
+</head>
+<body>
+
+<div class="window" id="win">
+  <!-- titlebar -->
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger" title="Show or hide the settings">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE9D9;</span>
+    <span class="tb-name">Pressure Loss</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path">Tower-A_Process.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="guideBtn" title="Open the guidebook: what to pick, which calculation fits which system, what every figure means">&#xE897;</span>
+      <span class="mdl2 theme-btn" id="themeBtn" title="Toggle light / dark theme">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- settings rail -->
+    <div class="rail" id="rail"><div class="inner">
+      <div class="rcap">CALCULATION</div>
+      <select class="sel2" id="cmb_calc" style="height:28px">
+        <option value="flow" selected>Liquid or ventilation air (Darcy, K)</option>
+        <option value="vacuum">Vacuum line (conductance)</option>
+      </select>
+      <div class="hint" id="lbl_calc_hint">Water, chilled water, supply and exhaust air: Darcy-Weisbach runs and K fittings at one density.</div>
+
+      <div class="rcap">START</div>
+      <div class="startcard"><b id="lbl_start">Pipe · DN40 · G-N2_Distribution</b>
+        <div class="hint" id="lbl_start_hint">Id 418302 · Level 01. A pump or fan outlet, the first pipe after it, or any run.</div></div>
+      <div class="two">
+        <button class="btn tall" id="btn_pick" title="Click one element in the Revit view. The window stays open."><span class="g">&#xE721;</span>Pick in Revit</button>
+        <button class="btn tall" id="btn_sel" title="Use the element currently selected in Revit (one element).">Use selection</button>
+      </div>
+
+      <div id="ports_block">
+        <div class="rcap">FLOW LEAVES THROUGH</div>
+        <div class="chk" id="port1" data-port="0"><span class="box"></span><span>Port 1 · DN40 · towards Regulator RG-01</span></div>
+        <div class="chk on" id="port2" data-port="1"><span class="box"></span><span>Port 2 · DN40 · towards Ball Valve - Flanged</span></div>
+        <div class="hint">Untick the port the flow comes IN through, and any port that should not be followed.</div>
+      </div>
+
+      <div class="rcap">FLOW</div>
+      <select class="sel2" id="cmb_dir">
+        <option value="supply" selected>Away from the start (supply)</option>
+        <option value="return">Towards the start (return / exhaust)</option>
+      </select>
+      <select class="sel2" id="cmb_mode" style="margin-top:6px">
+        <option value="area" selected>Total at the start, shared by outlet size</option>
+        <option value="equal">Total at the start, shared equally</option>
+        <option value="each">The same flow at every outlet</option>
+        <option value="velocity">The same velocity at every outlet</option>
+      </select>
+      <div class="fld"><input class="in num" id="txt_flow" value="3.5" style="flex:1" aria-label="Flow figure"><select class="sel2 sm" id="cmb_q"></select></div>
+      <div class="hint" id="lbl_flow_hint">One total, shared among the outlets in proportion to their pipe area.</div>
+      <div class="chk on" id="chk_model_flow" title="An outlet whose connector carries a flow in Revit keeps it."><span class="box"></span><span>Use flows the model already has</span></div>
+      <div class="chk on" id="chk_open_ends" title="A run that ends without equipment takes flow like an outlet. Off: open ends are dead legs."><span class="box"></span><span>Open ends count as outlets</span></div>
+      <div class="chk hide" id="chk_normal" title="On: the flow figures are normal volumes, brought to the pressure and temperature of the line."><span class="box"></span><span>Normal flow (20 °C, 1 bar)</span></div>
+
+      <div class="rcap">FLUID</div>
+      <select class="sel2" id="cmb_fluid">
+        <option value="model" selected>From the model</option>
+        <option value="water">Water</option>
+        <option value="air">Air</option>
+        <option value="gas">Gas at the start pressure</option>
+        <option value="custom">Custom</option>
+      </select>
+      <select class="sel2 hide" id="cmb_gas" style="margin-top:6px">
+        <option value="air">Air</option><option value="n2" selected>Nitrogen</option><option value="o2">Oxygen</option>
+        <option value="ar">Argon</option><option value="he">Helium</option><option value="h2">Hydrogen</option>
+      </select>
+      <div class="fld" id="row_temp"><span class="fl">Temperature</span><input class="in num" id="txt_temp" value="20" style="width:84px"><span class="fl w">°C</span></div>
+      <div class="fld hide" id="row_dens"><span class="fl">Density</span><input class="in num" id="txt_dens" value="998" style="width:84px"><span class="fl w">kg/m³</span></div>
+      <div class="fld hide" id="row_visc"><span class="fl">Viscosity</span><input class="in num" id="txt_visc" value="1.002" style="width:84px"><span class="fl w">mPa·s</span></div>
+      <div class="hint" id="lbl_fluid_hint">Water: 998.2 kg/m³, 1.002 mPa·s.</div>
+
+      <div class="rcap">PRESSURE</div>
+      <div class="fld" style="margin-top:0"><input class="in num" id="txt_p0" value="300000" style="flex:1" aria-label="Pressure at the start"><select class="sel2 sm" id="cmb_p"></select></div>
+      <div class="hint hide" id="lbl_p_hint">Absolute pressure at the start: the pump inlet when the flow runs towards the start, the chamber when it runs away from it.</div>
+      <div class="fld gap"><span class="fl">Needed at every outlet</span><input class="in num" id="txt_pmin" value="150000" style="width:84px"></div>
+      <div class="chk on" id="chk_static" title="Pressure falls by rho g dz on the way up and rises on the way down. Off for a closed loop."><span class="box"></span><span>Include height (static head)</span></div>
+
+      <div class="rcap">METHOD</div>
+      <select class="sel2" id="cmb_fric">
+        <option value="colebrook" selected>Colebrook-White</option><option value="haaland">Haaland</option>
+        <option value="swamee">Swamee-Jain</option><option value="altshul">Altshul-Tsal</option>
+      </select>
+      <select class="sel2" id="cmb_fit" style="margin-top:6px">
+        <option value="model" selected>From the model, else the table</option>
+        <option value="table">The table only</option>
+        <option value="ignore">Ignore fittings</option>
+      </select>
+      <div class="chk on" id="chk_elbow" title="Where the table answers for an elbow, read how its family is drawn."><span class="box"></span><span>Elbows by their drawn bend radius</span></div>
+      <div class="chk" id="chk_open_report"><span class="box"></span><span>Open the report after export</span></div>
+      <div class="hint" style="margin-top:12px">Calculate reads the network from the start, then works out every flow and loss. Nothing is written to the model.</div>
+    </div></div>
+
+    <!-- content -->
+    <div class="content" id="content">
+      <div class="tabs" id="tabs">
+        <button class="nav sel" data-pg="summary" data-title="Summary">Summary</button>
+        <button class="nav" data-pg="outlets" data-title="Outlets">Outlets</button>
+        <button class="nav" data-pg="path" data-title="Path">Path</button>
+        <button class="nav" data-pg="sections" data-title="Sections">Sections</button>
+        <button class="nav" data-pg="fittings" data-title="Fittings">Fittings</button>
+        <button class="nav" data-pg="setup" data-title="Coefficients" title="The loss coefficients the tool falls back on when the model carries none, and the rules that recognise a valve by its name">Coefficients</button>
+      </div>
+
+      <div class="kpis" id="kpis">
+        <div class="tile"><div class="lab">LOSS ON THE CRITICAL PATH</div><div class="val acc" id="kpi_loss">—</div></div>
+        <div class="tile"><div class="lab">PRESSURE AT THE WORST OUTLET</div><div class="val" id="kpi_worst">—</div></div>
+        <div class="tile" title="The angle the flow turns through from the start to the critical outlet: every elbow, tee branch, tap, angle valve and flex curve on the way."><div class="lab">TURN ON THE CRITICAL PATH</div><div class="val" id="kpi_turn">—</div></div>
+        <div class="tile"><div class="lab">TOTAL FLOW</div><div class="val" id="kpi_flow">—</div></div>
+        <div class="tile"><div class="lab">OUTLETS</div><div class="val" id="kpi_outs">—</div></div>
+        <div class="tile"><div class="lab">ELEMENTS READ</div><div class="val" id="kpi_els">—</div></div>
+      </div>
+
+      <div class="pages">
+        <!-- SUMMARY -->
+        <div class="page col on" id="pg_summary">
+          <div class="card hide" id="checks_card"><div class="checks" id="checks"></div></div>
+          <div class="sum">
+            <div class="card">
+              <div class="chead"><span class="cap">NETWORK</span><span class="hint">Distance from the start runs left to right; the critical path is drawn in the accent colour. Click an outlet to show it in Revit.</span></div>
+              <div class="scroll"><svg class="diag" id="diagram" viewBox="0 0 620 300" width="100%" role="img" aria-label="The network drawn as a tree, distance from the start left to right"></svg></div>
+            </div>
+            <div class="card"><div class="scroll pairs" id="pairs"></div></div>
+          </div>
+          <div class="empty" id="empty">
+            <div class="big mdl2">&#xE9D9;</div>
+            <b id="empty_t">Pressure loss from the pipework or ductwork alone</b>
+            <p id="empty_p">Pick the element the flow starts from, enter the pressure there and the flow, then Calculate. No equipment set-up is needed: every outlet and open end downstream takes its share of the flow.</p>
+          </div>
+        </div>
+
+        <!-- OUTLETS -->
+        <div class="page" id="pg_outlets"><div class="card" style="flex:1">
+          <div class="chead"><span class="hint">Every place the flow ends, highest loss first. The first row is the critical path. Click a row to show the outlet in Revit; double-click to see its path.</span></div>
+          <div class="scroll" id="t_outlets"></div></div></div>
+
+        <!-- PATH -->
+        <div class="page" id="pg_path"><div class="card" style="flex:1">
+          <div class="pathbar"><span class="fl">Outlet</span><select class="sel2" id="cmb_path" style="flex:1;height:26px"></select>
+            <button class="btn mini" id="btn_showpath" title="Select every element on this path in Revit">Show in Revit</button></div>
+          <div class="prof"><svg id="profile" viewBox="0 0 910 98" preserveAspectRatio="none" role="img" aria-label="Pressure along the chosen path"></svg></div>
+          <div class="scroll" id="t_path"></div></div></div>
+
+        <!-- SECTIONS -->
+        <div class="page" id="pg_sections"><div class="card" style="flex:1">
+          <div class="chead"><span class="hint">A section is a stretch with one flow and one size, in the shape of Revit's own report. Click a row to select its elements in Revit.</span>
+            <div class="chk inline" id="chk_crit_only"><span class="box"></span><span>Critical path only</span></div></div>
+          <div class="scroll" id="t_sections"></div></div></div>
+
+        <!-- FITTINGS -->
+        <div class="page" id="pg_fittings"><div class="card" style="flex:1">
+          <div class="chead"><span class="hint">Fittings and accessories grouped by kind, size and coefficient, with where the coefficient came from. Click a row to select them in Revit.</span></div>
+          <div class="scroll" id="t_fittings"></div></div></div>
+
+        <!-- COEFFICIENTS -->
+        <div class="page" id="pg_setup"><div class="card" style="flex:1">
+          <div class="chead"><span class="hint" id="lbl_setup_state">What a fitting or accessory loses when the model holds no coefficient for it. A K the family carries, or one Revit worked out, is always used first.</span>
+            <button class="btn" id="btn_defaults" title="Fill the form with the tool's built-in figures. Nothing is saved until Save.">Built-in figures</button>
+            <button class="btn" id="btn_revert" title="Drop the edits and show what is saved">Revert</button>
+            <button class="btn acc" id="btn_save" title="Check the form and save it for everyone who uses this extension. A result already on screen is worked out again with the new figures.">Save</button></div>
+          <div class="scroll setup" id="setup"></div></div></div>
+      </div>
+
+      <div class="banner" id="banner"><span id="banner_t"></span><button id="banner_x" title="Dismiss">&times;</button></div>
+    </div>
+  </div>
+
+  <!-- footer -->
+  <div class="footer">
+    <div class="prog" id="prog"><i></i></div>
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span><span class="fdot"></span>Model loaded · workshared</span>
+    <span class="fdiv"></span>
+    <div class="fstatus"><span class="mdl2">&#xE9F5;</span><span class="t" id="footer_status">Ready.</span></div>
+    <span class="pg" id="foot_page">Summary</span>
+    <button class="runx" id="btn_export" title="Write the report as PDF, HTML or an Excel workbook"><span class="g">&#xE74E;</span>EXPORT</button>
+    <button class="run" id="btn_run" title="Read the network from the start element and work out every flow, loss and pressure"><span class="g">&#xE768;</span>CALCULATE</button>
+  </div>
+
+  <!-- export dialog -->
+  <div class="scrim" id="scrim"><div class="dlg" role="dialog" aria-label="Export the report">
+    <h4>Export the report</h4>
+    <p>Which file? Every format carries the same sections: the run, the headline numbers, the checks, the recommendations, the critical path with the turn at every item, every outlet, the sections and the fittings.</p>
+    <div class="rad on" data-f="PDF"><span class="rb"></span>PDF</div>
+    <div class="rad" data-f="HTML"><span class="rb"></span>HTML</div>
+    <div class="rad" data-f="Excel workbook"><span class="rb"></span>Excel workbook</div>
+    <div class="rad" data-f="All three"><span class="rb"></span>All three</div>
+    <div class="foot"><button class="btn" id="exp_cancel">Cancel</button><button class="btn acc" id="exp_ok">OK</button></div>
+  </div></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---- engine: synthetic network, Darcy-Weisbach + K, plain data in / out ---- */
+var G=9.80665, P_ATM=101325;
+var ID_MM={20:21.2,25:27.2,32:35.9,40:41.9};
+var FT={20:.025,25:.023,32:.022,40:.021};
+var GASES={air:{n:'Air',M:28.96e-3,mu:1.82e-5},n2:{n:'Nitrogen',M:28.01e-3,mu:1.76e-5},o2:{n:'Oxygen',M:31.999e-3,mu:2.04e-5},ar:{n:'Argon',M:39.95e-3,mu:2.23e-5},he:{n:'Helium',M:4.003e-3,mu:1.96e-5},h2:{n:'Hydrogen',M:2.016e-3,mu:0.88e-5}};
+var WT=[[10,999.7,1.307],[20,998.2,1.002],[30,995.7,.797],[40,992.2,.653],[60,983.2,.466],[80,971.8,.355]];
+function waterProps(t){var a=WT[0],b=WT[WT.length-1],i;if(t<=a[0])return[a[1],a[2]*1e-3];if(t>=b[0])return[b[1],b[2]*1e-3];
+ for(i=1;i<WT.length;i++){if(t<=WT[i][0]){var p=WT[i-1],q=WT[i],k=(t-p[0])/(q[0]-p[0]);return[p[1]+k*(q[1]-p[1]),(p[2]+k*(q[2]-p[2]))*1e-3];}}}
+function airProps(t){var T=t+273.15;return[P_ATM/(287.05*T),1.716e-5*Math.pow(T/273.15,1.5)*(273.15+110.4)/(T+110.4)];}
+function gasProps(g,p0,t){var T=t+273.15,G_=GASES[g]||GASES.air;return[(p0+P_ATM)*G_.M/(8.314462*T),G_.mu];}
+/* the network: i, parent, kind (run|fit|acc), eid, name, size, len, dz, turn, part */
+var NET=[
+ {n:'Pipe',k:'run',e:418302,s:40,len:3.2,dz:0,turn:0},
+ {p:0,n:'Ball Valve - Flanged',k:'acc',e:418377,s:40,part:'acc'},
+ {p:1,n:'Pipe',k:'run',e:418390,s:40,len:6.4,dz:0},
+ {p:2,n:'Elbow - Butt Weld',k:'fit',e:418391,s:40,part:'elbow90',turn:90},
+ {p:3,n:'Pipe',k:'run',e:418398,s:40,len:8.1,dz:2.5},
+ {p:4,n:'Tee - Butt Weld',k:'fit',e:418406,s:40,part:'teeRun'},
+ {p:5,n:'Pipe',k:'run',e:418414,s:40,len:5.6,dz:0},
+ {p:6,n:'Reducer - Concentric',k:'fit',e:418431,s:32,part:'reducer',from:40},
+ {p:7,n:'Pipe',k:'run',e:418440,s:32,len:7.2,dz:1.2},
+ {p:8,n:'Tee - Butt Weld',k:'fit',e:418460,s:32,part:'teeRun'},
+ {p:9,n:'Pipe',k:'run',e:418468,s:32,len:4.8,dz:0},
+ {p:10,n:'Elbow - Butt Weld',k:'fit',e:418481,s:32,part:'elbow90',turn:90},
+ {p:11,n:'Pipe',k:'run',e:418490,s:32,len:3.6,dz:0},
+ {p:12,n:'Union - Threaded',k:'fit',e:418509,s:32,part:'union'},
+ {p:8,n:'Tee - Butt Weld',k:'fit',e:418460,s:25,part:'teeBranch',turn:90},
+ {p:14,n:'Elbow - Butt Weld',k:'fit',e:418540,s:25,part:'elbow45',turn:45},
+ {p:15,n:'Pipe',k:'run',e:418553,s:25,len:3.4,dz:0},
+ {p:4,n:'Tee - Butt Weld',k:'fit',e:418406,s:25,part:'teeBranch',turn:90},
+ {p:17,n:'Pipe',k:'run',e:418561,s:25,len:2.4,dz:0},
+ {p:18,n:'Elbow - Butt Weld',k:'fit',e:418580,s:25,part:'elbow90',turn:90},
+ {p:19,n:'Pipe',k:'run',e:418588,s:25,len:6.8,dz:3.0},
+ {p:20,n:'Filter Housing - Inline',k:'acc',e:418612,s:25,part:'acc'},
+ {p:21,n:'Pipe',k:'run',e:418620,s:25,len:4.2,dz:0},
+ {p:22,n:'Reducer - Concentric',k:'fit',e:418640,s:20,part:'reducer',from:25},
+ {p:23,n:'Pipe',k:'run',e:418647,s:20,len:3.1,dz:0}
+];
+var OUTLETS=[
+ {item:13,name:'Gas Panel GP-01',type:'equipment',level:'Level 02',eid:418520,bore:32},
+ {item:24,name:'Furnace F-02',type:'equipment',level:'Level 03',eid:418655,bore:20},
+ {item:16,name:'Open end, branch C',type:'open',level:'Level 02',eid:418553,bore:25}
+];
+function ruleFor(name,rules){
+ var n=name.toLowerCase(),i,j,w,at;
+ for(i=0;i<rules.length;i++){
+  for(j=0;j<rules[i].words.length;j++){
+   w=rules[i].words[j].toLowerCase();if(!w)continue;
+   at=n.indexOf(w);
+   while(at>=0){
+    if(at===0||!/[a-z0-9]/.test(n.charAt(at-1))||(/[0-9]/.test(n.charAt(at-1))!==/[0-9]/.test(n.charAt(at))&&/[a-z0-9]/.test(n.charAt(at-1))))return rules[i];
+    at=n.indexOf(w,at+1);
+   }
+  }
+ }
+ return null;}
+function colebrook(re,rr){var f=.02,i,x;for(i=0;i<40;i++){x=-2*Math.log10(rr/3.7+2.51/(re*Math.sqrt(f)));f=1/(x*x);}return f;}
+function turbF(method,re,rr){
+ if(method==='haaland'){var x=-1.8*Math.log10(Math.pow(rr/3.7,1.11)+6.9/re);return 1/(x*x);}
+ if(method==='swamee'){var y=Math.log10(rr/3.7+5.74/Math.pow(re,.9));return .25/(y*y);}
+ if(method==='altshul'){var f1=.11*Math.pow(rr+68/re,.25);return f1>=.018?f1:.85*f1+.0028;}
+ return colebrook(re,rr);}
+function fricF(method,re,rr){
+ if(re<2000)return 64/re;
+ if(re>=4000)return turbF(method,re,rr);
+ var fl=64/2000,ft=turbF(method,4000,rr);return fl+(re-2000)/2000*(ft-fl);}
+function regime(re){return re<2000?'laminar':(re<4000?'transitional':'turbulent');}
+function fluidOf(st){
+ var k=st.fluid,r;
+ if(k==='model')return{rho:998.2,mu:1.002e-3,label:'Water',kind:'water',origin:true};
+ if(k==='water'){r=waterProps(st.temp);return{rho:r[0],mu:r[1],label:'Water',kind:'water'};}
+ if(k==='air'){r=airProps(st.temp);return{rho:r[0],mu:r[1],label:'Air',kind:'air'};}
+ if(k==='gas'){r=gasProps(st.gas,st.p0,st.temp);return{rho:r[0],mu:r[1],label:GASES[st.gas].n+' at the start pressure',kind:'gas',gas:st.gas};}
+ return{rho:st.density,mu:st.viscosity*1e-3,label:'Custom',kind:'custom'};}
+function isLiquid(f){return f.kind==='water'||(f.kind==='custom'&&f.rho>=50)||(f.origin&&f.rho>=50);}
+function solve(st){
+ var f=fluidOf(st),rho=f.rho,mu=f.mu,items=[],i,it,o,par,sign=st.dir==='return'?-1:1;
+ NET.forEach(function(n,idx){items.push({i:idx,parent:n.p===undefined?-1:n.p,kind:n.k,eid:n.e,name:n.n,size:n.s,len:n.len||0,dz:n.dz||0,turn:n.turn||0,part:n.part||'',from:n.from,flow:0,section:0,dp:0,cum:0,static:0,p:0,v:0,re:0,f:0,k:0,src:'',dpf:null,known:true,dist:0,cum_turn:0,regime:'',z:0,dist:0});});
+ var outs=OUTLETS.filter(function(x){return st.openEnds||x.type!=='open';}).map(function(x,j){return{i:j,item:x.item,name:x.name,type:x.type,level:x.level,eid:x.eid,bore:x.bore};});
+ /* flows */
+ var wts=outs.map(function(x){var a=Math.pow(ID_MM[x.bore],2);return st.mode==='equal'?1:(st.mode==='each'||st.mode==='velocity')?1:a;});
+ var total=st.flow, fl;
+ if(st.mode==='each'){fl=outs.map(function(){return st.flow;});total=st.flow*outs.length;}
+ else if(st.mode==='velocity'){fl=outs.map(function(x){return st.flow*Math.PI/4*Math.pow(ID_MM[x.bore]/1000,2);});total=fl.reduce(function(a,b){return a+b;},0);}
+ else{var sw=wts.reduce(function(a,b){return a+b;},0);fl=wts.map(function(w){return total*w/sw;});}
+ outs.forEach(function(x,j){x.flow=fl[j];});
+ items.forEach(function(x){x.flow=0;});
+ outs.forEach(function(x){var c=x.item;while(c>=0){items[c].flow+=x.flow;c=items[c].parent;}});
+ /* geometry, kinds */
+ var fix=st.coef||{};
+ items.forEach(function(x){
+  par=x.parent>=0?items[x.parent]:null;
+  x.dist=(par?par.dist:0)+x.len; x.z=(par?par.z:0)+x.dz;
+  var d=ID_MM[x.size]/1000,A=Math.PI/4*d*d,q=x.flow;
+  x.v=q/A;x.vp=rho*x.v*x.v/2;
+  var run=x.kind==='run';
+  if(run){
+   x.re=rho*x.v*d/mu;x.rr=.046/ID_MM[x.size];
+   x.f=x.re>0?fricF(st.friction,x.re,x.rr):0;x.regime=x.re>0?regime(x.re):'';
+   x.dp=x.f*(x.len/d)*x.vp;x.k=0;x.src='friction';
+  }else{
+   var ft=FT[x.size],kk=0,src='',known=true,dpf=null,T=st.tbl;
+   if(st.fittings==='ignore'){kk=0;src='ignored';}
+   else{
+    switch(x.part){
+     case 'elbow90':
+       if(st.elbowR){kk=14*ft;src='table: bend 90\u00b0, r/d 1.5 (L/D 14)';}
+       else{kk=T.ld.elbow_90*ft;src='table: elbow 90\u00b0 (L/D '+T.ld.elbow_90+')';}
+       break;
+     case 'elbow45':kk=T.ld.elbow_45*ft;src='table: elbow 45\u00b0 (L/D '+T.ld.elbow_45+')';break;
+     case 'teeRun':kk=T.ld.tee_run*ft;src='table: tee, straight through (L/D '+T.ld.tee_run+')';break;
+     case 'teeBranch':kk=T.ld.tee_branch*ft;src='table: tee, branch (L/D '+T.ld.tee_branch+')';break;
+     case 'union':kk=T.k.union;src='table: union';break;
+     case 'reducer':var b=ID_MM[x.size]/ID_MM[x.from];kk=.8*Math.sin(15*Math.PI/180)*(1-b*b)/Math.pow(b,4);src='geometry: reducer';break;
+     default:
+       var r=ruleFor(x.name,T.rules);
+       if(r){
+        if(r.kind==='ld'){kk=r.val*ft;src='table: '+r.label+' (L/D '+r.val+')';}
+        else if(r.kind==='k'){kk=r.val;src='table: '+r.label;}
+        else{dpf=r.val;src='table: '+r.label;}
+       }else{kk=0;src='no coefficient known';known=false;}
+    }
+   }
+   if(dpf!==null){x.dpf=dpf;x.k=0;x.src=src;x.known=true;x.dp=q>0?dpf:0;}
+   else{
+   x.k=kk;x.src=src;x.known=known;x.dp=kk*x.vp;}
+  }
+  x.cum=(par?par.cum:0)+x.dp;
+  x.cum_turn=(par?par.cum_turn:0)+x.turn;
+  x.static=st.static?rho*G*(x.z):0;
+  x.p=st.p0-sign*x.cum-sign*x.static; /* supply: falls with height */
+  x.section=0;
+ });
+ /* run/fit loss splits per outlet */
+ outs.forEach(function(x){
+  var c=x.item,lr=0,lf=0,bends=0,dist=items[c].dist;
+  while(c>=0){var q=items[c];if(q.kind==='run')lr+=q.dp;else lf+=q.dp;if(q.turn>=1)bends++;c=q.parent;}
+  var q2=items[x.item];x.loss_run=lr;x.loss_fit=lf;x.loss=lr+lf;x.static=q2.static;x.p=q2.p;x.dist=dist;x.bends=bends;x.turn=q2.cum_turn;
+ });
+ /* sections: new where flow or size changes, or at a branch */
+ var sec=0,kids={};
+ items.forEach(function(x){if(x.parent>=0){(kids[x.parent]=kids[x.parent]||[]).push(x.i);}});
+ items.forEach(function(x){
+  if(x.parent<0){sec=1;x.section=1;return;}
+  var pr=items[x.parent];
+  if(Math.abs(pr.flow-x.flow)>1e-12||pr.size!==x.size){sec=Math.max.apply(null,items.slice(0,x.i).map(function(a){return a.section}))+1;x.section=sec;}
+  else x.section=pr.section;
+ });
+ var critical=0,worst=0;
+ outs.forEach(function(x,j){if(x.loss>outs[critical].loss)critical=j;if(sign>0?x.p<outs[worst].p:x.p>outs[worst].p)worst=j;});
+ var cnt={elements:0,runs:0,fittings:0,accessories:0,outlets:outs.length};
+ var eids={};items.forEach(function(x){eids[x.eid]=x.kind;});
+ Object.keys(eids).forEach(function(k){cnt.elements++;if(eids[k]==='run')cnt.runs++;else if(eids[k]==='fit')cnt.fittings++;else cnt.accessories++;});
+ outs.forEach(function(x){if(x.type!=='open')cnt.elements++;});
+ return{st:st,fluid:f,items:items,outlets:outs,critical:critical,worst:worst,total:total,counts:cnt};
+}
+
+
+/* ---------- helpers ---------- */
+var $=function(s,r){return (r||document).querySelector(s);};
+var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+var P_UNITS=[["Pa",1,0],["kPa",1000,2],["bar",100000,3],["psi",6894.757293,2],["m wg",9806.65,2],["mm wg",9.80665,1],["in wg",249.08891,2],["mbar",100,3],["Torr",133.322368,3]];
+var Q_UNITS=[["L/s",1e-3,2],["m³/h",1/3600,1],["L/min",1/60000,1],["CFM",4.719474432e-4,0],["US gpm",6.30901964e-5,1]];
+var SYSTEM="G-N2_Distribution";
+function esc(t){return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function fnum(v,nd){var neg=v<0,t=Math.abs(v).toFixed(nd);if(parseFloat(t)===0){neg=false;}var p=t.split(".");p[0]=p[0].replace(/\B(?=(\d{3})+(?!\d))/g,",");return (neg?"-":"")+p.join(".");}
+function unitOf(list,lab){for(var i=0;i<list.length;i++){if(list[i][0]===lab)return list[i];}return list[0];}
+function fmtP(pa,lab,withU){var u=unitOf(P_UNITS,lab),t=fnum(pa/u[1],u[2]);return withU===false?t:t+" "+u[0];}
+function fmtQ(q,lab,withU){var u=unitOf(Q_UNITS,lab),v=q/u[1],nd=(Math.abs(v)>=10||v===0)?u[2]:u[2]+1,t=fnum(v,nd);return withU===false?t:t+" "+u[0];}
+function fsig(v,d){d=d||3;if(v===0)return "0";var nd=Math.max(0,d-1-Math.floor(Math.log10(Math.abs(v))));return fnum(v,nd);}
+function fdeg(a){if(a<1e-6)return "";var t=a.toFixed(1);return t.slice(-2)===".0"?t.slice(0,-2):t;}
+function num(t){var v=parseFloat(String(t).replace(/,/g,"").trim());return isFinite(v)?v:NaN;}
+function plural(n,a,b){return n+" "+(n===1?a:b);}
+
+/* ---------- state ---------- */
+var S={calc:"flow",dir:"supply",mode:"area",flowTot:0.0035,flowEach:0.0012,vel:2.0,qUnit:"L/s",pUnit:"Pa",
+  fluid:"model",gas:"n2",temp:20,dens:998,visc:1.002,p0:300000,pmin:150000,static:true,openEnds:true,normal:false,
+  fric:"colebrook",fit:"model",elbow:true,openReport:false,ports:[false,true],dismissGas:false,
+  pathOut:0,critOnly:false,selOutlet:-1};
+var RES=null,busy=false,dirty=false,expFmt="PDF";
+
+/* ---------- coefficient table (the form and what is saved) ---------- */
+function defaultForm(){return{
+  f:{"pipe.ld.elbow_90":"30","pipe.ld.elbow_45":"16","pipe.ld.elbow_180":"50","pipe.ld.tee_run":"20","pipe.ld.tee_branch":"60",
+     "pipe.k.union":"0.04","pipe.k.cap":"0","pipe.k.other":"0","pipe.acc":"0",
+     "duct.k.elbow_90":"0.3","duct.k.tee_run":"0.15","duct.k.tee_branch":"1","duct.k.union":"0","duct.k.cap":"0","duct.k.other":"0","duct.acc":"0",
+     "rough.pipe":"0.046","rough.duct":"0.09","vlim.pipe":"3","vlim.duct":"10","readlim":"20000"},
+  rules:{pipe:[
+    {label:"Diaphragm valve, GF 514-517",words:"type 514, type 515, type 517",kind:"ld",val:"41"},
+    {label:"Butterfly valve",words:"butterfly",kind:"ld",val:"45"},
+    {label:"Gate valve",words:"gate",kind:"ld",val:"8"},
+    {label:"Globe valve",words:"globe",kind:"ld",val:"340"},
+    {label:"Ball valve",words:"ball",kind:"ld",val:"3"},
+    {label:"Check valve",words:"non-return, non return, check, nrv",kind:"ld",val:"100"},
+    {label:"Plug valve",words:"plug",kind:"ld",val:"18"},
+    {label:"Strainer",words:"strainer",kind:"k",val:"2"},
+    {label:"Balancing / control valve",words:"balanc, commission, regulat, control valve, picv, drv",kind:"ld",val:"340"},
+    {label:"Flowmeter, electromagnetic",words:"magmeter, mag meter",kind:"dp",val:"12500"},
+    {label:"Instrument",words:"sensor, gauge, thermometer, manometer, test point",kind:"k",val:"0"},
+    {label:"Adaptor / flange connector",words:"adaptor, adapter, connector",kind:"k",val:"0.04"}],
+   duct:[
+    {label:"Fire / smoke damper",words:"fire, smoke",kind:"k",val:"0.2"},
+    {label:"Non-return damper",words:"non-return, non return, backdraft, nrd",kind:"k",val:"1"},
+    {label:"Damper",words:"damper, vcd",kind:"k",val:"0.2"}]},
+  elb:{pipe:[],duct:[]},
+  sys:[
+    {label:"Not a gas: liquid nitrogen",words:"ln2",svc:"liquid"},
+    {label:"Vacuum",words:"vacuum, vakuum, vac, pvac, v-*",svc:"vacuum"},
+    {label:"Specialty gas or mixture",words:"g-s*",svc:"gas"},
+    {label:"Nitrogen",words:"nitrogen, stickstoff, n2",svc:"n2"},
+    {label:"Oxygen",words:"oxygen, sauerstoff, o2",svc:"o2"},
+    {label:"Argon",words:"argon, ar-w, ar-uhp",svc:"ar"},
+    {label:"Helium",words:"helium, he-uhp",svc:"he"},
+    {label:"Hydrogen",words:"hydrogen, wasserstoff, h2",svc:"h2"},
+    {label:"Compressed air",words:"compressed air, instrument air, cda, d-d*, d-p*",svc:"air"},
+    {label:"Exhaust air",words:"a-e*, a-r*",svc:"air"},
+    {label:"Gas",words:"gas, co2, g-*, pg",svc:"gas"}]};}
+function clone(o){return JSON.parse(JSON.stringify(o));}
+var FORM=defaultForm(),SAVED=clone(FORM);
+function parseWords(s){var out=[],cur="",q=false,i,c;
+  for(i=0;i<s.length;i++){c=s.charAt(i);
+    if(c==='"'){if(q&&s.charAt(i+1)==='"'){cur+='"';i++;}else if(q){q=false;}else if(cur.trim()===""){q=true;cur="";}else{cur+=c;}}
+    else if(c===","&&!q){out.push(cur.trim());cur="";}
+    else cur+=c;}
+  out.push(cur.trim());return {words:out.filter(function(w){return w;}),open:q};}
+function toTbl(F){var g=function(k){return parseFloat(F.f[k]);};
+  return{ld:{elbow_90:g("pipe.ld.elbow_90"),elbow_45:g("pipe.ld.elbow_45"),elbow_180:g("pipe.ld.elbow_180"),tee_run:g("pipe.ld.tee_run"),tee_branch:g("pipe.ld.tee_branch")},
+    k:{union:g("pipe.k.union")},
+    rules:F.rules.pipe.map(function(r){return{label:r.label,words:parseWords(r.words).words,kind:r.kind,val:parseFloat(r.val)};})};}
+
+/* ---------- compute a result ---------- */
+function settings(){
+  var st={fluid:S.fluid,gas:S.gas,temp:S.temp,density:S.dens,viscosity:S.visc,p0:S.p0,mode:S.mode,friction:S.fric,
+    fittings:S.fit,elbowR:S.elbow,static:S.static,openEnds:S.openEnds,dir:S.dir,tbl:toTbl(SAVED)};
+  var raw=S.mode==="velocity"?S.vel:(S.mode==="each"?S.flowEach:S.flowTot),fac=1;
+  if(S.fluid==="gas"&&S.normal&&S.mode!=="velocity"){fac=(1e5/(S.p0+P_ATM))*((S.temp+273.15)/293.15);}
+  st.flow=raw*fac;st.normalFac=fac;st.rawFlow=raw;return st;}
+function pathItems(R,oi){var out=[],i=R.outlets[oi].item;while(i>=0){out.push(i);i=R.items[i].parent;}return out.reverse();}
+function pathIds(R,oi){var seen={},out=[];pathItems(R,oi).forEach(function(i){var e=R.items[i].eid;if(!seen[e]){seen[e]=1;out.push(e);}});var o=R.outlets[oi];if(!seen[o.eid])out.push(o.eid);return out;}
+function sortedOutlets(R){return R.outlets.map(function(o,i){return i;}).sort(function(a,b){return R.outlets[b].loss-R.outlets[a].loss;});}
+function turnText(R,oi){
+  var o=R.outlets[oi],counts={},t=[];pathItems(R,oi).forEach(function(i){t.push(R.items[i].turn);});
+  t.forEach(function(a){if(a>=1){var k=Math.round(a);counts[k]=(counts[k]||0)+1;}});
+  var keys=Object.keys(counts).map(Number).sort(function(a,b){return b-a;});
+  var s=(fdeg(o.turn)||"0")+"° in "+plural(o.bends,"bend","bends");
+  var sched=keys.map(function(k){return counts[k]+" × "+k+"°";});
+  return {text:s,sched:sched.join(", ")||"none",full:sched.length?s+"  ("+sched.join(", ")+")":s};}
+function buildChecks(R){
+  var out=[],st=R.st,f=R.fluid,pu=S.pUnit,P=function(v){return fmtP(v,pu);},crit=R.outlets[R.critical],note="";
+  var g=gasProps("n2",st.p0,st.temp)[0];
+  if(isLiquid(f)){
+    out.push({level:"warn",key:"fluid",ids:[],text:
+      SYSTEM+' reads as a gas line (rule "Nitrogen"). The fluid is '+f.label+", "+Math.round(f.rho)+" kg/m³"+(f.origin?", as the system type holds it":"")+". "+
+      "Nitrogen at the start pressure weighs "+fsig(g)+" kg/m³. Every loss and the height term are about "+Math.round(f.rho/g)+" times too high. "+
+      'Set Fluid to "Gas at the start pressure" and pick Nitrogen.'});
+    note=SYSTEM+" reads as a gas line - see the first line on Summary.";
+  }else if(f.kind==="air"&&st.p0>0.1*P_ATM){
+    var ratio=(P_ATM+st.p0)/P_ATM;
+    out.push({level:"warn",key:"fluid",ids:[],text:'Fluid "Air" is air at atmospheric pressure, '+f.rho.toFixed(2)+" kg/m³. At the start pressure of "+fmtP(st.p0,"bar")+" gauge it weighs "+(f.rho*ratio).toFixed(2)+
+      " kg/m³. For the same volume flow every loss is about "+ratio.toFixed(1)+' times too low. For a compressed-air line set Fluid to "Gas at the start pressure".'});
+    note="Air here is at atmospheric pressure, the start is not - see the first line on Summary.";
+  }
+  R.note=note;
+  var worst=R.outlets[R.worst];
+  if(st.dir==="supply"&&S.pmin>0&&worst.p<S.pmin-1e-9){
+    var req=Math.max.apply(null,R.outlets.map(function(o){return o.loss+o.static;}))+S.pmin;
+    out.push({level:"fail",ids:[worst.eid],text:"The start pressure is not enough: the worst outlet is left with "+P(worst.p)+". It takes "+P(req)+" at the start for every outlet to keep "+P(S.pmin)+"."});
+  }
+  var unk=R.items.filter(function(x){return !x.known&&x.flow>0;}),un={};
+  unk.forEach(function(x){un[x.name]=1;});
+  if(unk.length){
+    var ids=[],seen={};unk.forEach(function(x){if(!seen[x.eid]){seen[x.eid]=1;ids.push(x.eid);}});
+    out.push({level:"warn",ids:ids,text:plural(ids.length,"fitting or accessory carries","fittings or accessories carry")+" no loss coefficient and "+(ids.length===1?"counts":"count")+" as K = 0: "+Object.keys(un).join("; ")+". Give the family a K coefficient, or add a rule for the name on the Coefficients page."});
+  }
+  var vlim=parseFloat(SAVED.f["vlim.pipe"]),over=R.items.filter(function(x){return x.kind==="run"&&vlim>0&&x.v>vlim;});
+  if(over.length){
+    var oid=[],sn={};over.forEach(function(x){if(!sn[x.eid]){sn[x.eid]=1;oid.push(x.eid);}});
+    out.push({level:"warn",ids:oid,text:plural(oid.length,"pipe run is","pipe runs are")+" faster than "+vlim+" m/s (the fastest is "+Math.max.apply(null,over.map(function(x){return x.v;})).toFixed(1)+" m/s). Either the flow entered is too high for these sizes, or they are undersized."});
+  }
+  var slow=R.items.filter(function(x){return x.regime==="laminar"||x.regime==="transitional";});
+  if(slow.length){out.push({level:"info",ids:slow.map(function(x){return x.eid;}),text:plural(slow.length,"run is","runs are")+" laminar or transitional (Re below 4000). The friction factor there is 64 / Re, blended up to the turbulent value at Re 4000."});}
+  if(!isLiquid(f)&&crit.loss>0.1*(P_ATM+Math.max(0,st.p0))){out.push({level:"warn",ids:[],text:"The loss is more than a tenth of the absolute pressure. The fluid is a gas and is treated as incompressible, which stops being a fair assumption at this point."});}
+  return out;}
+function buildRecs(R){
+  var out=[],pu=S.pUnit,crit=R.outlets[R.critical],loss=crit.loss,path=pathItems(R,R.critical).slice(1).map(function(i){return R.items[i];});
+  if(loss<=0)return out;
+  var top=path.slice().sort(function(a,b){return b.dp-a.dp;}).slice(0,3).filter(function(x){return x.dp>0.05*loss;});
+  if(top.length){
+    var adv=top[0].kind==="run"?"a run: one size up (about a quarter more bore) leaves roughly a third of its friction":"a fitting or accessory: a lower-loss type, or one size up through it, pays most";
+    out.push({level:"tip",ids:top.map(function(x){return x.eid;}),text:"Most of the critical path's loss sits in: "+top.map(function(x){return x.name+" DN"+x.size+" ("+Math.round(100*x.dp/loss)+" %)";}).join("; ")+". The largest is "+adv+"."});
+  }
+  var flowing=R.outlets.filter(function(o){return o.flow>0;});
+  if(flowing.length>=2){
+    var least=flowing.reduce(function(a,b){return b.loss<a.loss?b:a;}),gap=loss-least.loss;
+    if(gap>0.2*loss){out.push({level:"tip",ids:[crit.eid,least.eid],text:"The branches are not balanced. The way to "+crit.name+" loses "+fmtP(loss,pu)+"; the way to "+least.name+" only "+fmtP(least.loss,pu)+". For the flows as entered, the short branch needs "+fmtP(gap,pu)+" more resistance: a balancing valve, or a smaller size."});}
+  }
+  if(!out.length){out.push({level:"tip",ids:[],text:"Nothing stands out: no single item carries a large share of the loss, no run is over its velocity limit and the branches end close together."});}
+  return out;}
+function compute(){
+  var st=settings(),R=solve(st);
+  R.stale=false;R.checks=buildChecks(R);R.recs=buildRecs(R);
+  R.normalTotal=st.normalFac!==1?R.total/st.normalFac:null;
+  R.fails=R.checks.filter(function(c){return c.level==="fail";}).length;
+  R.warns=R.checks.filter(function(c){return c.level==="warn";}).length;
+  R.runLen=R.items.reduce(function(a,x){return a+(x.kind==="run"?x.len:0);},0);
+  R.seconds=0.3+Math.random()*0.3;
+  S.pathOut=0;S.dismissGas=false;
+  return R;}
+
+/* ---------- rendering ---------- */
+function status(t){$("#footer_status").textContent=t;$("#footer_status").title=t;}
+var bannerTimer=null;
+function banner(text,level){var b=$("#banner");$("#banner_t").textContent=text;b.className="banner on"+(level&&level!=="info"?" "+level:"");clearTimeout(bannerTimer);bannerTimer=setTimeout(function(){b.classList.remove("on");},6500);}
+function table(heads,rows,opts){
+  opts=opts||{};var h="<table class='gt'><thead><tr>"+heads.map(function(x){return "<th"+(x[1]?" class='l'":"")+">"+esc(x[0])+"</th>";}).join("")+"</tr></thead><tbody>";
+  rows.forEach(function(r,n){
+    h+="<tr class='row"+(r.cls?" "+r.cls:"")+"' data-n='"+n+"'>"+r.c.map(function(c,j){var hd=heads[j],cl=[];if(hd[1])cl.push("l");if(hd[2])cl.push(hd[2]);if(r.warnCol===j)cl.push("w");return "<td"+(cl.length?" class='"+cl.join(" ")+"'":"")+(hd[2]==="tx"?" title='"+String(c).replace(/'/g,"&#39;")+"'":"")+">"+c+"</td>";}).join("")+"</tr>";});
+  return h+"</tbody></table>";}
+function selectRow(host,tr){$$("tr.sel",host).forEach(function(x){x.classList.remove("sel");});tr.classList.add("sel");}
+function emptyMsg(t){return "<div class='hint' style='padding:14px 12px'>"+t+"</div>";}
+
+function renderKpis(){
+  var R=RES,ids=["kpi_loss","kpi_worst","kpi_turn","kpi_flow","kpi_outs","kpi_els"];
+  $$("#kpis .tile").forEach(function(t){t.classList.toggle("busy",!R);});
+  if(!R){ids.forEach(function(i){$("#"+i).textContent="—";});return;}
+  var c=R.outlets[R.critical],w=R.outlets[R.worst];
+  $("#kpi_loss").textContent=fmtP(c.loss,S.pUnit);
+  $("#kpi_worst").textContent=fmtP(w.p,S.pUnit);
+  $("#kpi_turn").textContent=turnText(R,R.critical).text;
+  $("#kpi_flow").textContent=fmtQ(R.total,S.qUnit);
+  $("#kpi_outs").textContent=R.counts.outlets;
+  $("#kpi_els").textContent=fnum(R.counts.elements,0);}
+
+function renderChecks(){
+  var R=RES,card=$("#checks_card"),host=$("#checks");
+  if(!R){card.classList.add("hide");host.innerHTML="";return;}
+  var list=R.checks.concat(R.recs),h="",glyph={fail:"&#xE783;",warn:"&#xE7BA;",info:"&#xE946;",tip:"&#xE82F;"};
+  list.forEach(function(c,n){
+    if(c.key==="fluid"&&S.dismissGas){h+="<div class='ck hidden'><span class='g mdl2'></span><span class='tx'>1 warning hidden. <button data-act='showgas'>Show it again</button></span></div>";return;}
+    h+="<div class='ck "+c.level+"'><span class='g'>"+glyph[c.level]+"</span><span class='tx'>"+esc(c.text)+"</span>"+
+      (c.ids&&c.ids.length?"<button class='ids' data-ids='"+c.ids.join(",")+"' title='Select "+plural(c.ids.length,"element","elements")+" in Revit'>"+plural(c.ids.length,"id","ids")+"</button>":"")+
+      (c.key==="fluid"?"<button class='x' data-act='hidegas' title='Hide this warning'>&times;</button>":"")+"</div>";});
+  host.innerHTML=h;card.classList.toggle("hide",!list.length);}
+
+function renderDiagram(){
+  var R=RES,svg=$("#diagram");if(!R){svg.innerHTML="";return;}
+  var W=620,H=300,L=16,RL=196,items=R.items,kids={},outAt={},crit={},row={},cnt=0,xmax=0;
+  items.forEach(function(x){if(x.parent>=0)(kids[x.parent]=kids[x.parent]||[]).push(x.i);xmax=Math.max(xmax,x.dist);});
+  R.outlets.forEach(function(o,j){(outAt[o.item]=outAt[o.item]||[]).push(j);});
+  pathItems(R,R.critical).forEach(function(i){crit[i]=1;});
+  var leafRow={};
+  (function walk(i){var rs=[];(outAt[i]||[]).forEach(function(j){leafRow[j]=cnt;rs.push(cnt++);});
+    (kids[i]||[]).forEach(function(k){rs=rs.concat(walk(k));});
+    if(!rs.length){rs=[cnt++];}row[i]=Math.min.apply(null,rs);return rs;})(0);
+  var rows=Math.max(1,cnt),top=34,bot=H-46,sx=(W-L-RL)/xmax;
+  var px=function(d){return L+d*sx;},py=function(r){return rows===1?(top+bot)/2:top+r*(bot-top)/(rows-1);};
+  var normal="",hot="",marks="",leaves="";
+  items.forEach(function(x){
+    if(x.i===0){var l0="<line x1='"+px(0)+"' y1='"+py(row[0])+"' x2='"+px(x.dist)+"' y2='"+py(row[0])+"'/>";hot+=l0;return;}
+    var p=items[x.parent],y=py(row[x.i]),x0=px(p.dist),x1=px(x.dist),seg="";
+    if(row[x.parent]!==row[x.i])seg+="<line x1='"+x0+"' y1='"+py(row[x.parent])+"' x2='"+x0+"' y2='"+y+"'/>";
+    seg+="<line x1='"+x0+"' y1='"+y+"' x2='"+x1+"' y2='"+y+"'/>";
+    if(x.flow<=0){normal+="<g stroke-dasharray='3 3' opacity='.7'>"+seg+"</g>";}
+    else if(crit[x.i])hot+=seg;else normal+=seg;
+    if(x.kind==="fit"){marks+="<circle cx='"+x1+"' cy='"+y+"' r='2.6' fill='var(--card)' stroke='"+(crit[x.i]?"var(--accent)":"var(--text-2)")+"' stroke-width='1.2'/>";}
+    else if(x.kind==="acc"){var c=x.known?(crit[x.i]?"var(--accent)":"var(--text-2)"):"var(--warn)";marks+="<path d='M"+(x1-4)+" "+y+"L"+x1+" "+(y-4)+"L"+(x1+4)+" "+y+"L"+x1+" "+(y+4)+"Z' fill='"+(x.known?"var(--card)":"var(--warn)")+"' stroke='"+c+"' stroke-width='1.2'><title>"+esc(x.name)+(x.known?"":" - no coefficient")+"</title></path>";}
+  });
+  R.outlets.forEach(function(o,j){
+    var it=items[o.item],x=px(it.dist),y=py(leafRow[j]),isC=j===R.critical,sel=j===S.selOutlet;
+    if(row[o.item]!==leafRow[j])normal+="<line x1='"+x+"' y1='"+py(row[o.item])+"' x2='"+x+"' y2='"+y+"'/>";
+    leaves+="<g class='leaf' data-o='"+j+"' style='cursor:pointer'><title>"+esc(o.name)+"</title>"+
+      "<circle cx='"+x+"' cy='"+y+"' r='"+(sel?8:6)+"' fill='"+(isC?"var(--accent)":"var(--card)")+"' stroke='"+(isC?"var(--accent)":"var(--text-2)")+"' stroke-width='1.6'"+(o.type==="open"?" stroke-dasharray='2 2'":"")+"/>"+
+      "<text x='"+(x+12)+"' y='"+(y-1)+"' font-size='11' font-weight='"+(isC?700:600)+"' fill='var(--text-main)'>"+esc(o.name)+"</text>"+
+      "<text x='"+(x+12)+"' y='"+(y+12)+"' font-size='10' fill='var(--text-2)'>"+fmtP(o.p,S.pUnit)+" · "+(fdeg(o.turn)||"0")+"°"+(isC?" · critical":"")+"</text></g>";});
+  var ax=H-20,ticks="",d;
+  for(d=0;d<=xmax;d+=10){ticks+="<line x1='"+px(d)+"' y1='"+ax+"' x2='"+px(d)+"' y2='"+(ax+4)+"'/><text x='"+px(d)+"' y='"+(ax+15)+"' font-size='9.5' text-anchor='middle' fill='var(--text-2)' stroke='none'>"+d+" m</text>";}
+  svg.setAttribute("viewBox","0 0 "+W+" "+H);
+  svg.innerHTML="<g stroke='var(--text-2)' stroke-width='1.6' opacity='.7' fill='none' stroke-linecap='round'>"+normal+"</g>"+
+    "<g stroke='var(--accent)' stroke-width='3' fill='none' stroke-linecap='round'>"+hot+"</g>"+marks+
+    "<text x='"+L+"' y='"+(py(row[0])-9)+"' font-size='10' fill='var(--text-2)'>Start</text>"+
+    "<circle cx='"+L+"' cy='"+py(row[0])+"' r='4' fill='var(--accent)'/>"+leaves+
+    "<g stroke='var(--text-2)' stroke-width='1'><line x1='"+px(0)+"' y1='"+ax+"' x2='"+px(xmax)+"' y2='"+ax+"'/>"+ticks+"</g>";}
+
+function renderPairs(){
+  var R=RES,host=$("#pairs");if(!R){host.innerHTML="";return;}
+  var c=R.outlets[R.critical],w=R.outlets[R.worst],pu=S.pUnit,tt=turnText(R,R.critical),P=function(v){return fmtP(v,pu);};
+  var pairs=[["Total flow at the start",fmtQ(R.total,S.qUnit)]];
+  if(R.normalTotal)pairs.push(["Total flow, normal (20 °C, 1 bar)",fmtQ(R.normalTotal,S.qUnit)]);
+  pairs.push(["Start pressure",P(R.st.p0)],["Loss on the critical path",P(c.loss)],["Length of the critical path",fnum(c.dist,1)+" m"],
+    ["Turns on the critical path",tt.text],["Bends by angle",tt.sched],
+    ["Pressure at the worst outlet",P(w.p)+" <small>("+esc(w.name)+")</small>"]);
+  if(S.pmin>0&&S.dir==="supply"){pairs.push(["Start pressure needed",P(Math.max.apply(null,R.outlets.map(function(o){return o.loss+o.static;}))+S.pmin)]);}
+  pairs.push(["Outlets",String(R.counts.outlets)],["Runs",R.counts.runs+" <small>("+fnum(R.runLen,1)+" m)</small>"],["Fittings / accessories",R.counts.fittings+" / "+R.counts.accessories]);
+  host.innerHTML=pairs.map(function(p){return "<div class='pair'><div class='k'>"+esc(p[0])+"</div><div class='v'>"+p[1]+"</div></div>";}).join("");}
+
+function renderSummary(){
+  var R=RES;$("#empty").classList.toggle("hide",!!R);
+  $(".sum").style.visibility=R?"visible":"hidden";
+  renderChecks();renderDiagram();renderPairs();}
+
+function renderOutlets(){
+  var R=RES,host=$("#t_outlets");if(!R){host.innerHTML=emptyMsg("Calculate first.");return;}
+  var pu=S.pUnit,qu=S.qUnit,order=sortedOutlets(R),P=function(v){return fmtP(v,pu,false);};
+  var heads=[["#",1],["Outlet",1],["Kind",1],["Level",1],["Id",1,"id"],["Flow ("+qu+")"],["Path (m)"],["Bends"],["Turn (°)"],["Pipe loss ("+pu+")"],["Fitting loss ("+pu+")"],["Height ("+pu+")"],["Total loss ("+pu+")"],["Pressure ("+pu+")"]];
+  var kind={open:"Open end",equipment:"Equipment"};
+  var rows=order.map(function(j,n){var o=R.outlets[j];
+    return {cls:(n===0?"crit ":"")+(j===S.selOutlet?"sel":""),c:[n+1,esc(o.name)+(n===0?"<span class='tag'>critical path</span>":""),kind[o.type]||"End",esc(o.level),o.eid,fmtQ(o.flow,qu,false),fnum(o.dist,1),o.bends,fdeg(o.turn)||"0",P(o.loss_run),P(o.loss_fit),P(o.static),P(o.loss),P(o.p)]};});
+  host.innerHTML=table(heads,rows);host.dataset.map=order.join(",");}
+
+function renderPathCombo(){
+  var R=RES,cb=$("#cmb_path");if(!R){cb.innerHTML="";return;}
+  cb.innerHTML=sortedOutlets(R).map(function(j,n){var o=R.outlets[j];return "<option value='"+n+"'>"+(n+1)+". "+esc(o.name)+"  ·  loss "+fmtP(o.loss,S.pUnit)+"</option>";}).join("");
+  cb.value=String(S.pathOut);}
+function renderPath(){
+  var R=RES,host=$("#t_path");if(!R){host.innerHTML=emptyMsg("Calculate first.");$("#profile").innerHTML="";return;}
+  var pu=S.pUnit,qu=S.qUnit,oi=sortedOutlets(R)[S.pathOut]||0,P=function(v){return fmtP(v,pu,false);};
+  var heads=[["#",1],["Sec",1],["Element",1],["Id",1,"id"],["Size",1],["Length (m)"],["Turn (°)"],["Turn sum (°)"],["Flow ("+qu+")"],["Velocity (m/s)"],["Re"],["f"],["K"],["Basis",1,"tx"],["Loss ("+pu+")"],["Total ("+pu+")"],["Pressure ("+pu+")"]];
+  var idx=pathItems(R,oi).slice(1),rows=idx.map(function(i,n){var x=R.items[i],run=x.kind==="run",k;
+    if(run)k=x.k>0?x.k.toFixed(3):"";else k=x.dpf!==null?"fixed":x.k.toFixed(3);
+    var basis=run?(x.regime==="laminar"?"laminar":x.regime==="transitional"?"transitional":"friction"):x.src;
+    return {warnCol:(!x.known?13:-1),c:[n+1,x.section,esc(x.name),x.eid,"DN"+x.size,x.len>0?fnum(x.len,2):"",fdeg(x.turn),fdeg(x.cum_turn)||"0",fmtQ(x.flow,qu,false),fnum(x.v,2),run&&x.re?fnum(x.re,0):"",run?x.f.toFixed(4):"",k,esc(basis),P(x.dp),P(x.cum),P(x.p)]};});
+  host.innerHTML=table(heads,rows);host.dataset.map=idx.join(",");
+  renderProfile(oi);}
+function renderProfile(oi){
+  var R=RES,svg=$("#profile");if(!R)return;
+  var pts=[[0,R.st.p0]],idx=pathItems(R,oi),i,x;
+  var run=0;
+  idx.forEach(function(i){var x=R.items[i];pts.push([x.dist,x.p,x.kind]);});
+  var ps=pts.map(function(p){return p[1];}),lo=Math.min.apply(null,ps),hi=Math.max.apply(null,ps);
+  if(hi-lo<1e-6){hi=lo+1;}var pad=(hi-lo)*0.12;lo-=pad;hi+=pad;
+  var W=910,H=98,L=76,Rr=108,T=12,B=22,xm=pts[pts.length-1][0]||1;
+  var X=function(d){return L+d*(W-L-Rr)/xm;},Y=function(p){return T+(hi-p)*(H-T-B)/(hi-lo);};
+  var d="M"+X(pts[0][0])+" "+Y(pts[0][1]),dots="";
+  pts.slice(1).forEach(function(p){d+=" L"+X(p[0])+" "+Y(p[1]);if(p[2]&&p[2]!=="run")dots+="<circle cx='"+X(p[0])+"' cy='"+Y(p[1])+"' r='2' fill='var(--card)' stroke='var(--accent)' stroke-width='1.2'/>";});
+  var last=pts[pts.length-1],grid="",g;
+  for(g=0;g<=xm;g+=10){grid+="<line x1='"+X(g)+"' y1='"+T+"' x2='"+X(g)+"' y2='"+(H-B)+"' stroke='var(--border)' stroke-width='1'/><text x='"+X(g)+"' y='"+(H-8)+"' font-size='9.5' text-anchor='middle' fill='var(--text-2)'>"+g+" m</text>";}
+  var need="";
+  if(S.pmin>0&&S.pmin>lo&&S.pmin<hi){need="<line x1='"+L+"' y1='"+Y(S.pmin)+"' x2='"+(W-Rr)+"' y2='"+Y(S.pmin)+"' stroke='var(--warn)' stroke-dasharray='4 3'/><text x='"+(L+4)+"' y='"+(Y(S.pmin)-3)+"' font-size='9.5' fill='var(--warn)'>needed "+fmtP(S.pmin,S.pUnit)+"</text>";}
+  svg.innerHTML=grid+need+
+    "<path d='"+d+" L"+X(last[0])+" "+(H-B)+" L"+X(0)+" "+(H-B)+" Z' fill='var(--accent)' opacity='.12'/>"+
+    "<path d='"+d+"' fill='none' stroke='var(--accent)' stroke-width='2' stroke-linejoin='round'/>"+dots+
+    "<text x='"+(L-6)+"' y='"+(Y(pts[0][1])+3)+"' font-size='10' text-anchor='end' fill='var(--text-main)'>"+fmtP(pts[0][1],S.pUnit)+"</text>"+
+    "<text x='"+(L-6)+"' y='"+Math.min(H-B,Y(last[1])+3)+"' font-size='10' text-anchor='end' fill='var(--text-main)'>"+fmtP(last[1],S.pUnit)+"</text>"+
+    "<circle cx='"+X(last[0])+"' cy='"+Y(last[1])+"' r='4' fill='var(--accent)'/>"+
+    "<text x='"+(X(last[0])+9)+"' y='"+(Y(last[1])+3)+"' font-size='10' fill='var(--text-main)'>"+esc(R.outlets[oi].name)+"</text>";}
+
+function renderSections(){
+  var R=RES,host=$("#t_sections");if(!R){host.innerHTML=emptyMsg("Calculate first.");return;}
+  var pu=S.pUnit,qu=S.qUnit,P=function(v){return fmtP(v,pu,false);},keep=null,secs={},order=[];
+  if(S.critOnly){keep={};pathItems(R,R.critical).forEach(function(i){keep[R.items[i].section]=1;});}
+  R.items.slice(1).forEach(function(x){var s=x.section;
+    if(!secs[s]){secs[s]={n:s,flow:x.flow,size:0,v:0,vp:0,len:0,turn:0,nfit:0,k:0,dr:0,df:0,ids:[],set:false};order.push(s);}
+    var r=secs[s];r.turn+=x.turn;r.k+=x.k;if(r.ids.indexOf(x.eid)<0)r.ids.push(x.eid);
+    if(x.kind==="run"){r.size=x.size;r.v=x.v;r.vp=x.vp;r.len+=x.len;r.dr+=x.dp;r.set=true;}
+    else{r.nfit++;r.df+=x.dp;if(!r.size)r.size=x.size;if(!r.set&&!r.v){r.v=x.v;r.vp=x.vp;}}});
+  var heads=[["Section",1],["Flow ("+qu+")"],["Size",1],["v (m/s)"],["pv (Pa)"],["Length (m)"],["Turn (°)"],["Fittings"],["Sum K"],["Friction (Pa/m)"],["Runs ("+pu+")"],["Fittings ("+pu+")"],["Section ("+pu+")"]];
+  var list=order.filter(function(s){return !keep||keep[s];});
+  var rows=list.map(function(s){var r=secs[s],rate=r.len>0?r.dr/r.len:0;
+    return {c:[r.n,fmtQ(r.flow,qu,false),"DN"+r.size,fnum(r.v,2),fnum(r.vp,1),fnum(r.len,2),fdeg(r.turn)||"0",r.nfit,r.k.toFixed(3),fnum(rate,1),P(r.dr),P(r.df),P(r.dr+r.df)]};});
+  host.innerHTML=table(heads,rows);host._ids=list.map(function(s){return secs[s].ids;});}
+
+function renderFittings(){
+  var R=RES,host=$("#t_fittings");if(!R){host.innerHTML=emptyMsg("Calculate first.");return;}
+  var pu=S.pUnit,groups={},order=[];
+  R.items.slice(1).forEach(function(x){if(x.kind==="run")return;
+    var kv=x.dpf!==null?"fixed":x.k.toFixed(3),key=[x.name,x.size,kv,fdeg(x.turn),x.src].join("|");
+    if(!groups[key]){groups[key]={name:x.name,size:x.size,n:0,k:kv,turn:fdeg(x.turn),src:x.src,dp:0,ids:[],known:x.known};order.push(key);}
+    var g=groups[key];g.n++;g.dp+=x.dp;if(g.ids.indexOf(x.eid)<0)g.ids.push(x.eid);});
+  order.sort(function(a,b){return groups[b].dp-groups[a].dp;});
+  var heads=[["Fitting / accessory",1],["Size",1],["Count"],["K (each)"],["Turn (°)"],["Basis",1,"tx"],["Loss, all ("+pu+")"]];
+  var rows=order.map(function(k){var g=groups[k];return {warnCol:g.known?-1:5,c:[esc(g.name),"DN"+g.size,g.n,g.k,g.turn,esc(g.src),fmtP(g.dp,pu,false)]};});
+  host.innerHTML=table(heads,rows);host._ids=order.map(function(k){return groups[k].ids;});}
+
+/* ---------- Coefficients page ---------- */
+function missingNames(){var m={},out=[];if(!RES)return out;RES.items.forEach(function(x){if(!x.known&&x.flow>0&&!m[x.name]){m[x.name]=1;out.push(x.name);}});return out;}
+var KINDS=[["ld","L/D"],["k","K"],["dp","Fixed loss (Pa)"]];
+var SVCS=[["air","Air"],["n2","Nitrogen"],["o2","Oxygen"],["ar","Argon"],["he","Helium"],["h2","Hydrogen"],["gas","A gas, not named"],["vacuum","Vacuum"],["liquid","Not a gas"]];
+function fld(key,label){return "<div class='sline'><span class='nm'>"+esc(label)+"</span><input class='in' data-key='"+key+"' value='"+esc(FORM.f[key])+"'></div>";}
+function ruleBlock(dom){
+  var name=dom==="pipe"?"Pipe":"Duct",h="";
+  h+="<div class='scap'>"+name+" accessories and fittings recognised by name</div>";
+  h+="<div class='hint'>A word counts where a word of the family or type name begins: meter finds Flow Meter and flow_meter, not Diameter or Flowmeter. The first rule that matches wins, so put the narrow ones on top.</div>";
+  h+="<div class='rrow head'><span>Label</span><span>Words to look for (comma separated)</span><span>Figure is</span><span>Figure</span><span></span></div>";
+  FORM.rules[dom].forEach(function(r,i){
+    h+="<div class='rrow'><input class='in' data-r='"+dom+"' data-i='"+i+"' data-p='label' value='"+esc(r.label)+"'>"+
+      "<input class='in' data-r='"+dom+"' data-i='"+i+"' data-p='words' value='"+esc(r.words)+"'>"+
+      "<select class='sel2' data-r='"+dom+"' data-i='"+i+"' data-p='kind'>"+KINDS.map(function(k){return "<option value='"+k[0]+"'"+(k[0]===r.kind?" selected":"")+">"+k[1]+"</option>";}).join("")+"</select>"+
+      "<input class='in num' data-r='"+dom+"' data-i='"+i+"' data-p='val' value='"+esc(r.val)+"'>"+
+      "<span class='acts'><button class='ib' data-act='up' data-r='"+dom+"' data-i='"+i+"' title='Move up'>&#xE70E;</button><button class='ib' data-act='down' data-r='"+dom+"' data-i='"+i+"' title='Move down'>&#xE70D;</button><button class='ib' data-act='del' data-r='"+dom+"' data-i='"+i+"' title='Remove this rule'>&#xE711;</button></span></div>";});
+  h+="<div style='margin-top:8px'><button class='btn mini' data-act='add' data-r='"+dom+"'><span class='g'>&#xE710;</span>Add a rule</button></div>";
+  h+="<div class='scap'>"+name+" elbows with a figure of their own</div>";
+  h+="<div class='hint'>An elbow the model holds no coefficient for is charged by the bend radius its family is drawn with. A rule here gives the families it names their own 90° figure instead.</div>";
+  h+="<div style='margin-top:8px'><button class='btn mini' data-act='addelb' data-r='"+dom+"'><span class='g'>&#xE710;</span>Add an elbow rule</button></div>";
+  return h;}
+function renderSetup(){
+  var host=$("#setup"),h="",miss=missingNames();
+  if(miss.length){
+    h+="<div class='scap first warn'>No coefficient in the last result</div>";
+    miss.forEach(function(n){h+="<div class='sline'><span class='nm mono' style='font-family:Consolas,monospace'>"+esc(n)+"</span><button class='btn mini' data-act='addmiss' data-name='"+esc(n)+"' title='Start a pipe rule that matches this name; give it its figure, then Save.'>Add a rule for it</button></div>";});}
+  h+="<div class='scap"+(miss.length?"":" first")+"'>Pipe fittings - equivalent length L/D  (K = L/D × fT, Crane)</div>";
+  h+=fld("pipe.ld.elbow_90","Elbow 90° - standard, or its radius not read")+fld("pipe.ld.elbow_45","Elbow 45° - the same")+fld("pipe.ld.elbow_180","Return bend 180° - the same")+fld("pipe.ld.tee_run","Tee, straight through")+fld("pipe.ld.tee_branch","Tee, branch");
+  h+="<div class='scap'>Pipe fittings - K</div>"+fld("pipe.k.union","Union, flange, coupling")+fld("pipe.k.cap","Cap")+fld("pipe.k.other","Any other fitting")+fld("pipe.acc","Accessory no rule matches");
+  h+=ruleBlock("pipe");
+  h+="<div class='scap'>Duct fittings - K</div>"+fld("duct.k.elbow_90","Elbow 90° whose radius is not read")+fld("duct.k.tee_run","Tee, straight through")+fld("duct.k.tee_branch","Tee, branch")+fld("duct.k.union","Union")+fld("duct.k.cap","Cap")+fld("duct.k.other","Any other fitting")+fld("duct.acc","Accessory no rule matches");
+  h+=ruleBlock("duct");
+  h+="<div class='scap'>General</div>"+fld("rough.pipe","Pipe roughness when the model has none (mm)")+fld("rough.duct","Duct roughness when the model has none (mm)")+fld("vlim.pipe","Pipe velocity that is warned about (m/s)")+fld("vlim.duct","Duct velocity that is warned about (m/s)")+fld("readlim","Most elements read from one start");
+  h+="<div class='scap'>System types that carry a gas or a vacuum, by name</div>";
+  h+="<div class='hint'>A model's system types often all hold the fluid of the template, water. So the name is the only thing that tells a nitrogen line from a water line. A word has to be a whole part of the name: n2 finds H-K100_N2-GAS-4.0, not LN2 and not N2O. A star lets the part go on. The first rule that matches wins.</div>";
+  h+="<div class='srow' style='margin-top:8px;font-size:10px;color:var(--text-2)'><span>Label</span><span>Words to look for (comma separated)</span><span>The line carries</span></div>";
+  FORM.sys.forEach(function(r,i){h+="<div class='srow'><input class='in' data-s='"+i+"' data-p='label' value='"+esc(r.label)+"'><input class='in' data-s='"+i+"' data-p='words' value='"+esc(r.words)+"'><select class='sel2' data-s='"+i+"' data-p='svc'>"+SVCS.map(function(k){return "<option value='"+k[0]+"'"+(k[0]===r.svc?" selected":"")+">"+k[1]+"</option>";}).join("")+"</select></div>";});
+  host.innerHTML=h;}
+function setDirty(v){dirty=v;$("#lbl_setup_state").textContent=v?"Edited. Nothing is saved until Save.":"What a fitting or accessory loses when the model holds no coefficient for it. A K the family carries, or one Revit worked out, is always used first.";}
+
+function renderAll(){renderKpis();renderSummary();renderOutlets();renderPathCombo();renderPath();renderSections();renderFittings();renderSetup();syncFluid();}
+
+/* ---------- rail ---------- */
+var FLOW_HINTS={area:"One total, shared among the outlets in proportion to their pipe area.",equal:"One total, the same share for every outlet.",each:"Every outlet takes this flow; the start carries the sum.",velocity:"Every outlet takes this velocity (m/s) times its own area; the start carries the sum."};
+function mpas(mu){return fsig(mu*1000,3);}
+function fillUnits(){
+  $("#cmb_p").innerHTML=P_UNITS.map(function(u){return "<option"+(u[0]===S.pUnit?" selected":"")+">"+u[0]+"</option>";}).join("");
+  var q=$("#cmb_q");
+  if(S.mode==="velocity"){q.innerHTML="<option>m/s</option>";q.disabled=true;}
+  else{q.disabled=false;q.innerHTML=Q_UNITS.map(function(u){return "<option"+(u[0]===S.qUnit?" selected":"")+">"+u[0]+"</option>";}).join("");}}
+function flowSI(){return S.mode==="velocity"?S.vel:(S.mode==="each"?S.flowEach:S.flowTot);}
+function writeFlow(){
+  var v=flowSI();$("#txt_flow").value=S.mode==="velocity"?String(v):String(+(v/unitOf(Q_UNITS,S.qUnit)[1]).toPrecision(6));}
+function writeP(){
+  var f=unitOf(P_UNITS,S.pUnit)[1];
+  $("#txt_p0").value=String(+(S.p0/f).toPrecision(8));$("#txt_pmin").value=String(+(S.pmin/f).toPrecision(8));}
+function syncFlow(){
+  var vac=S.calc==="vacuum",h=FLOW_HINTS[S.mode];
+  if(vac)h+=" In a vacuum line this is the volume flow at the start pressure, the pumping speed there.";
+  else if(S.fluid==="gas"&&S.mode!=="velocity"){
+    if(!S.normal)h+=" For a gas: the volume in the line. Tick Normal flow for a consumption in normal volumes.";
+    else{var f=(1e5/(S.p0+P_ATM))*((S.temp+273.15)/293.15);h+=" A normal volume: in the line it takes up "+f.toFixed(3)+" times that.";}}
+  $("#lbl_flow_hint").textContent=h;
+  var showN=S.fluid==="gas"&&S.mode!=="velocity"&&!vac;
+  $("#chk_normal").classList.toggle("hide",!showN);}
+function syncFluid(){
+  var vac=S.calc==="vacuum",k=S.fluid;
+  $("#cmb_fluid").classList.toggle("hide",vac);
+  $("#cmb_gas").classList.toggle("hide",!(vac||k==="gas"));
+  $("#row_dens").classList.toggle("hide",vac||k!=="custom");$("#row_visc").classList.toggle("hide",vac||k!=="custom");
+  $("#txt_temp").disabled=(!vac&&k==="custom");
+  $("#lbl_p_hint").classList.toggle("hide",!vac);
+  var hint,el=$("#lbl_fluid_hint"),note="";
+  if(vac){var g=GASES[S.gas];hint=g.n+": "+(g.M*1000).toFixed(1)+" g/mol, "+mpas(g.mu)+" mPa·s. Density follows the pressure.";}
+  else if(k==="custom")hint="Density and dynamic viscosity as entered.";
+  else if(k==="gas"){var r=gasProps(S.gas,S.p0,S.temp);hint=GASES[S.gas].n+": "+fsig(r[0])+" kg/m³, "+mpas(r[1])+" mPa·s. The density follows the start pressure, taken as a gauge pressure.";}
+  else if(k==="model"){hint="Water: 998.2 kg/m³, 1.002 mPa·s.";}
+  else{var p=k==="air"?airProps(S.temp):waterProps(S.temp);hint=p[0].toFixed(1)+" kg/m³, "+mpas(p[1])+" mPa·s at "+S.temp+" °C.";}
+  if(!vac&&RES&&RES.note&&RES.st.fluid===k)note=RES.note;
+  el.classList.toggle("warn",!!note);el.style.whiteSpace="pre-line";el.textContent=note?note+"\n"+hint:hint;
+  syncFlow();}
+function stale(msg){if(RES&&!RES.stale){RES.stale=true;}status(msg||"Settings changed. Calculate to update the result.");}
+
+function setupRail(){
+  fillUnits();writeFlow();writeP();
+  $$(".rail .chk").forEach(function(c){c.addEventListener("click",function(){
+    c.classList.toggle("on");var id=c.id,on=c.classList.contains("on");
+    if(id==="chk_model_flow"){}
+    else if(id==="chk_open_ends")S.openEnds=on;
+    else if(id==="chk_normal"){S.normal=on;syncFlow();}
+    else if(id==="chk_static")S.static=on;
+    else if(id==="chk_elbow")S.elbow=on;
+    else if(id==="chk_open_report"){S.openReport=on;return;}
+    else if(c.dataset.port!==undefined){S.ports[+c.dataset.port]=on;stale("Port "+(+c.dataset.port+1)+(on?" is followed.":" is not followed.")+" Calculate to read the network again.");return;}
+    stale();});});
+  $("#cmb_calc").addEventListener("change",function(){S.calc=this.value;
+    $("#lbl_calc_hint").textContent=S.calc==="flow"?"Water, chilled water, supply and exhaust air: Darcy-Weisbach runs and K fittings at one density.":"Process vacuum and forelines: conductance by flow regime, bends as extra length. Pressures are absolute.";
+    syncFluid();stale();});
+  $("#cmb_dir").addEventListener("change",function(){S.dir=this.value;stale();});
+  $("#cmb_mode").addEventListener("change",function(){S.mode=this.value;fillUnits();writeFlow();syncFlow();stale();});
+  $("#cmb_q").addEventListener("change",function(){S.qUnit=this.value;writeFlow();renderAll();});
+  $("#cmb_p").addEventListener("change",function(){S.pUnit=this.value;writeP();renderAll();});
+  $("#cmb_fluid").addEventListener("change",function(){S.fluid=this.value;syncFluid();stale();});
+  $("#cmb_gas").addEventListener("change",function(){S.gas=this.value;syncFluid();stale();});
+  $("#cmb_fric").addEventListener("change",function(){S.fric=this.value;stale();});
+  $("#cmb_fit").addEventListener("change",function(){S.fit=this.value;stale();});
+  function numField(id,apply,rev){$("#"+id).addEventListener("change",function(){var v=num(this.value);if(!isFinite(v)||v<0){rev();status("That figure is not a number. The last value is kept.");return;}apply(v);syncFluid();stale();});}
+  numField("txt_flow",function(v){if(S.mode==="velocity")S.vel=v;else{var si=v*unitOf(Q_UNITS,S.qUnit)[1];if(S.mode==="each")S.flowEach=si;else S.flowTot=si;}},writeFlow);
+  numField("txt_temp",function(v){S.temp=v;},function(){$("#txt_temp").value=S.temp;});
+  numField("txt_dens",function(v){S.dens=v;},function(){$("#txt_dens").value=S.dens;});
+  numField("txt_visc",function(v){S.visc=v;},function(){$("#txt_visc").value=S.visc;});
+  numField("txt_p0",function(v){S.p0=v*unitOf(P_UNITS,S.pUnit)[1];},writeP);
+  numField("txt_pmin",function(v){S.pmin=v*unitOf(P_UNITS,S.pUnit)[1];},writeP);
+  $("#btn_pick").addEventListener("click",function(){status("Pick one element in the Revit view …");var b=this;b.classList.add("off");
+    setTimeout(function(){b.classList.remove("off");status("Start: Pipe DN40, id 418302. Now Calculate.");},800);});
+  $("#btn_sel").addEventListener("click",function(){status("Start: Pipe DN40, id 418302, the element selected in Revit. Now Calculate.");});
+  $("#burger").addEventListener("click",function(){$("#rail").classList.toggle("collapsed");});
+  $("#guideBtn").addEventListener("click",function(){status("Guidebook opened in the browser.");});
+  $("#themeBtn").addEventListener("click",function(){document.body.classList.toggle("light");this.innerHTML=document.body.classList.contains("light")?"&#xE708;":"&#xE706;";});}
+
+/* ---------- pages ---------- */
+function gotoPage(pg,title){
+  $$("#tabs .nav").forEach(function(n){n.classList.toggle("sel",n.dataset.pg===pg);});
+  $$(".page").forEach(function(p){p.classList.remove("on");});$("#pg_"+pg).classList.add("on");
+  $("#foot_page").textContent=title;
+  if(pg==="path")renderPath();}
+function setupPages(){
+  $$("#tabs .nav").forEach(function(n){n.addEventListener("click",function(){gotoPage(n.dataset.pg,n.dataset.title);});});
+  $("#cmb_path").addEventListener("change",function(){S.pathOut=+this.value;renderPath();});
+  $("#btn_showpath").addEventListener("click",function(){if(!RES)return;var n=pathIds(RES,sortedOutlets(RES)[S.pathOut]).length;status("Showing "+plural(n,"element","elements")+" in Revit.");});
+  $("#chk_crit_only").addEventListener("click",function(){this.classList.toggle("on");S.critOnly=this.classList.contains("on");renderSections();});
+  $("#t_outlets").addEventListener("click",function(e){var tr=e.target.closest("tr.row");if(!tr)return;selectRow(this,tr);
+    var j=+this.dataset.map.split(",")[+tr.dataset.n];S.selOutlet=j;status("Showing "+RES.outlets[j].name+" in Revit.");renderDiagram();});
+  $("#t_outlets").addEventListener("dblclick",function(e){var tr=e.target.closest("tr.row");if(!tr)return;S.pathOut=+tr.dataset.n;renderPathCombo();gotoPage("path","Path");});
+  $("#t_path").addEventListener("click",function(e){var tr=e.target.closest("tr.row");if(!tr)return;selectRow(this,tr);
+    var i=+this.dataset.map.split(",")[+tr.dataset.n];status("Showing element "+RES.items[i].eid+" in Revit.");});
+  ["sections","fittings"].forEach(function(k){$("#t_"+k).addEventListener("click",function(e){var tr=e.target.closest("tr.row");if(!tr)return;selectRow(this,tr);
+    status("Showing "+plural(this._ids[+tr.dataset.n].length,"element","elements")+" in Revit.");});});
+  $("#checks").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;
+    if(b.dataset.ids){status("Showing "+plural(b.dataset.ids.split(",").length,"element","elements")+" in Revit.");}
+    else if(b.dataset.act==="hidegas"){S.dismissGas=true;renderChecks();status("Warning hidden. It returns at the next Calculate.");}
+    else if(b.dataset.act==="showgas"){S.dismissGas=false;renderChecks();}});
+  $("#diagram").addEventListener("click",function(e){var g=e.target.closest(".leaf");if(!g)return;S.selOutlet=+g.dataset.o;renderDiagram();status("Showing "+RES.outlets[S.selOutlet].name+" in Revit.");});
+  $("#diagram").addEventListener("dblclick",function(e){var g=e.target.closest(".leaf");if(!g)return;S.pathOut=sortedOutlets(RES).indexOf(+g.dataset.o);renderPathCombo();gotoPage("path","Path");});
+  $("#banner_x").addEventListener("click",function(){$("#banner").classList.remove("on");});}
+
+/* ---------- calculate and export ---------- */
+function setBusy(on){busy=on;$("#prog").classList.toggle("on",on);$("#btn_run").classList.toggle("off",on);$("#btn_export").classList.toggle("off",on||!RES);}
+function summaryLine(R){
+  var c=R.outlets[R.critical],tail=(R.fails||R.warns)?" - "+R.fails+" problem(s), "+R.warns+" warning(s): see Summary.":".";
+  return fnum(R.counts.elements,0)+" element(s) read in "+R.seconds.toFixed(1)+" s: "+R.counts.outlets+" outlet(s), critical path "+fmtP(c.loss,S.pUnit)+" over "+fnum(c.dist,1)+" m, turning "+(fdeg(c.turn)||"0")+"° in "+c.bends+" bend(s)"+tail;}
+function runCalc(){
+  if(busy)return;
+  if(S.calc==="vacuum"){status("Vacuum results are not drawn in this preview.");banner("This preview works out the flow calculation only. Pick “Liquid or ventilation air” to see a result.","warn");return;}
+  RES=null;setBusy(true);renderKpis();renderSummary();renderOutlets();renderPath();renderSections();renderFittings();
+  $("#empty_t").textContent="Reading the network …";$("#empty_p").textContent="Walking every run, fitting and accessory from the start, then splitting the flow at every branch.";
+  status("Reading the network from the start …");
+  setTimeout(function(){status("Calculating …");},450);
+  setTimeout(function(){
+    RES=compute();setBusy(false);$("#empty_t").textContent="Pressure loss from the pipework or ductwork alone";
+    $("#empty_p").textContent="Pick the element the flow starts from, enter the pressure there and the flow, then Calculate. No equipment set-up is needed: every outlet and open end downstream takes its share of the flow.";
+    renderAll();status(summaryLine(RES));},1000);}
+function runExport(){
+  if(!RES||busy)return;$("#scrim").classList.add("on");}
+function setupFooter(){
+  $("#btn_run").addEventListener("click",runCalc);
+  $("#btn_export").addEventListener("click",runExport);
+  $$(".rad").forEach(function(r){r.addEventListener("click",function(){$$(".rad").forEach(function(x){x.classList.remove("on");});r.classList.add("on");expFmt=r.dataset.f;});});
+  $("#exp_cancel").addEventListener("click",function(){$("#scrim").classList.remove("on");status("Export cancelled.");});
+  $("#exp_ok").addEventListener("click",function(){
+    $("#scrim").classList.remove("on");setBusy(true);status("Writing the report …");
+    setTimeout(function(){setBusy(false);
+      var base="PressureLoss_"+SYSTEM,ext={"PDF":[".pdf"],"HTML":[".html"],"Excel workbook":[".xlsx"],"All three":[".pdf",".html",".xlsx"]}[expFmt];
+      var names=ext.map(function(e){return base+e;});
+      status("Written: "+names.join("; ")+(S.openReport?" (opened)":""));
+      banner("Report written: "+names[0]+(names.length>1?" and "+(names.length-1)+" more":"")+".","info");},800);});}
+
+/* ---------- coefficient page actions ---------- */
+function setupCoef(){
+  var host=$("#setup");
+  host.addEventListener("input",function(e){var t=e.target;
+    if(t.dataset.key){FORM.f[t.dataset.key]=t.value;}
+    else if(t.dataset.r){FORM.rules[t.dataset.r][+t.dataset.i][t.dataset.p]=t.value;}
+    else if(t.dataset.s){FORM.sys[+t.dataset.s][t.dataset.p]=t.value;}
+    setDirty(true);});
+  host.addEventListener("change",function(e){var t=e.target;if(t.tagName==="SELECT"){
+    if(t.dataset.r)FORM.rules[t.dataset.r][+t.dataset.i][t.dataset.p]=t.value;else if(t.dataset.s)FORM.sys[+t.dataset.s][t.dataset.p]=t.value;setDirty(true);}});
+  host.addEventListener("click",function(e){var b=e.target.closest("button");if(!b||!b.dataset.act)return;
+    var a=b.dataset.act,d=b.dataset.r,i=+b.dataset.i,list=d?FORM.rules[d]:null;
+    if(a==="up"&&i>0){list.splice(i-1,0,list.splice(i,1)[0]);}
+    else if(a==="down"&&i<list.length-1){list.splice(i+1,0,list.splice(i,1)[0]);}
+    else if(a==="del"){list.splice(i,1);}
+    else if(a==="add"){list.unshift({label:"New rule",words:"",kind:"k",val:""});}
+    else if(a==="addelb"){status("Elbow rules are kept in a separate list; none is set in this table.");return;}
+    else if(a==="addmiss"){var n=b.dataset.name;FORM.rules.pipe.unshift({label:n,words:n.toLowerCase(),kind:"k",val:""});setDirty(true);renderSetup();
+      var inp=$("input[data-r='pipe'][data-i='0'][data-p='val']",host);if(inp)inp.focus();status("Rule started for "+n+". Give it its figure, then Save.");return;}
+    else return;
+    setDirty(true);renderSetup();});
+  $("#btn_defaults").addEventListener("click",function(){FORM=defaultForm();renderSetup();setDirty(true);status("Built-in figures filled in. Nothing is saved until Save.");});
+  $("#btn_revert").addEventListener("click",function(){FORM=clone(SAVED);renderSetup();setDirty(false);status("Coefficients as saved.");});
+  $("#btn_save").addEventListener("click",function(){
+    var problem="";
+    Object.keys(FORM.f).forEach(function(k){if(!problem&&!(FORM.f[k]!==""&&isFinite(num(FORM.f[k]))&&num(FORM.f[k])>=0))problem="“"+k+"” needs a number of 0 or more.";});
+    ["pipe","duct"].forEach(function(d){FORM.rules[d].forEach(function(r){
+      if(problem)return;var pw=parseWords(r.words);
+      if(pw.open)problem="a quoted word in the rule “"+r.label+"” is never closed.";
+      else if(!pw.words.length)problem="the rule “"+r.label+"” has no words to look for.";
+      else if(!(r.val!==""&&isFinite(num(r.val))&&num(r.val)>=0))problem="the rule “"+r.label+"” needs a figure of 0 or more.";});});
+    if(problem){status("Not saved - "+problem);banner("Not saved - "+problem,"warn");return;}
+    SAVED=clone(FORM);setDirty(false);
+    if(RES){var keepOut=S.pathOut;RES=compute();S.pathOut=Math.min(keepOut,RES.outlets.length-1);renderAll();
+      status("Coefficients saved. The result on screen is worked out again.");banner("Coefficients saved. The result on screen is worked out again.","info");}
+    else{status("Coefficients saved.");banner("Coefficients saved.","info");}});}
+
+/* ---------- start ---------- */
+setupRail();setupPages();setupFooter();setupCoef();
+RES=compute();RES.seconds=0.4;renderAll();
+$("#btn_export").classList.remove("off");
+status(summaryLine(RES));
+})();
+</script>
+</body>
+</html>
