@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TXS — Text Search</title>
+<style>
+  :root{
+    --window-bg:#0B1013; --text-main:#ECF4F7; --text-2:#8FA6B2;
+    --border:#283B45; --input-bg:#0F161A; --accent:#00BCD4; --accent-fg:#06222B;
+    --titlebar:#0F161A; --nav:#0F161A; --card:#141E24; --nav-sel:rgba(0,188,212,.14);
+    --panel:#152026; --panel2:#1C2B33; --hover:#1C2B33; --readout:#101a20;
+    --pass:#4CAF50; --warn:#FFB300; --fail:#FF5252; --track:#1C2B33; --violet:#B49BE0;
+    --mark-bg:rgba(255,179,0,.38); --mark-fg:#FFFFFF; --ink-warn:#1F1400; --ink-fail:#2A0808;
+  }
+  body.light{
+    --window-bg:#ECEFF1; --text-main:#263238; --text-2:#546E7A;
+    --border:#CFD8DC; --input-bg:#FFFFFF; --accent:#0097A7; --accent-fg:#FFFFFF;
+    --titlebar:#E7EDF0; --nav:#E7EDF0; --card:#FFFFFF; --nav-sel:rgba(0,151,167,.12);
+    --panel:#FFFFFF; --panel2:#E7EDF0; --hover:#E3EAEE; --readout:#F2F5F7;
+    --pass:#2E7D32; --warn:#F57F17; --fail:#D32F2F; --track:#E3EAEE; --violet:#5E35B1;
+    --mark-bg:#FFE79A; --mark-fg:#263238; --ink-warn:#1F1400; --ink-fail:#FFFFFF;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#06090b;font-family:"Segoe UI",system-ui,sans-serif;color:var(--text-main);padding:22px;display:flex;flex-direction:column;align-items:center;gap:14px}
+  body.light{background:#cfd8dc}
+  .window{position:relative;width:1220px;max-width:100%;background:var(--window-bg);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:0 18px 60px rgba(0,0,0,.55)}
+  .mdl2{font-family:"Segoe MDL2 Assets","Segoe UI Symbol",sans-serif;font-style:normal}
+  .mono{font-family:Consolas,monospace}
+  /* titlebar */
+  .titlebar{height:40px;background:var(--titlebar);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 14px}
+  .burger{color:var(--text-2);font-size:15px;cursor:pointer;padding:4px}
+  .burger:hover,.theme-btn:hover{color:var(--text-main)}
+  .tb-ico{color:var(--accent);font-size:15px}
+  .tb-name{font-weight:700;letter-spacing:.2px;font-size:13px}
+  .docchip{margin:0 auto;display:flex;align-items:center;gap:7px;background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:3px 12px;color:var(--text-2)}
+  .docchip .mdl2{color:var(--accent);font-size:12px}
+  .docchip .path{font-family:Consolas,monospace;font-size:11px;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tb-right{display:flex;align-items:center;gap:12px}
+  .theme-btn{color:var(--text-2);font-size:14px;cursor:pointer;padding:4px}
+  .dots{display:flex;gap:8px}
+  .dot{width:13px;height:13px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:"Segoe MDL2 Assets";font-size:8px}
+  .dot.m{background:#FEBC2E;color:#7A5A0F}.dot.x{background:#28C840;color:#0E5A1E}.dot.c{background:#FF5F57;color:#7A1410}
+  /* body */
+  .main{display:flex;height:604px}
+  .rail{width:232px;background:var(--nav);border-right:1px solid var(--border);padding:10px 12px 12px;display:flex;flex-direction:column;flex:none;transition:width .12s,padding .12s;position:relative;z-index:5}
+  .rail.collapsed{width:0;padding:10px 0;overflow:hidden;border-right-width:0}
+  .rlab{font:600 9px Consolas,monospace;letter-spacing:.14em;color:var(--text-2);padding:14px 0 6px}
+  .rlab:first-child{padding-top:4px}
+  .hint{font-size:10.5px;line-height:1.5;color:var(--text-2);margin-top:6px}
+  .keys{font-size:10.5px;line-height:1.75;color:var(--text-2)}
+  .keys b{font:600 10px Consolas,monospace;color:var(--text-main);background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:0 4px;margin-right:4px}
+  .content{flex:1;min-width:0;display:flex;flex-direction:column;padding:12px 13px 11px;gap:9px;position:relative;background:var(--window-bg)}
+  .page{display:none;flex:1;min-height:0;flex-direction:column;gap:9px}
+  .page.on{display:flex}
+  /* inputs */
+  .in{background:var(--input-bg);border:1px solid var(--border);color:var(--text-main);border-radius:4px;padding:5px 8px;font-size:11.5px;font-family:inherit;height:28px;outline:none;min-width:0}
+  .in:focus,.combo.open .in{border-color:var(--accent)}
+  .combo{position:relative}
+  .combo .in{width:100%;padding-right:26px;cursor:pointer;text-overflow:ellipsis}
+  .combo.ed .in{cursor:text}
+  .combo .cv{position:absolute;right:0;top:0;width:26px;height:28px;display:flex;align-items:center;justify-content:center;color:var(--text-main);font-size:10px;cursor:pointer}
+  .pop{display:none;position:absolute;left:0;top:29px;min-width:100%;width:max-content;max-width:330px;max-height:300px;overflow:auto;background:var(--input-bg);border:1px solid var(--accent);border-radius:0 0 4px 4px;z-index:20;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .combo.open .pop{display:block}
+  .pop div{padding:6px 10px;font-size:11.5px;cursor:pointer;white-space:pre}
+  .pop div:hover{background:var(--hover)}
+  .pop div.on{background:var(--nav-sel);font-weight:600}
+  .pop div small{color:var(--text-2);font-size:10.5px}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;cursor:pointer;margin-top:10px;user-select:none}
+  .chk .box{width:14px;height:14px;border:1px solid var(--border);border-radius:3px;background:var(--input-bg);position:relative;flex:none}
+  .chk.on .box{background:var(--accent);border-color:var(--accent)}
+  .chk.on .box::after{content:"\2713";position:absolute;inset:0;color:var(--accent-fg);font-size:10px;text-align:center;line-height:14px}
+  .mrow{display:flex;align-items:center;gap:6px}
+  .mrow .fl{font-size:11px;white-space:nowrap}
+  .mrow .in{width:48px;text-align:center;height:24px;padding:2px 4px;flex:none}
+  .mrow .un{font-size:11px;color:var(--text-2)}
+  /* search row */
+  .srow{display:flex;gap:6px;align-items:center}
+  .sbox{flex:1;display:flex;align-items:center;height:34px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;min-width:0}
+  .sbox:focus-within{border-color:var(--accent)}
+  .sbox .gl{color:var(--accent);font-size:13px;margin:0 6px 0 11px}
+  .sbox input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text-main);font-size:13px;font-family:inherit;padding:0 2px;height:100%}
+  .sbox .x{width:30px;height:30px;margin-right:2px;border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--text-2);font-size:10px;cursor:pointer}
+  .sbox .x:hover{background:var(--hover);color:var(--text-main)}
+  .step{width:34px;height:34px;border-radius:6px;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer;flex:none}
+  .step:hover,.tgl:hover{background:var(--hover)}
+  .tgl{height:34px;padding:0 14px;border-radius:6px;background:var(--panel2);border:1px solid var(--border);color:var(--text-main);font-size:11.5px;cursor:pointer;font-family:inherit;margin-left:2px}
+  .tgl.on{border-color:var(--accent)}
+  .rrow{display:none;align-items:center;height:36px;margin-top:-1px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;padding:0 4px 0 12px;gap:10px}
+  .rrow.on{display:flex}
+  .rrow:focus-within{border-color:var(--accent)}
+  .rrow .fl{font-size:11px;color:var(--text-2);white-space:nowrap}
+  .rrow input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:var(--text-main);font-size:13px;font-family:inherit;height:100%}
+  .abtn{background:var(--accent);color:var(--accent-fg);font-weight:700;letter-spacing:.03em;border:0;border-radius:6px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;flex:none}
+  .abtn:hover{filter:brightness(1.08)}
+  .abtn.dis{opacity:.5;cursor:default;filter:none}
+  .abtn .g{font-family:"Segoe MDL2 Assets","Segoe UI Symbol"}
+  .rrow .abtn{height:28px;min-width:122px;font-size:10.5px;padding:0 10px}
+  .rrow .abtn .g{font-size:11px}
+  /* kpis */
+  .kpis{display:grid;grid-template-columns:1fr 1fr 1fr 1.4fr;gap:9px}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 13px}
+  .tile .lab{font-size:9.5px;letter-spacing:.08em;color:var(--text-2)}
+  .tile .val{font-size:21px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums;line-height:1.25}
+  .tile .val.acc{color:var(--accent)}
+  /* results */
+  .results{position:relative;flex:1;min-height:0;background:var(--card);border:1px solid var(--border);border-radius:7px}
+  .scroll{position:absolute;inset:0;overflow-y:auto;padding:6px}
+  .gh{display:flex;align-items:center;gap:7px;background:var(--panel2);border-radius:4px;padding:5px 8px;margin:8px 0 3px;font-size:11px}
+  .gh:first-child{margin-top:0}
+  .gh .g{color:var(--accent);font-size:11px}
+  .gh b{font-weight:600}
+  .gh .kd{color:var(--text-2);white-space:pre}
+  .gh .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gh .ct{font:10.5px Consolas,monospace;color:var(--text-2)}
+  .nr{display:flex;align-items:center;gap:12px;padding:5px 6px 5px 10px;margin:1px 0;border-radius:4px;cursor:pointer;position:relative}
+  .nr:hover{background:var(--hover)}
+  .nr.cur{background:var(--nav-sel)}
+  .nr.cur::before{content:"";position:absolute;left:0;top:5px;bottom:5px;width:3px;border-radius:2px;background:var(--accent)}
+  .nr .tx{flex:1;min-width:0;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .nr .ty{font-size:10.5px;color:var(--text-2);width:140px;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .nr .id{font:10.5px Consolas,monospace;color:var(--text-2);width:54px;text-align:right}
+  .nr .go{color:var(--accent);font-size:12px;width:16px;text-align:center}
+  mark{background:var(--mark-bg);color:var(--mark-fg);font-weight:600;border-radius:2px;padding:0 1px}
+  .lb{color:var(--accent);font-weight:700;padding:0 1px}
+  .more{font-size:10.5px;color:var(--text-2);padding:8px 8px 4px;line-height:1.5}
+  .empty{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px}
+  .empty.on{display:flex}
+  .empty .g{color:var(--accent);font-size:30px;margin-bottom:10px}
+  .empty b{font-size:13.5px;font-weight:600}
+  .empty span.h{font-size:11px;color:var(--text-2);margin-top:6px;max-width:420px;line-height:1.5}
+  /* banner */
+  .banner{position:absolute;left:50%;top:10px;transform:translateX(-50%);max-width:520px;display:none;align-items:center;gap:10px;border-radius:6px;padding:8px 14px;font-size:11.5px;line-height:1.45;background:var(--accent);color:var(--accent-fg);box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:8}
+  .banner.on{display:flex}
+  .banner.warn{background:var(--warn);color:var(--ink-warn)}
+  .banner.error{background:var(--fail);color:var(--ink-fail)}
+  .banner .bx{cursor:pointer;font-size:10px;padding:2px 2px 2px 6px}
+  /* footer */
+  .footer{position:relative;display:flex;align-items:center;gap:12px;background:var(--titlebar);border-top:1px solid var(--border);padding:7px 16px;font-size:11px;color:var(--text-2);height:52px}
+  .prog{position:absolute;left:0;top:-1px;height:2px;width:0;background:var(--accent)}
+  .prog.on{animation:prog .7s linear forwards}
+  @keyframes prog{from{width:0}to{width:100%}}
+  .hallmark .mdl2{color:var(--accent);margin-right:5px}
+  .hallmark b{font-weight:800;color:var(--text-main)}.hallmark span.l{font-weight:300}
+  .fdiv{width:1px;height:14px;background:var(--border);flex:none}
+  .fdot{width:7px;height:7px;border-radius:50%;background:var(--pass);display:inline-block;margin-right:8px;vertical-align:middle}
+  .fst{flex:1;min-width:0;display:flex;align-items:center;gap:8px}
+  .fst .g{color:var(--accent);font-size:12px}
+  .fst span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .fpg{max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0 2px 0 12px}
+  .run{width:150px;height:36px;font-size:12px}
+  .run .g{font-size:13px}
+  /* confirm */
+  .ovl{position:absolute;inset:0;background:rgba(3,8,10,.58);display:none;align-items:center;justify-content:center;z-index:30}
+  body.light .ovl{background:rgba(38,50,56,.42)}
+  .ovl.on{display:flex}
+  .dlg{width:560px;max-width:92%;background:var(--window-bg);border:1px solid var(--border);border-radius:9px;box-shadow:0 22px 60px rgba(0,0,0,.6);overflow:hidden}
+  .dh{display:flex;align-items:center;gap:9px;height:38px;padding:0 14px;background:var(--titlebar);border-bottom:1px solid var(--border);font-weight:700;font-size:12.5px}
+  .dh .mdl2{color:var(--accent);font-size:14px}
+  .db{padding:14px 16px 6px;font-size:12px;line-height:1.55}
+  .db .pr{display:grid;grid-template-columns:1fr 18px 1fr;gap:6px;align-items:start;background:var(--input-bg);border:1px solid var(--border);border-radius:5px;padding:6px 9px;margin-top:6px;font:11px/1.45 Consolas,monospace;word-break:break-word}
+  .db .pr .ar{color:var(--accent);text-align:center;font-weight:700}
+  .db .pr .af{color:var(--text-main)}
+  .db .wr{margin-top:12px;color:var(--text-2);font-size:11.5px}
+  .df{display:flex;justify-content:flex-end;gap:9px;padding:12px 16px;background:var(--titlebar);border-top:1px solid var(--border);margin-top:10px}
+  .df button{font-family:inherit;font-size:12px;border-radius:6px;cursor:pointer;height:32px;padding:0 22px}
+  .df .no{background:var(--panel2);border:1px solid var(--border);color:var(--text-main)}
+  .df .no:hover{background:var(--hover)}
+  .df .yes{height:32px;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="window" id="win">
+  <div class="titlebar">
+    <span class="mdl2 burger" id="burger" title="Show or hide the search options">&#xE700;</span>
+    <span class="mdl2 tb-ico">&#xE721;</span>
+    <span class="tb-name">Text Search</span>
+    <div class="docchip"><span class="mdl2">&#xE7C3;</span><span class="path" id="lbl_file">Tower-A_MEP_Coordination.rvt</span></div>
+    <div class="tb-right">
+      <span class="mdl2 theme-btn" id="themeBtn" title="Toggle light / dark theme">&#xE706;</span>
+      <div class="dots"><span class="dot m mdl2">&#xE921;</span><span class="dot x mdl2">&#xE922;</span><span class="dot c mdl2">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- options column -->
+    <div class="rail" id="rail">
+      <div class="rlab">SCOPE</div>
+      <div class="combo ed" id="cb_scope" title="Pick All views, the active view, or one view. Or type part of a view name: every view whose name contains it is searched.">
+        <input class="in" id="scope_in" spellcheck="false" autocomplete="off"><span class="cv mdl2">&#xE70D;</span><div class="pop"></div>
+      </div>
+      <div class="hint">Pick a view, or type part of a view name. The list fills when the model is read.</div>
+
+      <div class="rlab">MATCH</div>
+      <div class="combo" id="cb_mode" title="Contains: anywhere in the note. Whole word: not inside a longer word. Exact text: the whole note. Wildcards: * any run of characters, ? one character. Regular expression: as typed.">
+        <input class="in" id="mode_in" readonly><span class="cv mdl2">&#xE70D;</span><div class="pop"></div>
+      </div>
+      <div class="chk" id="chk_case"><span class="box"></span>Match case</div>
+
+      <div class="rlab">ZOOM</div>
+      <div class="mrow"><span class="fl">Space around the text</span><input class="in mono" id="txt_margin" value="30"><span class="un">mm</span></div>
+      <div class="hint">Paper millimetres: at 1:50, 30 mm is 1.5 m of model.</div>
+      <div class="chk on" id="chk_select"><span class="box"></span>Select the note</div>
+
+      <div class="rlab">KEYS</div>
+      <div class="keys">
+        <div><b>Enter</b>read the model again and search</div>
+        <div><b>F3</b>next match, <b>Shift+F3</b> previous</div>
+        <div><b>Down</b><b>Up</b>in the search box: the same</div>
+        <div><b>Enter</b>in the replace box: replace all, asks first</div>
+        <div><b>Esc</b>close the window</div>
+      </div>
+    </div>
+
+    <!-- content: one page, no navigation -->
+    <div class="content">
+      <div class="page on" id="pg_search">
+        <div>
+          <div class="srow">
+            <div class="sbox">
+              <span class="gl mdl2">&#xE721;</span>
+              <input id="txt_query" value="FD-A-B100" spellcheck="false" autocomplete="off" title="Text to find in the model's text notes. Results update as you type; Enter reads the model again.">
+              <span class="x mdl2" id="btn_clear" title="Clear the search text">&#xE894;</span>
+            </div>
+            <span class="step mdl2" id="btn_prev" title="Zoom to the previous match (Shift+F3)">&#xE70E;</span>
+            <span class="step mdl2" id="btn_next" title="Zoom to the next match (F3)">&#xE70D;</span>
+            <button class="tgl" id="btn_rtoggle" title="Show or hide the replace row">Replace</button>
+          </div>
+          <div class="rrow" id="rrow" style="margin-top:8px">
+            <span class="fl">Replace with</span>
+            <input id="txt_replace" value="FD-A-B105" spellcheck="false" autocomplete="off" title="What every match becomes. Empty deletes the matches. In regular-expression mode backreferences (\1) work; in the other modes it is literal.">
+            <button class="abtn" id="btn_replace" title="Replace every match in the current results with the text beside this button. Asks before it writes; Ctrl+Z in Revit undoes it in one step."><span class="g">&#xE768;</span>REPLACE ALL</button>
+          </div>
+        </div>
+
+        <div class="kpis">
+          <div class="tile"><div class="lab">MATCHES</div><div class="val" id="kpi_matches">&#8212;</div></div>
+          <div class="tile"><div class="lab">VIEWS</div><div class="val" id="kpi_views">&#8212;</div></div>
+          <div class="tile" id="tile_read"><div class="lab">TEXT NOTES READ</div><div class="val" id="kpi_read">&#8212;</div></div>
+          <div class="tile"><div class="lab">CURRENT</div><div class="val acc" id="kpi_cur">&#8212;</div></div>
+        </div>
+
+        <div class="results">
+          <div class="scroll" id="scroll"><div id="list"></div></div>
+          <div class="empty" id="empty"><span class="g mdl2">&#xE721;</span><b id="empty_t">Find text notes by what they say</b><span class="h" id="empty_h">Type part of a note, such as a damper code, and press Enter. Click a result to open its view and zoom to it.</span></div>
+        </div>
+      </div>
+
+      <div class="banner" id="banner"><span id="banner_t"></span><span class="bx mdl2" id="banner_x" title="Dismiss">&#xE8BB;</span></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="prog" id="prog"></div>
+    <span class="hallmark"><span class="mdl2">&#xE8FD;</span><b>IcZ</b><span class="l"> Workspace</span></span>
+    <span class="fdiv"></span>
+    <span><span class="fdot"></span><span id="foot_model">Model loaded · workshared</span></span>
+    <span class="fdiv"></span>
+    <span class="fst"><span class="g mdl2">&#xE9F5;</span><span class="t" id="footer_status">Ready.</span></span>
+    <span class="fpg" id="foot_page">All views</span>
+    <button class="abtn run" id="btn_run" title="Read every text note in the model again, then apply the search"><span class="g">&#xE768;</span>SEARCH</button>
+  </div>
+
+  <!-- confirm card -->
+  <div class="ovl" id="ovl">
+    <div class="dlg" role="dialog" aria-label="Replace text">
+      <div class="dh"><span class="mdl2">&#xE70F;</span>Replace text</div>
+      <div class="db" id="dbody"></div>
+      <div class="df"><button class="no" id="btn_no">No</button><button class="abtn yes" id="btn_yes" style="padding:0 26px">Yes</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var $ = function(s,r){return (r||document).querySelector(s);};
+  var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
+  var esc = function(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");};
+  var group = function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",");};
+  var MAX_ROWS = 500, MAX_SPANS = 40, LB = "↵";
+
+  /* ---------- synthetic data: 6 views, 52 text notes ---------- */
+  var VIEWS = [
+    {n:"Detail - Damper Access",  k:"Detail View"},
+    {n:"L01 - Ventilation Plan",  k:"Floor Plan"},
+    {n:"L02 - Ventilation Plan",  k:"Floor Plan", active:true},
+    {n:"L03 - Reflected Ceiling", k:"Ceiling Plan"},
+    {n:"M-301 - Damper Legend",   k:"Sheet"},
+    {n:"Section 07 - Riser Shaft",k:"Section"}
+  ];
+  var TYPES = ["Arial 2.5mm","Arial 3.5mm","Arial 2.5mm Bold","Leader Note 2.5mm","Legend 3mm"];
+  var RAW = [
+    [0,1,"DETAIL 4 - FIRE DAMPER IN RATED WALL"],
+    [0,0,"FD-A-B100 - 150 mm CLEARANCE ALL SIDES"],
+    [0,0,"ACCESS PANEL 300x300 mm"],
+    [0,3,"FD-A-B101 - SAME AS DETAIL 4, LONGER SLEEVE"],
+    [0,0,"FIRE-RATED SLEEVE, 1.5 mm STEEL"],
+    [1,0,"FD-A-B100"],
+    [1,0,"FD-A-B100 - FIRE DAMPER 600x400, 120 MIN"],
+    [1,0,"FD-A-B101\nACCESS PANEL 300x300 REQUIRED"],
+    [1,0,"SD-A-C300"],
+    [1,3,"TYPE: FD-A-B100 / INSTALL PER DETAIL 4"],
+    [1,0,"VC-A-D400 - SET TO 40 % OPEN"],
+    [1,1,"Fire damper FD-A-B100 to be installed in rated wall"],
+    [1,0,"FDR-A-C200"],
+    [1,0,"GRID C-7: ADD FD-A-B100 AND FD-A-B100-A"],
+    [1,1,"SEE SHEET M-301 FOR DAMPER LEGEND"],
+    [1,2,"RISER SR-2 - DO NOT PENETRATE"],
+    [2,0,"FD-A-B100"],
+    [2,0,"FD-A-B100\n600x400"],
+    [2,0,"FD-A-B1001 (SPARE)"],
+    [2,0,"FD-A-B101"],
+    [2,0,"FD-A-B101 - FIRE DAMPER 500x500, 120 MIN"],
+    [2,0,"SD-A-C300 - SMOKE DAMPER, 24 V"],
+    [2,3,"fd-a-b100 (existing, to be relocated 1.2 m toward grid D-3 and labelled again after the commissioning check; the site team confirms the sleeve size before work starts, see the general notes)"],
+    [2,0,"VC-A-D400"],
+    [2,0,"FDR-A-C200 - ROUND, DN315"],
+    [2,1,"CONFIRM DAMPER TYPES WITH THE MECHANICAL ENGINEER"],
+    [2,0,"FDR-A-C201"],
+    [2,0,"FIRE STOP TO WALL BY OTHERS"],
+    [3,0,"FD-A-B100",true],
+    [3,0,"FD-A-B100 ACCESS FROM CORRIDOR SIDE"],
+    [3,0,"FD-A-B101"],
+    [3,0,"SD-A-C300"],
+    [3,0,"SD-A-C301"],
+    [3,1,"CEILING ACCESS HATCH 600x600"],
+    [3,0,"VC-A-D400"],
+    [3,0,"FDR-A-C200"],
+    [3,1,"REFER TO DETAIL 4"],
+    [4,2,"DAMPER LEGEND"],
+    [4,4,"FD-A-B100 - FIRE DAMPER, RECTANGULAR, 120 MIN"],
+    [4,4,"FD-A-B101 - FIRE DAMPER, RECTANGULAR, 90 MIN"],
+    [4,4,"FDR-A-C200 - FIRE DAMPER, ROUND, 120 MIN"],
+    [4,4,"SD-A-C300 - SMOKE DAMPER, RECTANGULAR"],
+    [4,4,"VC-A-D400 - VOLUME CONTROL DAMPER"],
+    [4,1,"EVERY DAMPER CARRIES A LABEL WITH ITS DAMPER CODE"],
+    [4,0,"ALL DIMENSIONS IN mm"],
+    [5,0,"RISER SR-2"],
+    [5,0,"FD-A-B100 AT EACH FLOOR PENETRATION"],
+    [5,0,"FD-A-B100\n(L01 TO L03)"],
+    [5,0,"SD-A-C300 AT SHAFT TOP"],
+    [5,0,"FIRE STOP BELOW DAMPER"],
+    [5,1,"LEVEL 01"],
+    [5,1,"LEVEL 02"]
+  ];
+  var NOTES = [], nid = 391204;
+  RAW.forEach(function(r,i){
+    nid += 37 + (i*53 % 211);
+    NOTES.push({id:nid, v:r[0], t:r[1], text:r[2], orig:r[2], locked:!!r[3]});
+  });
+  var MODES = [
+    ["contains","Contains"],["word","Whole word"],["exact","Exact text"],
+    ["wildcard","Wildcards  * ?"],["regex","Regular expression"]
+  ];
+
+  /* ---------- state ---------- */
+  var S = {
+    mode:"contains", mcase:false, scope:"all", sel:true, cursor:2,
+    flat:[], busy:false, undo:null, clock:"09:41", secs:"0.4", timer:0, bannerTimer:0
+  };
+
+  /* ---------- scope entries ---------- */
+  function counts(){
+    var c = VIEWS.map(function(){return 0;});
+    NOTES.forEach(function(n){c[n.v]++;});
+    return c;
+  }
+  function entries(){
+    var c = counts(), act = 0, out = [];
+    VIEWS.forEach(function(v,i){ if(v.active) act = i; });
+    out.push({k:"all", label:"All views", n:NOTES.length});
+    out.push({k:"active", label:"Active view  ·  "+VIEWS[act].n, n:c[act]});
+    VIEWS.forEach(function(v,i){ out.push({k:i, label:v.n+"  ·  "+v.k, n:c[i]}); });
+    return out;
+  }
+  function entryText(e){return e.label+"  ("+e.n+")";}
+  function resolveScope(text){
+    var t = (text||"").trim(); if(!t) return "all";
+    var low = t.toLowerCase(), es = entries();
+    for(var i=0;i<es.length;i++){
+      if(entryText(es[i]).toLowerCase()===low || es[i].label.toLowerCase()===low) return es[i].k;
+    }
+    return {name:t};
+  }
+  function allowedViews(sc){
+    if(sc==="all") return null;
+    if(sc==="active"){ var a = {}; VIEWS.forEach(function(v,i){ if(v.active) a[i]=1; }); return a; }
+    var o = {};
+    if(typeof sc==="number"){ o[sc]=1; return o; }
+    var low = sc.name.toLowerCase();
+    VIEWS.forEach(function(v,i){ if(v.n.toLowerCase().indexOf(low)>=0) o[i]=1; });
+    return o;
+  }
+  function caption(sc){
+    if(sc==="all") return "All views";
+    if(sc==="active") return "Active view";
+    if(typeof sc==="number") return VIEWS[sc].n;
+    return "Views named “"+sc.name+"”";
+  }
+
+  /* ---------- matcher ---------- */
+  function rx(s){return s.replace(/[.*+?^${}()|[\]\\\/-]/g,"\\$&");}
+  function build(q, mode, mcase){
+    if(mode!=="regex") q = q.trim();
+    if(!q) return {m:null};
+    var p;
+    if(mode==="regex") p = q;
+    else if(mode==="wildcard") p = q.split("").map(function(ch){return ch==="*"?"[^\\n]*":ch==="?"?"[^\\n]":rx(ch);}).join("");
+    else if(mode==="exact") p = "^\\s*"+rx(q)+"\\s*$";
+    else if(mode==="word") p = (/\w/.test(q.charAt(0))?"(?<!\\w)":"")+rx(q)+(/\w/.test(q.charAt(q.length-1))?"(?!\\w)":"");
+    else p = rx(q);
+    try{ return {m:new RegExp(p, mcase?"g":"gi")}; }
+    catch(e){ return {err:"Invalid pattern: "+String(e.message).split(": ").pop()}; }
+  }
+  function spansOf(m, text){
+    var out = [], r; m.lastIndex = 0;
+    while(out.length<MAX_SPANS && (r = m.exec(text))){
+      if(r[0].length===0){ m.lastIndex++; continue; }
+      out.push([r.index, r.index+r[0].length]);
+    }
+    return out;
+  }
+  function snippet(text, spans){
+    var width = 140, lead = 36;
+    if(text.length<=width) return {t:text, s:spans};
+    var first = spans.length?spans[0][0]:0;
+    var start = Math.max(0, Math.min(first-lead, text.length-width));
+    var end = Math.min(text.length, start+width);
+    var pre = start>0?"…":"", post = end<text.length?"…":"";
+    var shift = pre.length-start, moved = [];
+    spans.forEach(function(sp){
+      var s2 = Math.max(sp[0],start), e2 = Math.min(sp[1],end);
+      if(e2>s2) moved.push([s2+shift, e2+shift]);
+    });
+    return {t:pre+text.slice(start,end)+post, s:moved};
+  }
+  function marked(text, spans){
+    var out = "", pos = 0;
+    spans.forEach(function(sp){
+      if(sp[0]<pos) return;
+      out += hl(text.slice(pos,sp[0])) + "<mark>"+hl(text.slice(sp[0],sp[1]))+"</mark>";
+      pos = sp[1];
+    });
+    return out + hl(text.slice(pos));
+  }
+  function hl(s){return esc(s).split(LB).join('<span class="lb">'+LB+'</span>');}
+  function disp(t){return t.replace(/\n/g, LB);}
+
+  /* ---------- UI helpers ---------- */
+  function status(msg){ $("#footer_status").textContent = msg; $("#footer_status").title = msg; }
+  function banner(msg, kind){
+    var b = $("#banner"); $("#banner_t").textContent = msg;
+    b.className = "banner on"+(kind&&kind!=="info"?" "+kind:"");
+    clearTimeout(S.bannerTimer);
+    S.bannerTimer = setTimeout(function(){b.classList.remove("on");}, 9000);
+  }
+  $("#banner_x").addEventListener("click", function(){ $("#banner").classList.remove("on"); });
+  function progress(on){
+    var p = $("#prog"); p.classList.remove("on");
+    if(on){ void p.offsetWidth; p.classList.add("on"); }
+  }
+  function setBusy(b){
+    S.busy = b;
+    $("#btn_run").classList.toggle("dis", b);
+    $("#btn_replace").classList.toggle("dis", b);
+    progress(b);
+  }
+
+  /* ---------- search + render ---------- */
+  function refilter(zoomSingle){
+    var q = $("#txt_query").value;
+    var b = build(q, S.mode, S.mcase);
+    S.scope = resolveScope($("#scope_in").value);
+    $("#foot_page").textContent = caption(S.scope);
+    var cap = caption(S.scope);
+    if(b.err){
+      S.flat = []; S.cursor = -1; renderList([], 0);
+      showEmpty("That pattern does not compile", b.err);
+      kpis(0,0); status(b.err); return;
+    }
+    var allowed = allowedViews(S.scope), flat = [], groups = [];
+    VIEWS.forEach(function(v,vi){
+      if(allowed && !allowed[vi]) return;
+      var g = {v:vi, rows:[]};
+      NOTES.forEach(function(n){
+        if(n.v!==vi) return;
+        if(b.m){
+          var sp = spansOf(b.m, n.text);
+          if(!sp.length) return;
+          g.rows.push({n:n, spans:sp});
+        } else g.rows.push({n:n, spans:[]});
+      });
+      if(g.rows.length){ groups.push(g); g.rows.forEach(function(r){flat.push(r);}); }
+    });
+    S.flat = flat; S.cursor = -1;
+    var n = flat.length, v = groups.length, shown = (S.mode==="regex"?q:q.trim());
+    renderList(groups, n); kpis(n, v);
+    if(!NOTES.length){ showEmpty("This model has no text notes","Nothing to search. Press Enter after adding notes to read the model again."); status("The model has no text notes."); }
+    else if(!n){
+      showEmpty("No match","Nothing in "+cap+" matches “"+shown+"”. Check the scope and the match mode, or press Enter to read the model again.");
+      status("No text note in "+cap+" matches “"+shown+"”.");
+    }
+    else if(!b.m) status(group(n)+" text note(s) in "+cap+" - type to narrow them down.");
+    else status(group(n)+" match(es) in "+group(v)+" view(s) - click one to zoom to it, or use F3.");
+    if(zoomSingle && n===1) zoomTo(0);
+  }
+  function kpis(n, v){
+    $("#kpi_matches").textContent = group(n);
+    $("#kpi_views").textContent = group(v);
+    $("#kpi_cur").textContent = "—";
+  }
+  function showEmpty(t, h){
+    $("#empty_t").textContent = t; $("#empty_h").textContent = h;
+    $("#empty").classList.add("on");
+  }
+  function renderList(groups, total){
+    var html = "", drawn = 0;
+    groups.forEach(function(g){
+      if(drawn>=MAX_ROWS) return;
+      var v = VIEWS[g.v];
+      html += '<div class="gh"><span class="g mdl2">&#xE8A5;</span><span class="nm"><b>'+esc(v.n)+'</b><span class="kd">  ·  '+esc(v.k)+'</span></span><span class="ct">'+group(g.rows.length)+'</span></div>';
+      g.rows.forEach(function(r){
+        if(drawn>=MAX_ROWS) return;
+        var full = disp(r.n.text), sn = snippet(full, r.spans);
+        var tip = full+"\n\nView: "+v.n+" ("+v.k+")\nType: "+TYPES[r.n.t]+"\nElement id: "+r.n.id+"\n\nClick to open the view and zoom to this note.";
+        html += '<div class="nr" data-p="'+drawn+'" title="'+esc(tip)+'"><span class="tx">'+marked(sn.t, sn.s)+'</span><span class="ty">'+esc(TYPES[r.n.t])+'</span><span class="id">'+r.n.id+'</span><span class="go mdl2">&#xE8A3;</span></div>';
+        r.pos = drawn; drawn++;
+      });
+    });
+    if(drawn<total) html += '<div class="more">Showing the first '+group(drawn)+' of '+group(total)+' matches. Narrow the search to list the rest; F3 still steps through all of them.</div>';
+    $("#list").innerHTML = html;
+    $("#empty").classList.toggle("on", total===0);
+    $("#scroll").scrollTop = 0;
+  }
+  function setCursor(p){
+    S.cursor = p;
+    $$(".nr.cur").forEach(function(x){x.classList.remove("cur");});
+    var el = $('.nr[data-p="'+p+'"]');
+    if(el){
+      el.classList.add("cur");
+      var sc = $("#scroll"), top = el.offsetTop, bot = top+el.offsetHeight;
+      if(top < sc.scrollTop+4) sc.scrollTop = Math.max(0, top-34);
+      else if(bot > sc.scrollTop+sc.clientHeight-4) sc.scrollTop = bot-sc.clientHeight+10;
+    }
+    $("#kpi_cur").textContent = (p+1)+" / "+group(S.flat.length);
+    $("#tile_read").title = "Read at "+S.clock+" in "+S.secs+" s.";
+    $("#kpi_cur").title = disp(S.flat[p].n.text);
+  }
+  function zoomTo(p){
+    if(p<0 || p>=S.flat.length) return;
+    var rec = S.flat[p].n, v = VIEWS[rec.v];
+    setCursor(p);
+    status("Opening ‘"+v.n+"’ …");
+    clearTimeout(S.zt);
+    S.zt = setTimeout(function(){ status("Zoomed to note "+rec.id+" in '"+v.n+"'."); }, 320);
+  }
+  function step(d){
+    if(!S.flat.length){ status("No match to step to - search first."); return; }
+    var n = S.flat.length, p = S.cursor<0 ? (d>0?0:n-1) : (S.cursor+d+n)%n;
+    zoomTo(p);
+  }
+
+  /* ---------- search button / read the model ---------- */
+  function runSearch(){
+    if(S.busy) return;
+    clearTimeout(S.timer);
+    setBusy(true);
+    status("Reading the model's text notes …");
+    setTimeout(function(){
+      setBusy(false);
+      S.clock = "09:4"+(2+Math.floor(Math.random()*6)); S.secs = (0.3+Math.random()*0.4).toFixed(1);
+      $("#kpi_read").textContent = group(NOTES.length);
+      $("#tile_read").title = "Read at "+S.clock+" in "+S.secs+" s.";
+      refilter(true);
+    }, 720);
+  }
+  $("#btn_run").addEventListener("click", runSearch);
+
+  /* ---------- typing ---------- */
+  $("#txt_query").addEventListener("input", function(){
+    clearTimeout(S.timer); S.timer = setTimeout(function(){ refilter(false); }, 140);
+  });
+  $("#txt_query").addEventListener("keydown", function(e){
+    if(e.key==="Enter"){ e.preventDefault(); runSearch(); }
+    else if(e.key==="ArrowDown"){ e.preventDefault(); step(1); }
+    else if(e.key==="ArrowUp"){ e.preventDefault(); step(-1); }
+  });
+  $("#btn_clear").addEventListener("click", function(){ $("#txt_query").value = ""; $("#txt_query").focus(); refilter(false); });
+  $("#btn_next").addEventListener("click", function(){ step(1); });
+  $("#btn_prev").addEventListener("click", function(){ step(-1); });
+  document.addEventListener("keydown", function(e){
+    if(e.key==="F3"){ e.preventDefault(); step(e.shiftKey?-1:1); }
+    else if(e.key==="Escape" && $("#ovl").classList.contains("on")){ closeConfirm(); }
+    else if((e.ctrlKey||e.metaKey) && (e.key==="z"||e.key==="Z") && S.undo && !/INPUT/.test((e.target||{}).tagName||"")){
+      e.preventDefault(); undoReplace();
+    }
+  });
+  $("#list").addEventListener("click", function(e){
+    var r = e.target.closest ? e.target.closest(".nr") : null;
+    if(r) zoomTo(+r.getAttribute("data-p"));
+  });
+
+  /* ---------- option column ---------- */
+  $("#burger").addEventListener("click", function(){ $("#rail").classList.toggle("collapsed"); });
+  function mkCombo(id, items, pick, typed){
+    var root = $(id), inp = $("input", root), pop = $(".pop", root);
+    function fill(){
+      var cur = inp.value;
+      pop.innerHTML = items().map(function(it,i){
+        return '<div data-i="'+i+'" class="'+(it.text===cur?"on":"")+'">'+esc(it.text)+'</div>';
+      }).join("");
+    }
+    function toggle(open){
+      if(open){ fill(); root.classList.add("open"); } else root.classList.remove("open");
+    }
+    $(".cv", root).addEventListener("click", function(e){ e.stopPropagation(); toggle(!root.classList.contains("open")); });
+    if(!typed) inp.addEventListener("click", function(e){ e.stopPropagation(); toggle(!root.classList.contains("open")); });
+    else inp.addEventListener("input", function(){ toggle(false); typed(inp.value); });
+    pop.addEventListener("click", function(e){
+      var d = e.target.closest("div[data-i]"); if(!d) return;
+      var it = items()[+d.getAttribute("data-i")];
+      inp.value = it.text; toggle(false); pick(it);
+    });
+    document.addEventListener("click", function(e){ if(!root.contains(e.target)) toggle(false); });
+  }
+  mkCombo("#cb_scope", function(){ return entries().map(function(e){return {text:entryText(e), k:e.k};}); },
+    function(){ refilter(false); }, function(){ refilter(false); });
+  mkCombo("#cb_mode", function(){ return MODES.map(function(m){return {text:m[1], k:m[0]};}); },
+    function(it){ S.mode = it.k; refilter(false); });
+  $("#scope_in").value = entryText(entries()[0]);
+  $("#mode_in").value = "Contains";
+  $("#chk_case").addEventListener("click", function(){ this.classList.toggle("on"); S.mcase = this.classList.contains("on"); refilter(false); });
+  $("#chk_select").addEventListener("click", function(){ this.classList.toggle("on"); S.sel = this.classList.contains("on"); });
+  $("#txt_margin").addEventListener("change", function(){
+    var v = parseFloat(this.value.replace(",","."));
+    if(isNaN(v)) v = 30;
+    v = Math.max(2, Math.min(500, v)); this.value = String(v);
+  });
+
+  /* ---------- replace ---------- */
+  $("#btn_rtoggle").addEventListener("click", function(){
+    var on = $("#rrow").classList.toggle("on"); this.classList.toggle("on", on);
+    if(on) $("#txt_replace").focus();
+  });
+  $("#txt_replace").addEventListener("keydown", function(e){ if(e.key==="Enter"){ e.preventDefault(); askReplace(); } });
+  $("#btn_replace").addEventListener("click", askReplace);
+
+  function plan(text, m, repl, regex){
+    var count = 0;
+    m.lastIndex = 0;
+    var out = text.replace(m, function(){
+      var a = arguments, s = a[0];
+      if(!s.length) return s;
+      count++;
+      if(!regex) return repl;
+      var ng = 0; while(typeof a[ng+1]!=="number") ng++;
+      return repl.replace(/\\(\d|n|\\)/g, function(_,c){
+        if(c==="n") return "\n";
+        if(c==="\\") return "\\";
+        return (+c<=ng && typeof a[+c]==="string") ? a[+c] : "";
+      });
+    });
+    return [out, count];
+  }
+  var pend = null;
+  function askReplace(){
+    if(S.busy) return;
+    var q = $("#txt_query").value, b = build(q, S.mode, S.mcase);
+    if(b.err){ status(b.err); banner(b.err, "error"); return; }
+    if(!b.m){ status("Type what to find first - replace needs a query."); return; }
+    var repl = $("#txt_replace").value, regex = S.mode==="regex";
+    var occ = 0, notes = 0, pairs = [];
+    S.flat.forEach(function(r){
+      var p = plan(r.n.text, b.m, repl, regex);
+      if(!p[1]) return;
+      notes++; occ += p[1];
+      if(pairs.length<3) pairs.push([disp(r.n.text), disp(p[0])]);
+    });
+    if(!occ){ status("Nothing to replace: the matches mark nothing to splice."); return; }
+    var shown = regex ? q : q.trim();
+    var h = '<div>'+(repl?"Replace":"Delete")+' '+group(occ)+' occurrence(s) of “'+esc(shown)+'” in '+group(notes)+' note(s), '+esc(caption(S.scope))+'.</div>';
+    pairs.forEach(function(p){
+      h += '<div class="pr"><span>“'+esc(p[0])+'”</span><span class="ar">→</span><span class="af">“'+esc(p[1])+'”</span></div>';
+    });
+    h += '<div class="wr">This writes to the model - Ctrl+Z in Revit undoes it in one step.</div>';
+    $("#dbody").innerHTML = h;
+    pend = {m:b.m, repl:repl, regex:regex, n:notes};
+    $("#ovl").classList.add("on");
+    $("#btn_yes").focus();
+  }
+  function closeConfirm(){ $("#ovl").classList.remove("on"); }
+  $("#btn_no").addEventListener("click", function(){
+    closeConfirm(); pend = null; status("Replace cancelled - nothing was written.");
+  });
+  $("#ovl").addEventListener("click", function(e){ if(e.target===this){ closeConfirm(); pend = null; status("Replace cancelled - nothing was written."); } });
+  $("#btn_yes").addEventListener("click", function(){
+    if(!pend) return;
+    var P = pend; pend = null; closeConfirm();
+    setBusy(true);
+    status("Replacing in "+group(P.n)+" note(s) …");
+    setTimeout(function(){
+      var snap = [], changed = 0, occ = 0, skipped = [];
+      S.flat.forEach(function(r){
+        var n = r.n;
+        if(n.locked){ skipped.push(n.id); return; }
+        var p = plan(n.text, P.m, P.repl, P.regex);
+        if(!p[1]) return;
+        snap.push([n, n.text]); n.text = p[0]; changed++; occ += p[1];
+      });
+      S.undo = snap.length ? snap : null;
+      var msg = "Replaced "+group(occ)+" occurrence(s) in "+group(changed)+" note(s)";
+      if(skipped.length) msg += ". "+group(skipped.length)+" skipped ("+skipped[0]+": owned by another user - sync, or ask for the element)";
+      msg += ". Ctrl+Z in Revit undoes it.";
+      banner(msg, "info");
+      setBusy(false);
+      // the window reads the model again, so the list shows the new text
+      setBusy(true); status("Reading the model's text notes …");
+      setTimeout(function(){ setBusy(false); refilter(false); }, 520);
+    }, 760);
+  });
+  function undoReplace(){
+    if(!S.undo) return;
+    S.undo.forEach(function(s){ s[0].text = s[1]; });
+    var k = S.undo.length; S.undo = null;
+    refilter(false);
+    status("Undone: IcZ Text Search replace restored "+group(k)+" note(s).");
+  }
+
+  /* ---------- theme ---------- */
+  $("#themeBtn").addEventListener("click", function(){
+    document.body.classList.toggle("light");
+    this.innerHTML = document.body.classList.contains("light") ? "&#xE708;" : "&#xE706;";
+  });
+
+  /* ---------- first paint: a session already in progress ---------- */
+  $("#kpi_read").textContent = group(NOTES.length);
+  $("#tile_read").title = "Read at "+S.clock+" in "+S.secs+" s.";
+  refilter(false);
+  zoomTo(2);
+  $("#footer_status").textContent = "Zoomed to note "+S.flat[2].n.id+" in '"+VIEWS[S.flat[2].n.v].n+"'.";
+})();
+</script>
+</body>
+</html>
