@@ -1068,14 +1068,14 @@ a.spill.lnk:hover{border-color:var(--accent)}
         <a href="#tools" data-name="tools all tools index table at a glance what it does touches the model formats"><span class="gi"><i class="fa-solid fa-table-list"></i></span>All tools</a>
         <a href="#architecture" data-name="architecture stack diagram shared library dependency"><span class="gi"><i class="fa-solid fa-diagram-project"></i></span>Architecture</a>
         <a href="#agent" data-name="agent mcp bridge drive it dry run commit terminal orient read"><span class="gi"><i class="fa-solid fa-robot"></i></span>Drive it with an agent</a>
-        <a href="#timeline" data-name="timeline what's new changelog rounds r176 r154 r156 r158 r163 r169 r170 r172 r173 r174 history landed"><span class="gi"><i class="fa-solid fa-timeline"></i></span>What&rsquo;s new</a>
+        <a href="#timeline" data-name="timeline what's new changelog rounds r190 r176 r154 r156 r158 r163 r169 r170 r172 r173 r174 history landed"><span class="gi"><i class="fa-solid fa-timeline"></i></span>What&rsquo;s new</a>
       </div>
 
       <div class="nav-group" data-group>
         <div class="nav-label">1 · Set up and clean the model</div>
         <a href="#psu" data-name="psu project setup links levels project info"><span class="gi"><i class="fa-solid fa-sliders"></i></span>Project Setup<span class="tcode">PSU</span></a>
         <a href="#aa" data-name="aa qaqc suite quality model health scan apply stages pipeline"><span class="gi"><i class="fa-solid fa-layer-group"></i></span>IcZ QAQC Suite<span class="tcode">AA</span></a>
-        <a href="#cd" data-name="cd model cleanup ghost purge connection fix nested"><span class="gi"><i class="fa-solid fa-broom"></i></span>Model Cleanup<span class="tcode">CD</span></a>
+        <a href="#cd" data-name="cd model cleanup survey plan region preview ghost purge connection fix nested"><span class="gi"><i class="fa-solid fa-broom"></i></span>Model Cleanup<span class="tcode">CD</span></a>
         <a href="#fit" data-name="fit mep workbench fitting audit coordinates flex param sync"><span class="gi"><i class="fa-solid fa-screwdriver-wrench"></i></span>MEP Workbench<span class="tcode">FIT</span></a>
         <a href="#sfx" data-name="sfx structural framing fix disallow join extension compensation cope butt miter"><span class="gi"><i class="fa-solid fa-grip-lines"></i></span>Framing Fix<span class="tcode">SFX</span></a>
       </div>
@@ -1138,7 +1138,7 @@ a.spill.lnk:hover{border-color:var(--accent)}
       <!-- HERO / OVERVIEW -->
       <section class="doc hero reveal" id="overview" style="padding-top:10px">
         <canvas id="heroCanvas" aria-hidden="true"></canvas>
-        <span class="eyebrow"><i class="fa-solid fa-cube"></i> Revit 2022–2026 · pyRevit · IronPython</span> <a class="eyebrow latest" href="#timeline"><i class="fa-solid fa-timeline"></i> Latest r176 · 14 Oct</a>
+        <span class="eyebrow"><i class="fa-solid fa-cube"></i> Revit 2022–2026 · pyRevit · IronPython</span> <a class="eyebrow latest" href="#timeline"><i class="fa-solid fa-timeline"></i> Latest r190 · 18 Oct</a>
         <h1>A custom <span class="grad">Revit automation</span><br>suite, built tool by tool</h1>
         <p class="lede">The <strong>IcZ SuiteTools</strong> turn slow, error-prone MEP coordination work into one-click
         operations — eighteen modeless tools on one shared library, and an MCP bridge an agent can drive. Every tool scans before it writes, and every write is one undoable transaction.</p>
@@ -1253,7 +1253,7 @@ a.spill.lnk:hover{border-color:var(--accent)}
               <td data-l="Tool"><a href="#cd"><b>Model Cleanup</b></a> <span class="tcode">CD</span></td>
               <td data-l="Panel">Tools</td>
               <td data-l="What it does" class="does">Nine cleanup passes in one modeless workbench — ghosts, overkill lines, connections, the system layer, nested cases, orphans and duplicate families — armed individually, committed as one undoable act.</td>
-              <td data-l="Touches the model"><span class="touch">one undoable group for every armed station</span></td>
+              <td data-l="Touches the model"><span class="touch">a preview rolls back; a run is one undoable group</span></td>
               <td data-l="In → out">a production model → a cleaned model, an .xlsx receipt and a run console</td>
               <td data-l="Since"><span class="tag new">new</span></td>
             </tr>
@@ -1409,7 +1409,7 @@ a.spill.lnk:hover{border-color:var(--accent)}
               <span class="node tool" data-tool="aa"  data-uses="availability bimstd colorize configstore confirm dashboard dialogs doclayout failures fmt host mcheck mep mhealth modeless naming ownership paramreg params piechart pycompat radar reporthtml review_grid revit_compat revit_utils selection serdes shell tags theme units vfilters worksets xlsxlite">QAQC Suite <span class="nc">AA</span></span>
               <span class="node tool" data-tool="fit" data-uses="availability configstore confirm dashboard depends diaglog failures famedit famlib flex fmt geom host libmodel mep modeless modify naming nwd ownership params pycompat report_export review_grid revit_compat revit_utils riser route routing scan serdes shell theme units validation worksets">MEP Workbench <span class="nc">FIT</span></span>
               <span class="node tool" data-tool="psu" data-uses="availability bimstd colorize configstore dashboard dialogs failures fmt host modeless naming ownership paramreg params pycompat report_export review_grid revit_compat serdes shell spacesync theme vfilters vg_transfer worksets xlsxlite xlsxread">Project Setup <span class="nc">PSU</span></span>
-              <span class="node tool" data-tool="cd"  data-uses="availability configstore dashboard depends design_options fmt geom host mep mepdoctor modeless naming orphans overkill ownership report_export review_grid revit_compat revit_utils serdes shell theme units">Model Cleanup <span class="nc">CD</span></span>
+              <span class="node tool" data-tool="cd"  data-uses="availability configstore depends design_options fmt geom host mep mepdoctor modeless naming orphans overkill ownership report_export review_grid revit_compat revit_utils serdes shell theme units">Model Cleanup <span class="nc">CD</span></span>
               <span class="node tool" data-tool="issueone" data-uses="availability configstore confirm dialogs doclayout exportcfg failures fmt host lastused modeless naming pdfview perftracker pycompat reader revit_compat serdes shell theme validation xlsxlite">Transmit <span class="nc">EXP</span></span>
               <span class="node tool" data-tool="mepauto" data-uses="availability bimstd confirm doclayout failures fmt modeless piechart report_export review_grid revit_compat serdes sheet_overlap sheetpreview shell tag_leader theme">AutoDoc <span class="nc">DOC</span></span>
               <span class="node tool" data-tool="ro1" data-uses="availability configstore confirm cpyworker dashboard dialogs failures fmt host modeless ownership paramreg params pycompat report_export review_grid revit_compat revit_utils serdes shell theme units xlsxlite">BOQ Lookup <span class="nc">RO1</span></span>
@@ -1599,13 +1599,13 @@ a.spill.lnk:hover{border-color:var(--accent)}
         <div class="sec-head">
           <div class="sec-glyph"><i class="fa-solid fa-timeline"></i></div>
           <div class="sec-titles">
-            <h2>What&rsquo;s new since September <span class="tag">r149 → r176</span></h2>
-            <div class="sub">Twelve things a user notices, from the previous sync of this page to this one. Each stop links to the section it explains. The dots sit on the calendar. Scroll the track, click a dot, or let it play.</div>
+            <h2>What&rsquo;s new since September <span class="tag">r149 → r190</span></h2>
+            <div class="sub">Thirteen things a user notices, from the previous sync of this page to this one. Each stop links to the section it explains. The dots sit on the calendar. Scroll the track, click a dot, or let it play.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="tl-ctl"><button class="btn" id="tlPrev" type="button" aria-label="Previous"><i class="fa-solid fa-chevron-left"></i></button><button class="btn" id="tlNext" type="button" aria-label="Next"><i class="fa-solid fa-chevron-right"></i></button><span class="sp"></span><label><input type="checkbox" id="tlAuto"> play</label></div>
-          <div class="tl-rail" id="tlBar"><span class="lab l">24 Sep</span><i class="dot" data-i="0" style="left:16.4%" title="r154 · Sep 27"></i><i class="dot" data-i="1" style="left:45.2%" title="r156 · Oct 3"></i><i class="dot" data-i="2" style="left:50.0%" title="r158 · Oct 4"></i><i class="dot" data-i="3" style="left:59.6%" title="r163 · Oct 6"></i><i class="dot" data-i="4" style="left:88.4%" title="r169 · Oct 12"></i><i class="dot" data-i="5" style="left:89.6%" title="r170 · Oct 12"></i><i class="dot" data-i="6" style="left:90.8%" title="r172 · Oct 12"></i><i class="dot" data-i="7" style="left:92.0%" title="r171/r173 · Oct 12"></i><i class="dot" data-i="8" style="left:93.2%" title="r169.1 · Oct 13"></i><i class="dot" data-i="9" style="left:94.8%" title="r174 · Oct 13"></i><i class="dot" data-i="10" style="left:96.4%" title="r169.8 · Oct 13"></i><i class="dot" data-i="11" style="left:98.0%" title="r176 · Oct 14"></i><span class="lab r">14 Oct</span></div>
+          <div class="tl-rail" id="tlBar"><span class="lab l">24 Sep</span><i class="dot" data-i="0" style="left:14.0%" title="r154 · Sep 27"></i><i class="dot" data-i="1" style="left:38.0%" title="r156 · Oct 3"></i><i class="dot" data-i="2" style="left:42.0%" title="r158 · Oct 4"></i><i class="dot" data-i="3" style="left:50.0%" title="r163 · Oct 6"></i><i class="dot" data-i="4" style="left:71.6%" title="r169 · Oct 12"></i><i class="dot" data-i="5" style="left:72.8%" title="r170 · Oct 12"></i><i class="dot" data-i="6" style="left:74.0%" title="r172 · Oct 12"></i><i class="dot" data-i="7" style="left:75.2%" title="r171/r173 · Oct 12"></i><i class="dot" data-i="8" style="left:77.2%" title="r169.1 · Oct 13"></i><i class="dot" data-i="9" style="left:78.4%" title="r174 · Oct 13"></i><i class="dot" data-i="10" style="left:79.6%" title="r169.8 · Oct 13"></i><i class="dot" data-i="11" style="left:82.0%" title="r176 · Oct 14"></i><i class="dot" data-i="12" style="left:98.0%" title="r190 · Oct 18"></i><span class="lab r">18 Oct</span></div>
           <div class="tl-track" id="tlTrack">
             <div class="tl-card glass-card" tabindex="0">
               <span class="r">r154</span><span class="d">Sep 27</span> <span class="tag new">new</span>
@@ -1678,6 +1678,12 @@ a.spill.lnk:hover{border-color:var(--accent)}
               <h4>MEP Workbench checks pipe types against the piping library</h4>
               <p>Library check reads a library model laid out on a board. Declare from library adds the proposed markers to the editor in one step.</p>
               <div class="lk"><a href="#fit">MEP Workbench</a></div>
+            </div>
+            <div class="tl-card glass-card" tabindex="0">
+              <span class="r">r190</span><span class="d">Oct 18</span> <span class="tag new">new</span>
+              <h4>Model Cleanup shows its findings on a plan of the model</h4>
+              <p>Draw a region to clean only part of the model. PREVIEW runs the cleanup, measures it and rolls it back, and the forecast counts the MEP systems a delete leaves empty.</p>
+              <div class="lk"><a href="#cd">Model Cleanup</a></div>
             </div>
           </div>
           <details class="pages" id="tlEarlier">
@@ -1925,13 +1931,13 @@ health.score(results)                           # live Model Health — no TaskD
           <div class="sec-glyph"><i class="fa-solid fa-broom"></i></div>
           <div class="sec-titles">
             <h2>Model Cleanup <span class="tag code">CD</span> <span class="tag">Tools.panel</span></h2>
-            <div class="sub">Nine cleanup passes as stations on one production line — ghost duplicates, overkill lines, open connectors, the MEP system layer, nested cases, orphan purge and duplicate loaded families. Arm stations on the line, read the commit manifest, then commit the run as one undoable group.</div>
+            <div class="sub">Nine cleanup passes, read as a plan of the model. A scan puts every finding it can place on a plan of the model&rsquo;s own grid, shaped by pass and coloured by what a run would do to it; the rest wait on a shelf below the plan. Draw a region to clean only part of the model, PREVIEW the run as a measured rollback, then commit it as one undoable group.</div>
           </div>
         </div>
         <div class="sec-body">
           <div class="glance">
             <div class="g"><span class="gl">Does</span><span class="gv">Nine cleanup passes in one modeless workbench — ghosts, overkill lines, connections, the system layer, nested cases, orphans and duplicate families — armed individually, committed as one undoable act.</span></div>
-            <div class="g"><span class="gl">Touches the model</span><span class="gv"><span class="touch">one undoable group for every armed station</span></span></div>
+            <div class="g"><span class="gl">Touches the model</span><span class="gv"><span class="touch">a preview rolls back; a run is one undoable group</span></span></div>
             <div class="g"><span class="gl">Works with</span><span class="gv lk"><a href="#fit">MEP Workbench</a><a href="#aa">QAQC Suite</a></span></div>
           </div>
           <div class="shot">
@@ -1945,10 +1951,18 @@ health.score(results)                           # live Model Health — no TaskD
             </div>
           </div>
           <div class="techtags">
-            <span class="ttag alt">SubTransaction</span><span class="ttag alt">Spatial grid O(n)</span><span class="ttag alt">Nested family resolution</span>
+            <span class="ttag alt">Measured preview</span><span class="ttag alt">Region scope</span><span class="ttag alt">SubTransaction</span><span class="ttag alt">Spatial grid O(n)</span><span class="ttag alt">Nested family resolution</span>
           </div>
 
           <div class="subgrid">
+            <div class="subcard glass-card">
+              <h4><i class="fa-solid fa-map-location-dot"></i> The plan <span class="tag new">new</span></h4>
+              <p>A scan draws its findings on a plan of the model: an 8&nbsp;×&nbsp;6 grid of cells over the model&rsquo;s own grid lines, one mark for each finding it can place. A mark&rsquo;s shape names the pass and its colour the consequence — a delete, a delete that takes a tag or a dimension with it, a repair, or held. The five busiest cells light up as hot zones.</p>
+            </div>
+            <div class="subcard glass-card">
+              <h4><i class="fa-solid fa-crop-simple"></i> Region &amp; PREVIEW <span class="tag new">new</span></h4>
+              <p>Drag a region on the plan, or click a hot zone, and a run touches only what lies inside it. The forecast gives the model after the run: the deletes, their own parts, the MEP systems they leave empty and the real dependents. PREVIEW runs every armed pass inside a transaction group, measures what changed, then rolls it back.</p>
+            </div>
             <div class="subcard glass-card">
               <h4><i class="fa-solid fa-ghost"></i> Ghost Purge</h4>
               <p>Detects overlapping duplicate elements (MEP + structural), keeps the connected copy and deletes the floating ghost — grouping by category/type first so it stays O(n) per group, not O(n²). Cleans massive models in seconds.</p>
@@ -1970,12 +1984,12 @@ health.score(results)                           # live Model Health — no TaskD
               <p>Overkill Lines merges collinear detail/model/separation lines that overlap or touch onto one survivor and deletes the rest. Orphan Purge removes empty elevation markers and orphaned tags, with configurable extras — scope boxes, view filters, rooms/spaces, CAD imports.</p>
             </div>
             <div class="subcard glass-card">
-              <h4><i class="fa-solid fa-clone"></i> Families <span class="tag new">new</span></h4>
+              <h4><i class="fa-solid fa-clone"></i> Families</h4>
               <p>The ninth station finds loaded families that share a category and a normalised name — trailing digits, “– Copy”, case — proposes a survivor (most instances, then the un-suffixed name), re-points every matched instance to the survivor's type and deletes the now-empty loser. Losers with types the survivor lacks are held by default and shown with the reason.</p>
             </div>
           </div>
 
-          <div class="note warn glass-card"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Never acts on stale data.</b> Scope changes invalidate the scope-dependent caches and prompt a re-read, and a document-identity guard blocks committing against a switched document. The commit manifest states every consequence before the fact — its dependent-cascade probe reports computed, capped or failed, never a reassuring zero — and an .xlsx receipt, a run console holding every event, and one-click Undo round out the workflow.</div></div>
+          <div class="note warn glass-card"><i class="fa-solid fa-triangle-exclamation"></i><div class="nt"><b>Never acts on stale data.</b> A scope change invalidates the caches it affects and asks for a new scan. An edit made outside the window marks the scan stale, and so does an undo of the run. A document-identity guard blocks a commit against a switched document. The forecast states every consequence first — its dependent count is computed, capped or marked as a bound, never a reassuring zero — PREVIEW then measures it exactly, and an .xlsx receipt, a run console holding every event and one-click Undo complete the workflow.</div></div>
 
           <div class="code-label-wrap">
             <div class="code-label"><i class="fa-brands fa-python"></i> the safety pattern — isolate, verify, roll back</div>
@@ -1988,13 +2002,13 @@ with SubTransaction(doc) as st:
     st.Commit() if clash_cleared(candidate) else st.RollBack()</code></pre>
           <p class="illus"><i class="fa-solid fa-circle-info"></i> Illustrative — the guard pattern shared across the repair stations.</p>
           <details class="pages usage">
-            <summary><span class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — arm stations, Read Model, read the manifest, then Run</span><span class="pn">5 pages</span></summary>
+            <summary><span class="usage-h"><i class="fa-solid fa-wand-magic-sparkles"></i> How you use it — scan, read the plan, draw a region, preview, then run</span><span class="pn">5 pages</span></summary>
             <div class="op-grid">
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-ghost"></i></div><h5>Ghost Purge</h5><p>Detects overlapping duplicate elements (MEP + structural), keeps the connected copy and deletes the floating ghost.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-plug"></i></div><h5>Connection Fix</h5><p>Seals open MEP connector pairs within 20 mm — run after Ghost Purge on the cleaned model.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-diagram-project"></i></div><h5>Nested Fix</h5><p>Finds hosts with intersecting same-type nested sub-components — a hidden duplicate Ghost Purge can't see — and clears the redundant one per family rule.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-list-check"></i></div><h5>Read, Manifest, Run</h5><p>Arm or bypass each of the nine stations, READ MODEL for a read-only sweep (the same button cancels it), read the commit manifest — Will delete, Dependent cascade, Will change, Held · report only, Model after — then RUN CLEANUP as one undoable group. Ctrl+Z reverts every armed station, and the tray keeps a per-station receipt; findings and actions are counted separately, and a held row says why.</p></div>
-              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Configuration</h5><p>Tune overlap buckets, connect tolerance, excluded categories, per-family nested rules, fallback system types and purge extras from an in-window overlay sheet — persisted to <code>cd_config.json</code>; Save clears all caches.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-magnifying-glass"></i></div><h5>Scan and read the plan</h5><p>SCAN MODEL reads every pass in one read-only sweep (the same button cancels it). The Layers rail lists the passes with their counts; tick one to show it on the plan and arm it, pick one to read its rows in the catch below the plan. Findings and actions are counted apart, and a held row says why.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-crop-simple"></i></div><h5>Region</h5><p>Drag on the plan or click a hot zone to set a region: the scope switches to it and the region card names the cells. The off-plan passes have no position, so a region run leaves them out and their cards say so.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-flask"></i></div><h5>Forecast and PREVIEW</h5><p>The run pane forecasts Will delete, Dependent cascade, Will change, Held · report only and Model after. PREVIEW runs the armed passes, fills the result card from what it measured and rolls everything back; a change to the scope, the arms or the ticks takes that card down.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-play"></i></div><h5>Run, receipt, undo</h5><p>RUN CLEANUP commits every armed pass as one undoable group. The catch becomes a run receipt, the footer names what changed — the MEP systems Revit removed with their last member included — and UNDO LAST CLEANUP or Ctrl+Z reverts the whole run.</p></div>
+              <div class="op-card"><div class="op-ic"><i class="fa-solid fa-gear"></i></div><h5>Configuration</h5><p>A drawer over the right of the window holds the overlap buckets, the connect tolerance, excluded categories, per-family nested rules, fallback system types and purge extras. Its Sieve plots the open connector gaps the scan found, so the tolerance can be set by eye. Saved to <code>cd_config.json</code>.</p></div>
             </div>
                     </details>
 
@@ -3336,7 +3350,7 @@ if is_empty(elem, cfg["param_x"]):       # overwrite guard: keep existing values
               <div class="dom">UI / Shell</div>
               <h4><i class="fa-solid fa-gauge-high"></i> dashboard</h4>
               <p>The suite's one data-viz vocabulary: KPI stat tiles, status donut, legend, labelled stat bars and separators — so a KPI strip in one tool reads exactly like the next tool's.</p>
-              <div class="uses"><span class="u">AA</span><span class="u">FIT</span><span class="u">PSU</span><span class="u">CD</span><span class="u">RO1</span><span class="u">CIT</span><span class="u">SFX</span></div>
+              <div class="uses"><span class="u">AA</span><span class="u">FIT</span><span class="u">PSU</span><span class="u">RO1</span><span class="u">CIT</span><span class="u">SFX</span></div>
             </div>
 
             <div class="modcard glass-card" data-domain="ui" data-name="confirm themed modal yes no choice notice replacement forms alert taskdialog">

@@ -20,7 +20,7 @@ the implementation lives in a separate private repository.
 **18 tools across 6 ribbon panels** on the `SuiteTools` tab. The panels are IcZ, Parameter,
 QualityCheck, Report, Structural and Tools. The labels below are the ones the ribbon shows. They
 are read from the `bundle.yaml` titles, not from a design document. The site is synced to
-workspace round **r176** (2026-10-14).
+workspace round **r176** (2026-10-14), and Model Cleanup to **r190** (2026-10-18).
 
 | Code | Ribbon label | Panel | What it does |
 | --- | --- | --- | --- |
@@ -188,7 +188,7 @@ A single-page, zero-build portal, in the CyanogenMod-inspired cyan-on-charcoal t
   hover a tool to draw the wires to the modules it consumes, hover a module to wire it to its
   consumers, click to pin, or run the tour across all eighteen.
   Every edge is re-measured from the tool folders' `from icz… import` lines at each sync.
-* **What's new since September** — twelve product stops on a calendar rail from r150 to r176, each
+* **What's new since September** — thirteen product stops on a calendar rail from r150 to r190, each
   linking to the section it explains. The earlier eight stops sit behind a summary.
 * **Try the contract** — an illustrative terminal in the MCP section plays the JSON-RPC exchange
   for a status call, a dry-run delete, commit + confirm, a refused `Save()`, a smoke scenario and
@@ -203,8 +203,8 @@ A single-page, zero-build portal, in the CyanogenMod-inspired cyan-on-charcoal t
   the standalone projects named.
 * **Around the suite** — a section of cards for the other repositories and the guide site.
 * **Live interface previews** — every tool's real UI, embedded as a hand-authored mockup
-  under `mockups/`, auto-fitted down to phone widths. `plr.html`, `iso.html` and `textsearch.html`
-  are the newest.
+  under `mockups/`, auto-fitted down to phone widths. `cd.html`, Model Cleanup's plan of findings,
+  is the newest; `plr.html`, `iso.html` and `textsearch.html` came just before it.
 * **Learn section** — the companion BIM & AI Guide, linked from the hero, the sidebar and the footer.
 * **Module explorer** — the library as filterable cards grouped by domain, each naming its
   consuming tools.
@@ -234,7 +234,7 @@ cd mrgezz.github.io
 | Path | What it is |
 | --- | --- |
 | `index.html` | The entire site — markup, styles and script in one file |
-| `mockups/` | Hand-authored interface previews, one per tool (`plr.html`, `iso.html` and `textsearch.html` are the newest), embedded by `index.html` |
+| `mockups/` | Hand-authored interface previews, one per tool (`cd.html`, Model Cleanup's plan of findings, is the newest), embedded by `index.html` |
 | `404.html` | Themed not-found page |
 | `og.html`, `og.png` | The link-preview card and the template it is rendered from — a designed 1200×630 card, never a screenshot of the page; the regeneration recipe is in the template's head comment |
 | `favicon.svg`, `robots.txt`, `sitemap.xml` | Site plumbing |

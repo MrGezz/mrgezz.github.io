@@ -1,1280 +1,723 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8">
-<title>CD Model Cleanup &#183; THE LINE</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CD Model Cleanup &#183; THE SURVEY</title>
 <!--
   Interactive mockup of the CD Model Cleanup tool - the shipped UI, not a
-  sketch. Two things worth trying: the chevron beside the footer status chip
-  opens the run console, and RUN CLEANUP switches the tool into its post-run
-  state, where the RESULTS chip, Export report and Undo last run become
-  reachable. Model and element names throughout are illustrative.
+  sketch. Things worth trying: drag on the plan to draw a region, or click a
+  hot zone; PREVIEW shows the measured run that was rolled back; RUN CLEANUP
+  turns the catch into the run receipt, where SCAN AGAIN and UNDO LAST
+  CLEANUP take over; Config opens the drawer with the Sieve; the chevron
+  beside the footer status opens the run console. Model and element names
+  throughout are illustrative.
 -->
 <style>
-  /* ============================================================
-     TOKENS - theme.py THEMES verbatim. WPF #AARRGGBB -> CSS #RRGGBBAA:
-     the 6 alpha keys per palette are REORDERED (r81 measured defect).
-     No key is invented; nothing is collapsed onto a neighbour.
-     ============================================================ */
-  :root[data-theme="dark"] {
-      --WindowBg: #0B1013;
-      --TextMain: #ECF4F7;
-      --TextSecondary: #8FA6B2;
-      --TextTertiary: #5F7683;
-      --WarningRed: #FF5252;
-      --BorderBrush: #283B45;
-      --InputBg: #0F161A;
-      --InputText: #FFFFFF;
-      --BtnThemeBg: #1C2B33;
-      --BtnHoverBg: #22333D;
-      --BtnPressedBg: #283B45;
-      --AccentBg: #00BCD4;
-      --AccentHover: #4DD0E1;
-      --AccentFg: #06222B;
-      --AccentInk: #0B0E14;
-      --TitleBarBg: #0F161A;
-      --ViseBg: #111B21;
-      --NavBg: #0F161A;
-      --CardBg: #141E24;
-      --NavSelectedBg: #00BCD41F;
-      --RowHoverBg: #1C2B33;
-      --BadgeBg: #00BCD41F;
-      --PanelBg: #152026;
-      --PanelBg2: #1C2B33;
-      --ScrollThumbBg: #116573;
-      --ScrollThumbHoverBg: #00BCD4;
-      --DotIdle: #39424E;
-      --DotCloseIdle: #FF5F57;
-      --DotMinIdle: #FEBC2E;
-      --DotMaxIdle: #28C840;
-      --DotMinHover: #E0A320;
-      --DotMaxHover: #1FA835;
-      --DotCloseHover: #E0443E;
-      --DotCloseGlyph: #7A1410;
-      --DotMinGlyph: #7A5A0F;
-      --DotMaxGlyph: #0E5A1E;
-      --StatusPass: #4CAF50;
-      --StatusWarn: #FFB300;
-      --StatusFail: #FF5252;
-      --StatusPassInk: #0B0E14;
-      --StatusFailInk: #0B0E14;
-      --StatusPassBg: #4CAF501A;
-      --StatusWarnBg: #FFB3001A;
-      --StatusFailBg: #FF52521A;
-      --TrackBg: #1C2B33;
-      --RuleBrush: #22333C;
-      --AccentGlow: #00BCD466;
-      --PaperWhite: #FFFFFF;
-      --PaperMatte: #E9EDF0;
-      --CadCanvas: #11181D;
-      --LogoInk: #0B6E8C;
-      --DotGlyphHover: #0B0E14;
-  }
-  :root[data-theme="light"] {
-      --WindowBg: #ECEFF1;
-      --TextMain: #263238;
-      --TextSecondary: #546E7A;
-      --TextTertiary: #7A929E;
-      --WarningRed: #D32F2F;
-      --BorderBrush: #CFD8DC;
-      --InputBg: #FFFFFF;
-      --InputText: #000000;
-      --BtnThemeBg: #E7EDF0;
-      --BtnHoverBg: #DDE6EA;
-      --BtnPressedBg: #CFD8DC;
-      --AccentBg: #0097A7;
-      --AccentHover: #00838F;
-      --AccentFg: #FFFFFF;
-      --AccentInk: #0B0E14;
-      --TitleBarBg: #E7EDF0;
-      --ViseBg: #E7EFF3;
-      --NavBg: #E7EDF0;
-      --CardBg: #FFFFFF;
-      --NavSelectedBg: #0097A71A;
-      --RowHoverBg: #E3EAEE;
-      --BadgeBg: #0097A71A;
-      --PanelBg: #FFFFFF;
-      --PanelBg2: #E7EDF0;
-      --ScrollThumbBg: #72BBC4;
-      --ScrollThumbHoverBg: #0097A7;
-      --DotIdle: #C2C9D1;
-      --DotCloseIdle: #FF5F57;
-      --DotMinIdle: #FEBC2E;
-      --DotMaxIdle: #28C840;
-      --DotMinHover: #E0A320;
-      --DotMaxHover: #1FA835;
-      --DotCloseHover: #E0443E;
-      --DotCloseGlyph: #7A1410;
-      --DotMinGlyph: #7A5A0F;
-      --DotMaxGlyph: #0E5A1E;
-      --StatusPass: #2E7D32;
-      --StatusWarn: #F57F17;
-      --StatusFail: #D32F2F;
-      --StatusPassInk: #FFFFFF;
-      --StatusFailInk: #FFFFFF;
-      --StatusPassBg: #2E7D321A;
-      --StatusWarnBg: #F57F171A;
-      --StatusFailBg: #D32F2F1A;
-      --TrackBg: #E3EAEE;
-      --RuleBrush: #DDE6EA;
-      --AccentGlow: #0097A755;
-      --PaperWhite: #FFFFFF;
-      --PaperMatte: #E9EDF0;
-      --CadCanvas: #11181D;
-      --LogoInk: #0B6E8C;
-      --DotGlyphHover: #0B0E14;
-  }
-  * , *::before, *::after { box-sizing: border-box; }
-  html, body { margin:0; padding:0; }
-  body {
-    background:var(--CadCanvas); display:flex; align-items:center; justify-content:center;
-    min-height:100vh; padding:24px;
-    font-family:"Segoe UI", -apple-system, system-ui, sans-serif;
-  }
-  /* min-width:0 at every nesting level - a single grid/flex item whose
-     min-width defaulted to auto dragged the whole window +197px in r81.
-     Fixed at the RULE, never per instance. */
-  .win * { min-width:0; }
+/* Token block: every custom property IS a lib/icz/theme.py THEMES key.
+   Alpha values are written CSS-order #RRGGBBAA here; theme.py stores WPF-order
+   #AARRGGBB. The XAML side never copies these literals, it references the key. */
+:root {
+  --WindowBg: #ECEFF1;
+  --TextMain: #263238;
+  --TextSecondary: #546E7A;
+  --TextTertiary: #7A929E;
+  --BorderBrush: #CFD8DC;
+  --InputBg: #FFFFFF;
+  --InputText: #000000;
+  --BtnThemeBg: #E7EDF0;
+  --BtnHoverBg: #DDE6EA;
+  --BtnPressedBg: #CFD8DC;
+  --AccentBg: #0097A7;
+  --AccentHover: #00838F;
+  --AccentFg: #FFFFFF;
+  --TitleBarBg: #E7EDF0;
+  --NavBg: #E7EDF0;
+  --CardBg: #FFFFFF;
+  --NavSelectedBg: #0097A71A;
+  --RowHoverBg: #E3EAEE;
+  --BadgeBg: #0097A71A;
+  --PanelBg: #FFFFFF;
+  --PanelBg2: #E7EDF0;
+  --ScrollThumbBg: #72BBC4;
+  --ScrollThumbHoverBg: #0097A7;
+  --DotCloseIdle: #FF5F57;
+  --DotMinIdle: #FEBC2E;
+  --DotMaxIdle: #28C840;
+  --StatusPass: #2E7D32;
+  --StatusWarn: #F57F17;
+  --StatusFail: #D32F2F;
+  --StatusCascade: #E25324;
+  --StatusPassBg: #2E7D321A;
+  --StatusWarnBg: #F57F171A;
+  --StatusFailBg: #D32F2F1A;
+  --TrackBg: #E3EAEE;
+  --RuleBrush: #DDE6EA;
+  --AccentGlow: #0097A755;
+  --PaperMatte: #E9EDF0;
+  --CadCanvas: #11181D;
+  --LogoInk: #0B6E8C;
+}
+:root[data-theme="dark"] {
+  --WindowBg: #0B1013;
+  --TextMain: #ECF4F7;
+  --TextSecondary: #8FA6B2;
+  --TextTertiary: #5F7683;
+  --BorderBrush: #283B45;
+  --InputBg: #0F161A;
+  --InputText: #FFFFFF;
+  --BtnThemeBg: #1C2B33;
+  --BtnHoverBg: #22333D;
+  --BtnPressedBg: #283B45;
+  --AccentBg: #00BCD4;
+  --AccentHover: #4DD0E1;
+  --AccentFg: #06222B;
+  --TitleBarBg: #0F161A;
+  --NavBg: #0F161A;
+  --CardBg: #141E24;
+  --NavSelectedBg: #00BCD41F;
+  --RowHoverBg: #1C2B33;
+  --BadgeBg: #00BCD41F;
+  --PanelBg: #152026;
+  --PanelBg2: #1C2B33;
+  --ScrollThumbBg: #116573;
+  --ScrollThumbHoverBg: #00BCD4;
+  --DotCloseIdle: #FF5F57;
+  --DotMinIdle: #FEBC2E;
+  --DotMaxIdle: #28C840;
+  --StatusPass: #4CAF50;
+  --StatusWarn: #FFB300;
+  --StatusFail: #FF5252;
+  --StatusCascade: #FF7E2D;
+  --StatusPassBg: #4CAF501A;
+  --StatusWarnBg: #FFB3001A;
+  --StatusFailBg: #FF52521A;
+  --TrackBg: #1C2B33;
+  --RuleBrush: #22333C;
+  --AccentGlow: #00BCD466;
+  --PaperMatte: #E9EDF0;
+  --CadCanvas: #11181D;
+  --LogoInk: #0B6E8C;
+}
 
-  .win {
-    width:1360px; height:880px; display:grid;
-    grid-template-rows:48px 1fr 44px;
-    background:var(--WindowBg); color:var(--TextMain);
-    border:1px solid var(--BorderBrush); border-radius:8px; overflow:hidden;
-    box-shadow:0 24px 64px rgba(0,0,0,.55);
-  }
-  .mdl2 { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif; }
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--WindowBg);color:var(--TextMain);font:12px/1.35 'Segoe UI',system-ui,sans-serif}
+.stage{display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 0 16px;width:max-content;margin:0 auto}
 
-  /* ---------------------------------------------------- title bar --- */
-  .titlebar {
-    background:var(--TitleBarBg); border-bottom:1px solid var(--BorderBrush);
-    display:grid; grid-template-columns:auto 1fr auto; align-items:center;
-    padding:0 14px; gap:14px;
-  }
-  .wtitle { font-size:13px; font-weight:600; letter-spacing:.02em; }
-  .wsub   { font-size:11px; color:var(--TextTertiary); margin-left:8px; }
-  .docchip {
-    justify-self:center; display:inline-flex; align-items:center; gap:7px;
-    background:var(--BadgeBg); border:1px solid var(--BorderBrush);
-    border-radius:11px; padding:3px 11px; font-size:11px;
-    color:var(--TextSecondary); max-width:520px;
-  }
-  .docchip b { color:var(--TextMain); font-weight:600; overflow:hidden;
-               text-overflow:ellipsis; white-space:nowrap; }
-  .tb-right { display:flex; align-items:center; gap:9px; }
-  .iconbtn {
-    width:26px; height:26px; border-radius:5px; border:1px solid transparent;
-    background:transparent; color:var(--TextSecondary); cursor:pointer;
-    display:inline-flex; align-items:center; justify-content:center; font-size:13px;
-  }
-  .iconbtn:hover { background:var(--BtnHoverBg); color:var(--TextMain); }
-  .dots { display:flex; gap:8px; margin-left:4px; }
-  .dot { width:14px; height:14px; border-radius:7px; border:none; cursor:pointer; }
-  #btn_min   { background:var(--DotMinIdle); }
-  #btn_max   { background:var(--DotMaxIdle); }
-  #btn_close { background:var(--DotCloseIdle); }
+/* .win { 1360 x 880; rows 48 / 1fr / console auto / 44 } */
+.win{width:1360px;height:880px;background:var(--WindowBg);border:1px solid var(--BorderBrush);border-radius:6px;display:grid;grid-template-rows:48px minmax(0,1fr) auto 44px;overflow:hidden;position:relative}
+.win *{min-width:0}
+.gl{font-family:'Segoe MDL2 Assets';font-style:normal;font-weight:400;line-height:1;display:inline-block}
+.mono{font-family:Consolas,'Cascadia Mono',monospace}
+.num{font-variant-numeric:tabular-nums}
+.sp{flex:1}
 
-  /* ---------------------------------------------------------- body --- */
-  .body { display:grid; grid-template-columns:1fr 314px; overflow:hidden; }
-  .leftcol { display:grid; grid-template-rows:330px 1fr; overflow:hidden;
-             border-right:1px solid var(--BorderBrush); }
+/* title bar: auto | 1fr | auto, padding 0 14 */
+.titlebar{background:var(--TitleBarBg);border-bottom:1px solid var(--BorderBrush);display:grid;grid-template-columns:auto 1fr auto;align-items:center;padding:0 14px;gap:14px}
+.ttl{font-size:13px;font-weight:600}
+.ttl small{font-size:11px;font-weight:400;color:var(--TextTertiary);margin-left:8px}
+.docchip{justify-self:center;max-width:520px;display:flex;align-items:center;gap:7px;height:24px;padding:0 10px;border:1px solid var(--BorderBrush);border-radius:12px;background:var(--BadgeBg);color:var(--TextSecondary);font-size:11px;white-space:nowrap;overflow:hidden}
+.tbr{display:flex;align-items:center;gap:9px}
+.tbtn{height:26px;padding:0 9px;border:1px solid var(--BorderBrush);background:var(--BtnThemeBg);color:var(--TextSecondary);border-radius:5px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font:inherit;font-size:11px}
+.tbtn:hover{background:var(--BtnHoverBg);color:var(--TextMain)}
+.tbtn.on{background:var(--NavSelectedBg);color:var(--AccentBg);border-color:var(--AccentBg)}
+.icon{width:26px;height:26px;border:1px solid transparent;background:transparent;color:var(--TextSecondary);border-radius:5px;cursor:pointer;font-size:13px;padding:0}
+.icon:hover{background:var(--BtnHoverBg);color:var(--TextMain)}
+.dots{display:flex;gap:8px;margin-left:4px}
+.dot{width:14px;height:14px;border-radius:7px;border:0;padding:0;font-size:9px;color:transparent;cursor:pointer}
+.dot.m{background:var(--DotMinIdle)}.dot.x{background:var(--DotMaxIdle)}.dot.c{background:var(--DotCloseIdle)}
 
-  /* ---------------------------------------------------------- lane --- */
-  .lane { display:grid; grid-template-rows:38px 1fr 22px; overflow:hidden;
-          background:var(--ViseBg); border-bottom:1px solid var(--BorderBrush); }
-  .lanehdr {
-    display:flex; align-items:center; gap:12px; padding:0 14px;
-    border-bottom:1px solid var(--RuleBrush);
-  }
-  .lanetitle { font-size:10px; font-weight:700; letter-spacing:.16em;
-               color:var(--TextTertiary); }
-  .intake { display:flex; align-items:baseline; gap:6px; font-size:11px;
-            color:var(--TextSecondary); }
-  .intake b { color:var(--TextMain); font-size:12px; font-weight:600; }
-  .lanespacer { flex:1 1 auto; }
-  .lanebtn {
-    display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 10px;
-    border-radius:12px; border:1px solid var(--BorderBrush);
-    background:var(--BtnThemeBg); color:var(--TextSecondary);
-    font-size:10.5px; font-weight:600; letter-spacing:.06em; cursor:pointer;
-  }
-  .lanebtn:hover { background:var(--BtnHoverBg); color:var(--TextMain); }
-  .lanebtn.pri { background:var(--AccentBg); color:var(--AccentFg);
-                 border-color:var(--AccentBg); }
-  .lanebtn .g { font-size:11px; }
+/* body: 236 | 1fr | 318 */
+.body{display:grid;grid-template-columns:236px minmax(0,1fr) 318px;min-height:0;position:relative}
+.pane{min-height:0;display:flex;flex-direction:column;border-right:1px solid var(--BorderBrush);background:var(--PanelBg)}
+.pane.run{border-right:0;background:var(--NavBg)}
+/* .ph { height:40; padding:0 14; border-bottom:1px BorderBrush; background:PanelBg2 } */
+.ph{height:40px;flex:none;display:flex;align-items:center;gap:10px;padding:0 14px;border-bottom:1px solid var(--BorderBrush);background:var(--PanelBg2)}
+.lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--TextTertiary)}
+.sub{font-size:11px;color:var(--TextTertiary)}
+.link{background:none;border:0;color:var(--AccentBg);font:600 10.5px 'Segoe UI';cursor:pointer;padding:2px 6px;border-radius:4px}
+.link:hover{background:var(--BtnHoverBg)}
+.link[disabled]{opacity:.45;cursor:default}
 
-  .track { display:flex; align-items:stretch; padding:12px 14px; gap:0;
-           overflow-x:auto; overflow-y:hidden; }
+/* layers rail */
+.rail-b{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:14px}
+.cov{border:1px solid var(--BorderBrush);border-radius:6px;padding:8px 10px;background:var(--CardBg)}
+.cov .big{font-size:20px;font-weight:700}
+.cov .big small{font-size:11px;font-weight:500;color:var(--TextSecondary);margin-left:4px}
+.cov .bar{height:6px;background:var(--TrackBg);border-radius:3px;margin:6px 0 4px;overflow:hidden}
+.cov .bar i{display:block;height:100%;width:0;background:var(--AccentBg)}
+.note{color:var(--TextTertiary);font-size:10.5px;line-height:1.5}
+.grp .lbl{margin:0 0 4px 4px}
+/* .ly { grid: 18 18 1fr auto; gap 8; padding 5 6; radius 5 } */
+.ly{display:grid;grid-template-columns:18px 18px minmax(0,1fr) auto;align-items:center;gap:8px;padding:5px 6px;border-radius:5px;cursor:pointer;border:1px solid transparent}
+.ly:hover{background:var(--RowHoverBg)}
+.ly.sel{background:var(--NavSelectedBg);border-color:var(--AccentBg)}
+.ly.off .shape,.ly.off .nm,.ly.off .n{opacity:.45}
+.ly input{accent-color:var(--AccentBg);margin:0}
+.ly .shape{width:16px;height:16px;display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--TextSecondary)}
+.ly .shape svg{width:16px;height:16px}
+.ly .nm{line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ly .nm small{display:block;color:var(--TextTertiary);font-size:10px}
+.ly .n{font-weight:700}
+.legend{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--TextSecondary)}
+.legend span{display:flex;align-items:center;gap:7px}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;flex:none}
 
-  /* ------------------------------------------------------ station --- */
-  .stn {
-    flex:0 0 108px; width:108px; display:flex; flex-direction:column;
-    align-items:center; gap:5px; padding:8px 6px 7px;
-    background:var(--CardBg); border:1px solid var(--BorderBrush);
-    border-radius:7px; cursor:pointer; position:relative;
-    justify-content:flex-start;
-  }
-  .stn.destroy { border-top:2px solid var(--StatusFail); }
-  .stn.repair  { border-top:2px solid var(--AccentBg); }
-  .stn:hover   { background:var(--RowHoverBg); }
-  .stn.sel     { background:var(--NavSelectedBg); border-color:var(--AccentBg);
-                 box-shadow:0 0 0 1px var(--AccentBg) inset; }
-  .stn.bypass  { opacity:.42; }
-  .stn-top { display:flex; align-items:center; justify-content:space-between;
-             width:100%; }
-  .ordn { font-size:11px; font-weight:700; color:var(--AccentBg);
-          font-variant-numeric:tabular-nums; }
-  .stn.destroy .ordn { color:var(--StatusFail); }
-  .grp  { font-size:7.5px; letter-spacing:.11em; color:var(--TextTertiary); }
-  .stn-glyph { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-               font-size:19px; color:var(--TextSecondary); line-height:1; }
-  .stn.sel .stn-glyph { color:var(--AccentBg); }
-  .stn-name { font-size:11px; font-weight:600; }
-  .gauge {
-    width:46px; height:92px; flex:0 0 92px; background:transparent;
-    border-bottom:1px solid var(--BorderBrush);
-    display:flex; flex-direction:column; justify-content:flex-end; overflow:hidden;
-  }
-  .gseg { width:100%; }
-  .gseg.del  { background:var(--StatusFail); }
-  .gseg.chg  { background:var(--StatusWarn); }
-  .gseg.held { background:var(--TextTertiary); opacity:.55; }
-  .stn-found { font-size:10px; color:var(--TextTertiary); }
-  .stn-found b { font-size:12.5px; color:var(--TextMain); font-weight:700;
-                 font-variant-numeric:tabular-nums; }
-  .stn-act { font-size:10px; font-weight:700; }
-  .act.del { color:var(--StatusFail); }
-  .act.chg { color:var(--StatusWarn); }
-  .act.none{ color:var(--TextTertiary); font-weight:600; }
-  .casc { font-size:8.5px; color:var(--TextTertiary); letter-spacing:.02em;
-          white-space:nowrap; }
-  .casc.hot { color:var(--StatusWarn); }
-  .casc.cap { color:var(--StatusFail); font-weight:600; }
-  .casc.none { opacity:.5; }
-  .capnote { opacity:.8; }
-  .arm {
-    width:100%; height:20px; margin-top:auto; flex:0 0 20px; border-radius:10px; font-size:8.5px; font-weight:700;
-    letter-spacing:.11em; cursor:pointer; border:1px solid var(--AccentBg);
-    background:var(--AccentBg); color:var(--AccentFg); margin-top:2px;
-  }
-  .stn.bypass .arm { background:transparent; color:var(--TextTertiary);
-                     border-color:var(--BorderBrush); }
-  .stn-after { font-size:8.5px; color:var(--TextTertiary); }
-  .stn-after b { color:var(--TextSecondary); font-variant-numeric:tabular-nums; }
+/* plan pane: header 40 / map 5* / shelf auto / catch 4* */
+.planp{display:grid;grid-template-rows:40px minmax(0,5fr) auto minmax(0,4fr);border-right:1px solid var(--BorderBrush);min-height:0;background:var(--WindowBg)}
+.mh{display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:1px solid var(--BorderBrush);background:var(--PanelBg);white-space:nowrap}
+.chips{display:inline-flex;gap:6px}
+/* .chip { height:25; padding:0 12; radius:13; border:1px BorderBrush; bg BtnThemeBg; 10.5 bold } */
+.chip{height:25px;padding:0 12px;border-radius:13px;border:1px solid var(--BorderBrush);background:var(--BtnThemeBg);color:var(--TextSecondary);font:700 10.5px 'Segoe UI';cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip:hover{background:var(--BtnHoverBg)}
+.chip.on{background:var(--NavSelectedBg);border-color:var(--AccentBg);color:var(--TextMain)}
+.chip b{font-weight:800;color:var(--TextMain)}
+.mapwrap{position:relative;background:var(--CadCanvas);border-bottom:1px solid var(--BorderBrush);min-height:0;overflow:hidden}
+.mapwrap svg{display:block;width:100%;height:100%;cursor:crosshair;user-select:none}
+.hud{position:absolute;left:10px;bottom:8px;color:var(--PaperMatte);opacity:.8;font:10.5px Consolas,monospace;pointer-events:none}
+.mapidle{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--PaperMatte)}
+.mapidle .t{font-size:14px;font-weight:600}
+.mapidle .s{font-size:11px;opacity:.7}
+/* shelf: 4 equal cards, 84 tall */
+.shelf{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;padding:8px 12px;border-bottom:1px solid var(--BorderBrush);background:var(--PanelBg)}
+.sc{border:1px solid var(--BorderBrush);border-top:3px solid var(--TextTertiary);border-radius:6px;background:var(--CardBg);padding:6px 9px;cursor:pointer;display:flex;flex-direction:column;gap:2px;min-height:66px}
+.sc:hover{background:var(--RowHoverBg)}
+.sc.sel{border-color:var(--AccentBg)}
+.sc.dim{opacity:.45}
+.sc h4{margin:0;font-size:11.5px;font-weight:600;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden}
+.sc h4 .gl{color:var(--TextTertiary)}
+.sc .n{font-size:17px;font-weight:700}
+.sc .n small{font-size:10px;font-weight:600;color:var(--TextSecondary);margin-left:5px}
+.sc p{margin:0;color:var(--TextTertiary);font-size:10px;line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc.t5{border-top-color:var(--StatusFail)}.sc.t0{border-top-color:var(--TextTertiary)}.sc.t1{border-top-color:var(--StatusPass)}.sc.t3{border-top-color:var(--StatusWarn)}
 
-  .ruler { display:flex; align-items:center; padding:0 14px;
-           border-top:1px solid var(--RuleBrush); background:var(--WindowBg); }
-  .rcell { flex:0 0 108px; width:108px; text-align:center; font-size:9.5px;
-           color:var(--TextTertiary); font-variant-numeric:tabular-nums; }
-  .rcell.hot { color:var(--TextSecondary); font-weight:700; }
-  .rcell.off { opacity:.35; }
-  .rgap { flex:0 0 20px; width:20px; text-align:center; color:var(--BorderBrush);
-          font-size:9px; }
+/* catch: header auto / colhead 24 / rows 1fr / foot auto */
+.catch{display:grid;grid-template-rows:auto 24px minmax(0,1fr) auto;background:var(--PanelBg);min-height:0}
+.ch{display:grid;grid-template-columns:auto auto auto minmax(0,1fr) 190px;align-items:center;gap:10px;padding:8px 14px}
+.ch .ord{font-weight:700;font-size:11px;color:var(--StatusWarn)}
+.ch .g{font-size:15px;color:var(--AccentBg)}
+.ch .ti{font-size:13px;font-weight:600}
+.ch .de{font-size:11px;color:var(--TextTertiary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search{height:25px;border:1px solid var(--BorderBrush);border-radius:5px;background:var(--InputBg);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px;padding:0 9px}
+.search .gl{font-size:11px;color:var(--TextTertiary)}
+.search input{border:0;background:transparent;color:var(--InputText);font:11px 'Segoe UI';outline:none;width:100%}
+/* .cols { 28 90 90 130 66 44 44 88 1fr } */
+.cols{display:grid;grid-template-columns:28px 90px 90px 130px 66px 44px 44px 88px minmax(0,1fr);align-items:center;padding:0 14px;background:var(--PanelBg2);border-top:1px solid var(--RuleBrush);border-bottom:1px solid var(--RuleBrush)}
+.cols span{font-size:9px;color:var(--TextTertiary);padding-left:8px;white-space:nowrap}
+.cols span.r{text-align:right}
+.rows{overflow:auto;min-height:0;position:relative}
+.row{display:grid;grid-template-columns:28px 90px 90px 130px 66px 44px 44px 88px minmax(0,1fr);align-items:center;height:30px;padding:0 14px;border-bottom:1px solid var(--RuleBrush);font-size:11px}
+.row:hover{background:var(--RowHoverBg)}
+.row > span{padding-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row > span.r{text-align:right}
+/* receipt count spans LENGTH + ZONE + DEPS (66+44+44) - Grid.ColumnSpan="3" */
+.row > span.rspan{grid-column:5 / span 3}
+.row .d{color:var(--TextTertiary)}
+.row input{accent-color:var(--AccentBg);margin:0}
+.pill{display:inline-flex;align-items:center;gap:4px;height:17px;padding:0 8px;border-radius:9px;font-size:9px;font-weight:700}
+.pill .gl{font-size:9px}
+.pill.del{background:var(--StatusWarnBg);color:var(--StatusWarn)}
+.pill.dep{background:var(--StatusFailBg);color:var(--StatusCascade)}
+.pill.chg{background:var(--BadgeBg);color:var(--AccentBg)}
+.pill.held{background:var(--TrackBg);color:var(--TextTertiary)}
+.empty{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--TextTertiary)}
+.empty .gl{font-size:26px;opacity:.5}
+.cf{display:flex;align-items:center;gap:10px;padding:7px 14px;border-top:1px solid var(--RuleBrush)}
+.cf .cnt{font-size:10.5px;color:var(--TextTertiary)}
 
-  .conn { flex:0 0 20px; width:20px; position:relative; }
-  .conn-rule { position:absolute; left:0; right:0; top:50%; height:2px;
-               background:var(--RuleBrush); }
-  .conn-dot  { position:absolute; left:50%; top:50%; width:0; height:0;
-               margin:-4px 0 0 -2px; border-top:4px solid transparent;
-               border-bottom:4px solid transparent;
-               border-left:6px solid var(--BorderBrush); }
+/* run pane */
+.rb{flex:1;overflow:auto;padding:12px 15px;display:flex;flex-direction:column;gap:11px}
+.mflabel{font-size:9.5px;color:var(--TextTertiary);margin:0 0 5px;letter-spacing:.06em}
+select{height:29px;border:1px solid var(--BorderBrush);background:var(--InputBg);color:var(--TextMain);border-radius:5px;padding:0 8px;font:11.5px 'Segoe UI';width:100%}
+.btn{height:30px;padding:0 14px;border:1px solid var(--BorderBrush);background:var(--BtnThemeBg);color:var(--TextMain);border-radius:6px;cursor:pointer;font:700 11.5px 'Segoe UI';display:inline-flex;align-items:center;justify-content:center;gap:7px;white-space:nowrap}
+.btn:hover{background:var(--BtnHoverBg)}
+.btn.pri{background:var(--AccentBg);border-color:var(--AccentBg);color:var(--AccentFg)}
+.btn.pri:hover{background:var(--AccentHover)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.btn.wide{width:100%}
+.card{border:1px solid var(--BorderBrush);border-radius:6px;background:var(--CardBg)}
+.stale{border:1px solid var(--StatusWarn);background:var(--StatusWarnBg);color:var(--StatusWarn);border-radius:6px;padding:7px 10px;font-size:11px;font-weight:600;display:none}
+.regc{padding:9px 12px;display:flex;flex-direction:column;gap:4px}
+.regc .big{font-size:19px;font-weight:700}
+.small{font-size:11px;color:var(--TextSecondary);line-height:1.5}
+.bk{display:flex;flex-direction:column}
+/* .bkr { grid 14 1fr auto; gap 8; padding 4 10 } */
+.bkr{display:grid;grid-template-columns:14px minmax(0,1fr) auto;align-items:center;gap:8px;padding:4px 10px;border-bottom:1px solid var(--RuleBrush);font-size:11px}
+.bkr:last-child{border-bottom:0}
+.bkr .shape{width:14px;height:14px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--TextTertiary)}
+.bkr .shape svg{width:14px;height:14px}
+.bkr b{font-weight:700}
+.bkr.off{opacity:.45}
+.delta{padding:10px 12px;display:flex;flex-direction:column;gap:4px}
+.delta .big{font-size:19px;font-weight:700;display:flex;gap:8px;align-items:baseline}
+.delta .big i{font-style:normal;color:var(--TextTertiary);font-weight:400}
+.kv{display:grid;grid-template-columns:minmax(0,1fr) auto;font-size:11px;color:var(--TextSecondary)}
+.kv b{color:var(--TextMain)}
+.kv b.del{color:var(--StatusWarn)}.kv b.chg{color:var(--AccentBg)}.kv b.held{color:var(--TextTertiary)}
+.capnote{font-size:10.5px;color:var(--TextSecondary);line-height:1.45;display:none}
+.confirm{border:1px solid var(--StatusFail);background:var(--StatusFailBg);border-radius:6px;padding:8px 10px;display:none;grid-template-columns:auto minmax(0,1fr);gap:9px;align-items:start;font-size:11px;line-height:1.45}
+.confirm input{margin-top:2px;accent-color:var(--StatusFail)}
+.res{border:1px solid var(--StatusPass);background:var(--StatusPassBg);border-radius:6px;padding:9px 12px;display:none;flex-direction:column;gap:4px}
+.res h3{margin:0;font-size:12.5px;color:var(--StatusPass)}
+.res.pv{border-color:var(--AccentBg);background:var(--BadgeBg)}
+.res.pv h3{color:var(--AccentBg)}
+.rf{flex:none;border-top:1px solid var(--RuleBrush);padding:11px 15px 13px;display:flex;flex-direction:column;gap:8px}
+.rf .txn{font-size:10.5px;color:var(--TextTertiary);line-height:1.45}
+.rf .pair{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rf .pair.post{display:none}
 
-  /* ---------------------------------------------------------- tray --- */
-  .tray { display:grid; grid-template-rows:auto auto 1fr auto; overflow:hidden;
-          background:var(--PanelBg); }
-  .trayhdr { display:flex; align-items:center; gap:10px; padding:11px 14px 9px; }
-  .trayglyph { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-               font-size:16px; color:var(--AccentBg); }
-  .trayord { font-size:11px; font-weight:700; color:var(--StatusFail);
-             font-variant-numeric:tabular-nums; }
-  .traytitle { font-size:13px; font-weight:600; }
-  .traydesc { font-size:11px; color:var(--TextTertiary); flex:1 1 auto;
-              overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .traybar { display:flex; align-items:center; gap:7px; padding:0 14px 9px;
-             border-bottom:1px solid var(--RuleBrush); }
-  .chip {
-    display:inline-flex; align-items:center; gap:6px; height:25px; padding:0 12px;
-    border-radius:13px; border:1px solid var(--BorderBrush);
-    background:var(--BtnThemeBg); color:var(--TextSecondary); cursor:pointer;
-    font-size:10.5px; font-weight:700; letter-spacing:.07em;
-  }
-  .chip:hover { background:var(--BtnHoverBg); }
-  .chip.on { background:var(--NavSelectedBg); border-color:var(--AccentBg);
-             color:var(--TextMain); }
-  .chip .n { font-variant-numeric:tabular-nums; font-weight:800;
-             color:var(--TextMain); }
-  .chip.on .n { color:var(--AccentBg); }
-  /* RESULTS is post-run state, hidden by a rule rather than an inline style
-     on the instance. */
-  .chip.postrun { display:none; }
-  .win.has-run .chip.postrun { display:inline-flex; }
-  .searchwrap { margin-left:auto; display:flex; align-items:center; gap:6px;
-                background:var(--InputBg); border:1px solid var(--BorderBrush);
-                border-radius:5px; padding:0 9px; height:25px; width:210px; }
-  .searchwrap i { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-                  font-size:11px; color:var(--TextTertiary); font-style:normal; }
-  .searchwrap input { border:0; outline:0; background:transparent; width:100%;
-                      color:var(--InputText); font-size:11px;
-                      font-family:inherit; }
-  .linkbtn { background:none; border:0; color:var(--AccentBg); cursor:pointer;
-             font-size:10.5px; font-weight:600; font-family:inherit; }
+/* config drawer: 400 wide, right-aligned overlay over the body */
+.cfg{position:absolute;top:0;right:0;bottom:0;width:400px;background:var(--PanelBg);border-left:1px solid var(--BorderBrush);z-index:20;display:none;grid-template-rows:44px minmax(0,1fr) auto;box-shadow:-8px 0 24px var(--AccentGlow)}
+.cfg-h{display:flex;align-items:center;gap:9px;padding:0 14px;border-bottom:1px solid var(--RuleBrush);font-weight:600;font-size:13px}
+.cfg-h .gl{color:var(--AccentBg);font-size:15px}
+.cfg-b{overflow:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.cfgcard{background:var(--CardBg);border:1px solid var(--BorderBrush);border-radius:7px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.cfgk{font-size:9.5px;font-weight:700;color:var(--TextTertiary);letter-spacing:.06em}
+/* .frow { grid 1fr auto; gap 8 } */
+.frow{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+.frow .fl{font-size:11.5px;color:var(--TextSecondary)}
+.fin{height:26px;width:118px;border:1px solid var(--BorderBrush);background:var(--InputBg);color:var(--InputText);border-radius:5px;padding:0 7px;font:11px 'Segoe UI'}
+select.fin{width:118px}
+textarea.fin{width:100%;height:58px;padding:4px 7px;resize:none}
+.sw{width:34px;height:18px;border-radius:9px;background:var(--TrackBg);border:1px solid var(--BorderBrush);position:relative;cursor:pointer;padding:0}
+.sw::after{content:"";position:absolute;top:1px;left:1px;width:14px;height:14px;border-radius:7px;background:var(--TextTertiary)}
+.sw.on{background:var(--AccentBg);border-color:var(--AccentBg)}.sw.on::after{left:17px;background:var(--AccentFg)}
+.sieve{border:1px solid var(--BorderBrush);border-radius:6px;background:var(--PanelBg2);padding:6px 8px}
+.sieve svg{display:block;width:100%;height:84px;cursor:ew-resize;touch-action:none}
+.sv-read{display:flex;justify-content:space-between;align-items:baseline;font-size:10.5px;color:var(--TextSecondary);margin-top:3px}
+.sv-read b{font-size:14px;color:var(--TextMain)}
+.tagwrap{display:flex;flex-wrap:wrap;gap:5px}
+.tagwrap span{padding:3px 8px;border-radius:9px;background:var(--PanelBg2);border:1px solid var(--BorderBrush);font-size:9.5px;color:var(--TextSecondary)}
+.rules{display:flex;flex-direction:column;gap:4px}
+.rules .rr{display:grid;grid-template-columns:150px minmax(0,1fr) 54px 26px;gap:6px}
+.rules .rr span{height:24px;border:1px solid var(--BorderBrush);background:var(--InputBg);border-radius:4px;font-size:10.5px;padding:3px 6px;overflow:hidden;white-space:nowrap}
+.cfg-f{display:flex;justify-content:flex-end;gap:9px;padding:11px 14px;border-top:1px solid var(--RuleBrush)}
 
-  .trayscroll { overflow:auto; }
-  .thead, .trow {
-    display:grid;
-    grid-template-columns:30px 96px 96px 148px 84px 66px 96px 1fr;
-    align-items:center; gap:8px; padding:0 14px;
-  }
-  .thead { height:26px; font-size:9px; letter-spacing:.12em;
-           color:var(--TextTertiary); background:var(--PanelBg2);
-           border-bottom:1px solid var(--RuleBrush); position:sticky; top:0; }
-  .trow { height:30px; font-size:11px; border-bottom:1px solid var(--RuleBrush); }
-  .trow:hover { background:var(--RowHoverBg); }
-  .cell { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .c-id  { font-variant-numeric:tabular-nums; }
-  .c-num { font-variant-numeric:tabular-nums; text-align:right;
-           color:var(--TextSecondary); }
-  .c-note{ color:var(--TextTertiary); font-size:10.5px; }
-  .dim   { color:var(--TextTertiary); }
-  .tick  { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-           font-size:11px; font-style:normal; color:var(--AccentBg);
-           display:inline-flex; width:15px; height:15px; align-items:center;
-           justify-content:center; border:1px solid var(--BorderBrush);
-           border-radius:3px; background:var(--InputBg); }
-  .vpill { display:inline-flex; align-items:center; gap:4px; height:18px;
-           padding:0 8px; border-radius:9px; font-size:9px; font-weight:700;
-           letter-spacing:.07em; font-style:normal; }
-  .vg { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-        font-size:9px; font-style:normal; }
-  .vt { font-style:normal; }
-  .bt { letter-spacing:inherit; }
-  .vd-del  { background:var(--StatusFailBg); color:var(--StatusFail); }
-  .vd-chg  { background:var(--StatusWarnBg); color:var(--StatusWarn); }
-  .vd-held { background:var(--TrackBg); color:var(--TextTertiary); }
-  .linkbtn:disabled { color:var(--TextTertiary); opacity:.55; cursor:default; }
-  .trayfoot { display:flex; align-items:center; gap:10px; padding:8px 14px;
-              border-top:1px solid var(--RuleBrush); font-size:10.5px;
-              color:var(--TextTertiary); }
+/* console row (collapsed by default) */
+.console{display:block;height:0;background:var(--PanelBg2);border-top:0;padding:0 16px;}
+.console.open{height:120px;border-top:1px solid var(--BorderBrush);padding:8px 16px}
+.console{font:11px Consolas,monospace;color:var(--TextSecondary);overflow:auto;white-space:pre}
 
-  /* empty states - DEFAULTS FIRST, overrides after, and compound so a later
-     sibling rule can never re-show a hidden twin (r81 cascade-order leak). */
-  .trayempty { display:none; flex-direction:column; align-items:center;
-               justify-content:center; gap:7px; padding:40px 0;
-               color:var(--TextTertiary); font-size:12px; }
-  .trayempty .eg { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-                   font-size:26px; opacity:.5; }
-  .tray.is-empty .trayempty.only { display:flex; }
-  .tray.is-empty .trayscroll     { display:none; }
-
-  /* ------------------------------------------------------ manifest --- */
-  .manifest { display:flex; flex-direction:column; background:var(--NavBg);
-              overflow:hidden; }
-  .mfhdr { padding:12px 15px 9px; border-bottom:1px solid var(--RuleBrush); }
-  .mfk { font-size:10px; font-weight:700; letter-spacing:.16em;
-         color:var(--TextTertiary); }
-  .mfsub { font-size:10.5px; color:var(--TextTertiary); margin-top:3px; }
-  .mfbody { flex:1 1 auto; overflow:auto; padding:12px 15px; }
-  .mfrow { display:flex; align-items:baseline; justify-content:space-between;
-           gap:10px; padding:5px 0; font-size:11.5px; }
-  .mfrow .lb { color:var(--TextSecondary); }
-  .mfrow .vl { font-variant-numeric:tabular-nums; font-weight:700;
-               font-size:13px; }
-  .mfrow.sub { padding:1px 0 5px 12px; font-size:10.5px; }
-  .mfrow.sub .vl { font-size:11px; font-weight:600; }
-  .mfrule { height:1px; background:var(--RuleBrush); margin:9px 0; }
-  .mflabel { font-size:9.5px; letter-spacing:.13em; color:var(--TextTertiary);
-             margin:2px 0 6px; }
-  select.mfselect {
-    width:100%; height:29px; border-radius:5px; padding:0 8px;
-    background:var(--InputBg); color:var(--InputText);
-    border:1px solid var(--BorderBrush); font-size:11.5px; font-family:inherit;
-  }
-  .mf-del .vl  { color:var(--StatusFail); }
-  .totbar { display:flex; height:9px; border-radius:5px; overflow:hidden;
-            background:var(--TrackBg); margin:4px 0 10px; }
-  .totbar i { display:block; }
-  .mftxn { background:var(--PanelBg2); border:1px solid var(--BorderBrush);
-           border-radius:6px; padding:9px 10px; font-size:10.5px;
-           color:var(--TextTertiary); line-height:1.5; }
-  .mftxn b { color:var(--TextSecondary); }
-  .mffoot { padding:11px 15px 13px; border-top:1px solid var(--RuleBrush);
-            display:flex; flex-direction:column; gap:8px; }
-  .bigbtn { height:36px; border-radius:6px; font-size:12px; font-weight:700;
-            letter-spacing:.06em; cursor:pointer; font-family:inherit;
-            display:inline-flex; align-items:center; justify-content:center;
-            gap:8px; border:1px solid var(--BorderBrush);
-            background:var(--BtnThemeBg); color:var(--TextMain); }
-  .bigbtn:hover { background:var(--BtnHoverBg); }
-  .bigbtn.pri { background:var(--StatusFail); color:var(--StatusFailInk);
-                border-color:var(--StatusFail); }
-  .bigbtn .g { font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-               font-size:13px; }
-
-  /* -------------------------------------------------------- footer --- */
-  .footer { background:var(--TitleBarBg); border-top:1px solid var(--BorderBrush);
-            display:flex; align-items:center; gap:14px; padding:0 16px;
-            font-size:10.5px; color:var(--TextTertiary); }
-  .hallmark { display:inline-flex; align-items:center; gap:7px;
-              color:var(--TextSecondary); font-weight:600; }
-  .hallmark .sq { width:11px; height:11px; border-radius:3px;
-                  background:var(--AccentBg); }
-  /* The chip is the element that YIELDS and the chevron the one that stays
-     put: the wrapper takes the free space (min-width:0, or a flex item
-     refuses to shrink below its content) and the chip ellipsizes inside it,
-     so the chevron sits at a fixed x however long the status runs. Every
-     other footer child is pinned below - in the real window they are Auto
-     grid columns, which cannot shrink, whereas a CSS flex item shrinks by
-     default and would let the model name compress instead. */
-  .statuswrap { flex:1 1 auto; min-width:0; display:flex; align-items:center; }
-  .footer > :not(.statuswrap) { flex:0 0 auto; }
-  .statuschip { display:inline-flex; align-items:center; gap:6px; height:20px;
-                padding:0 10px; border-radius:10px; max-width:100%;
-                white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-                background:var(--StatusWarnBg); color:var(--StatusWarn);
-                font-size:9.5px; font-weight:700; letter-spacing:.07em; }
-  .chevbtn { width:24px; height:18px; padding:0; border:0; cursor:pointer;
-             background:transparent; color:var(--TextTertiary); font-size:10px;
-             font-family:"Segoe MDL2 Assets","Segoe Fluent Icons",sans-serif;
-             line-height:1; display:inline-flex; align-items:center;
-             justify-content:center; }
-  .chevbtn:hover { color:var(--TextMain); }
-  .fspacer { flex:1 1 auto; }
-  .progwrap { width:132px; height:5px; border-radius:3px;
-              background:var(--TrackBg); overflow:hidden; }
-  .progwrap i { display:block; height:100%; width:0%; background:var(--AccentBg); }
-
-  /* ------------------------------------------------------- console --- */
-  /* The band has its own row between the body and the footer. Collapsed is
-     height 0 INCLUDING its rule - the 1px top border sits on the text box
-     rather than a wrapper, so it disappears with the console instead of
-     stacking a second line on the footer's. */
-  .conrow { flex:0 0 auto; }
-  .console { display:none; height:190px; overflow:auto; padding:8px 16px;
-             background:var(--PanelBg2);
-             border-top:1px solid var(--BorderBrush);
-             font-family:Consolas,"Cascadia Mono",monospace; font-size:11px;
-             line-height:1.6; white-space:pre; color:var(--TextSecondary); }
-  .win.console-open .console { display:block; }
-
-  /* ------------------------------------------------- config sheet --- */
-  .scrim { position:absolute; inset:0; background:rgba(0,0,0,.55);
-           display:none; align-items:center; justify-content:center; }
-  .win.cfg-open .scrim { display:flex; }
-  .sheet { width:760px; max-height:720px; background:var(--PanelBg);
-           border:1px solid var(--BorderBrush); border-radius:9px;
-           display:flex; flex-direction:column; overflow:hidden;
-           box-shadow:0 18px 50px rgba(0,0,0,.5); }
-  .sheethdr { display:flex; align-items:center; gap:10px; padding:13px 16px;
-              border-bottom:1px solid var(--RuleBrush); }
-  .sheethdr .t { font-size:13px; font-weight:600; flex:1 1 auto; }
-  .sheetbody { overflow:auto; padding:14px 16px; display:grid;
-               grid-template-columns:1fr 1fr; gap:14px 20px; }
-  .cfgcard { background:var(--CardBg); border:1px solid var(--BorderBrush);
-             border-radius:7px; padding:11px 12px; }
-  .cfgcard.wide { grid-column:1 / -1; }
-  .cfgk { font-size:9.5px; font-weight:700; letter-spacing:.13em;
-          color:var(--TextTertiary); margin-bottom:8px; }
-  .frow { display:flex; align-items:center; justify-content:space-between;
-          gap:10px; padding:4px 0; font-size:11.5px; }
-  .frow .fl { color:var(--TextSecondary); }
-  input.fin, select.fin { height:26px; width:118px; border-radius:5px;
-          padding:0 7px; background:var(--InputBg); color:var(--InputText);
-          border:1px solid var(--BorderBrush); font-size:11px;
-          font-family:inherit; }
-  .sw { width:34px; height:18px; border-radius:9px; border:1px solid var(--BorderBrush);
-        background:var(--TrackBg); position:relative; cursor:pointer; padding:0; }
-  .sw i { position:absolute; top:1px; left:1px; width:14px; height:14px;
-          border-radius:7px; background:var(--TextTertiary); display:block; }
-  .sw.on { background:var(--AccentBg); border-color:var(--AccentBg); }
-  .sw.on i { left:17px; background:var(--AccentFg); }
-  .taglist { display:flex; flex-wrap:wrap; gap:5px; }
-  .tagpill { font-size:9.5px; padding:3px 8px; border-radius:9px;
-             background:var(--PanelBg2); border:1px solid var(--BorderBrush);
-             color:var(--TextSecondary); }
-  /* STATION 07 advanced editors. Multiline fields are monospace because a
-     cross-type pair list is read column-wise, not as prose. */
-  .cfglab { font-size:11px; color:var(--TextSecondary); margin:8px 0 4px; }
-  .cfgcard > .cfglab:first-of-type { margin-top:0; }
-  textarea.fml { width:100%; box-sizing:border-box; border-radius:5px;
-          padding:6px 7px; background:var(--InputBg); color:var(--InputText);
-          border:1px solid var(--BorderBrush); font-size:11px; resize:vertical;
-          font-family:Consolas,"Cascadia Mono",monospace; }
-  .nrrules { display:flex; flex-direction:column; gap:4px; }
-  .nrrule { display:flex; align-items:center; justify-content:space-between;
-            gap:10px; font-size:11px; padding:5px 8px; border-radius:5px;
-            background:var(--PanelBg2); border:1px solid var(--BorderBrush);
-            color:var(--TextSecondary); }
-  .nrbtns { display:flex; gap:9px; margin-top:8px; }
-  .sheetfoot { display:flex; gap:9px; justify-content:flex-end;
-               padding:11px 16px; border-top:1px solid var(--RuleBrush); }
-  .sbtn { height:30px; padding:0 16px; border-radius:6px; cursor:pointer;
-          font-size:11.5px; font-weight:600; font-family:inherit;
-          border:1px solid var(--BorderBrush); background:var(--BtnThemeBg);
-          color:var(--TextMain); }
-  .sbtn.pri { background:var(--AccentBg); color:var(--AccentFg);
-              border-color:var(--AccentBg); }
+/* footer: auto | auto | 1fr | auto | auto | auto | 132 */
+.foot{background:var(--TitleBarBg);border-top:1px solid var(--BorderBrush);display:grid;grid-template-columns:auto auto minmax(0,1fr) auto auto auto 132px;align-items:center;gap:14px;padding:0 16px;font-size:10.5px;color:var(--TextTertiary)}
+.hall{display:flex;align-items:center;gap:6px;color:var(--TextSecondary)}
+.hall .gl{color:var(--AccentBg);font-size:11px}
+.hall b{color:var(--TextMain);font-weight:800}
+.stat{height:20px;border-radius:10px;padding:0 10px;display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;background:var(--PanelBg2);color:var(--TextSecondary);white-space:nowrap}
+.stat.acc{background:var(--BadgeBg);color:var(--AccentBg)}
+.stat.pass{background:var(--StatusPassBg);color:var(--StatusPass)}
+.evt{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--TextSecondary)}
+.chev{width:24px;height:18px;border:0;background:transparent;color:var(--TextTertiary);cursor:pointer;font-size:10px;padding:0}
+.prog{height:5px;background:var(--TrackBg);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--AccentBg)}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--CardBg);color:var(--TextMain);border:1px solid var(--BorderBrush);border-radius:5px;padding:5px 8px;font-size:11px;display:none;max-width:300px}
 </style>
 </head>
 <body>
-<div class="win" id="cd_window" data-ctl="window" data-page="line" data-theme-host="true">
+<div class="stage">
 
-  <!-- ============================== title bar ============================== -->
-  <div class="titlebar">
-    <div>
-      <span class="wtitle">Model Cleanup</span><span class="wsub">the line</span>
-    </div>
-    <div class="docchip"><i class="mdl2"></i>
-      <b id="lbl_file" data-ctl="label">Tower-A_MEP_Part_001.rvt</b>
-      <span id="lbl_doc_count" data-ctl="label">&#183; 37 363 elements</span>
-    </div>
-    <div class="tb-right">
-      <button class="iconbtn mdl2" id="btn_config" data-ctl="button" data-page="line"
-              data-handler="OnOpenConfig" data-new="true" title="Configuration"></button>
-      <button class="iconbtn mdl2" id="btn_theme" data-ctl="button"
-              data-handler="ToggleTheme" title="Theme">&#9789;</button>
-      <div class="dots">
-        <button class="dot" id="btn_min"   data-ctl="button" data-handler="Min_Click"></button>
-        <button class="dot" id="btn_max"   data-ctl="button" data-handler="Max_Click"></button>
-        <button class="dot" id="btn_close" data-ctl="button" data-handler="Close_Click"></button>
-      </div>
-    </div>
+  <div class="win" id="win">
+
+<!-- ============================ TITLE BAR ============================ -->
+<div class="titlebar">
+  <div class="ttl">Model Cleanup<small>The Survey</small></div>
+  <div class="docchip"><span class="gl"></span><span id="lbl_file" data-ctl="TextBlock" data-page="shell">Tower-A_MEP_Part_001</span><span id="lbl_doc_count" data-ctl="TextBlock" data-page="shell">&middot; 37 363 elements</span></div>
+  <div class="tbr">
+    <button class="tbtn" id="btn_config" data-ctl="Button" data-page="shell" data-handler="OnOpenConfig" title="Configuration"><span class="gl"></span><span>Config</span></button>
+    <button class="icon" id="btn_theme" data-ctl="Button" data-page="shell" data-handler="ToggleTheme" title="Theme"><span class="gl"></span></button>
+    <div class="dots"><button class="dot m" id="btn_min" data-ctl="Button" data-page="shell" data-handler="Min_Click" title="Minimise"><span class="gl"></span></button><button class="dot x" id="btn_max" data-ctl="Button" data-page="shell" data-handler="Max_Click" title="Maximise"><span class="gl"></span></button><button class="dot c" id="btn_close" data-ctl="Button" data-page="shell" data-handler="Close_Click" title="Close"><span class="gl"></span></button></div>
   </div>
+</div>
 
-  <!-- ================================= body ================================ -->
-  <div class="body">
-    <div class="leftcol">
+<!-- =============================== BODY ============================== -->
+<div class="body">
 
-      <!-- ------------------------------ THE LINE ------------------------- -->
-      <div class="lane">
-        <div class="lanehdr">
-          <span class="lanetitle">THE LINE</span>
-          <span class="intake">intake
-            <b id="lbl_intake_count" data-ctl="label">37 363</b>
-            <span id="lbl_scope_echo" data-ctl="label">whole model</span>
-          </span>
-          <span class="lanespacer"></span>
-          <button class="iconbtn mdl2" id="btn_reset_view" data-ctl="button" data-page="line"
-                  data-handler="OnResetView" data-new="true"
-                  title="Reset temporary hide / isolate in the active view">&#xE72C;</button>
-          <button class="lanebtn" id="btn_arm_all" data-ctl="button" data-page="line"
-                  data-handler="OnCheckAll"><i class="g mdl2"></i><span class="bt">ARM ALL</span></button>
-          <button class="lanebtn pri" id="btn_scan" data-ctl="button" data-page="line"
-                  data-handler="OnScan" data-new="true"><i class="g mdl2"></i><span class="bt">READ MODEL</span></button>
-        </div>
-        <div class="track" id="track_line" data-ctl="border" data-page="line">
-        <div class="stn destroy" id="stn_dups" data-ctl="border"
-             data-page="line" data-tag="dups" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_dups_ord" data-ctl="label">01</span>
-            <span class="grp">GEOMETRY</span>
-          </div>
-          <div class="stn-glyph" id="stn_dups_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_dups_name" data-ctl="label">Ghosts</div>
-          <div class="gauge" id="gauge_dups" data-ctl="border">
-            <div class="gseg held" id="gauge_dups_held" data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg chg"  id="gauge_dups_chg"  data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg del"  id="gauge_dups_del"  data-ctl="border" style="height:92.0px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_dups_found" data-ctl="label">412</b> found</div>
-          <div class="stn-act" id="lbl_dups_act" data-ctl="label"><span class="act del">&#8722;412</span></div>
-          <div class="casc hot" id="lbl_dups_cascade" data-ctl="label">cascade +38</div>
-          <button class="arm" id="chk_dups" data-ctl="checkbox" data-page="line"
-                  data-tag="dups" data-handler="OnArmStation" data-new="true">ARMED</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn destroy sel" id="stn_lines" data-ctl="border"
-             data-page="line" data-tag="lines" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_lines_ord" data-ctl="label">02</span>
-            <span class="grp">GEOMETRY</span>
-          </div>
-          <div class="stn-glyph" id="stn_lines_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_lines_name" data-ctl="label">Overkill</div>
-          <div class="gauge" id="gauge_lines" data-ctl="border">
-            <div class="gseg held" id="gauge_lines_held" data-ctl="border" style="height:11.1px"></div>
-            <div class="gseg chg"  id="gauge_lines_chg"  data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg del"  id="gauge_lines_del"  data-ctl="border" style="height:46.5px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_lines_found" data-ctl="label">88</b> found</div>
-          <div class="stn-act" id="lbl_lines_act" data-ctl="label"><span class="act del">&#8722;71</span></div>
-          <div class="casc" id="lbl_lines_cascade" data-ctl="label">cascade 0</div>
-          <button class="arm" id="chk_lines" data-ctl="checkbox" data-page="line"
-                  data-tag="lines" data-handler="OnArmStation" data-new="true">ARMED</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn repair" id="stn_mep" data-ctl="border"
-             data-page="line" data-tag="mep" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_mep_ord" data-ctl="label">03</span>
-            <span class="grp">CONNECTIONS</span>
-          </div>
-          <div class="stn-glyph" id="stn_mep_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_mep_name" data-ctl="label">Connect</div>
-          <div class="gauge" id="gauge_mep" data-ctl="border">
-            <div class="gseg held" id="gauge_mep_held" data-ctl="border" style="height:4.0px"></div>
-            <div class="gseg chg"  id="gauge_mep_chg"  data-ctl="border" style="height:59.7px"></div>
-            <div class="gseg del"  id="gauge_mep_del"  data-ctl="border" style="height:0.0px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_mep_found" data-ctl="label">126</b> found</div>
-          <div class="stn-act" id="lbl_mep_act" data-ctl="label"><span class="act chg">118 changed</span></div>
-          <div class="casc none">no cascade</div>
-          <button class="arm" id="chk_mep" data-ctl="checkbox" data-page="line"
-                  data-tag="mep" data-handler="OnArmStation" data-new="true">ARMED</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn destroy" id="stn_sysempty" data-ctl="border"
-             data-page="line" data-tag="sysempty" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_sysempty_ord" data-ctl="label">04</span>
-            <span class="grp">SYSTEMS</span>
-          </div>
-          <div class="stn-glyph" id="stn_sysempty_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_sysempty_name" data-ctl="label">Integrity</div>
-          <div class="gauge" id="gauge_sysempty" data-ctl="border">
-            <div class="gseg held" id="gauge_sysempty_held" data-ctl="border" style="height:38.9px"></div>
-            <div class="gseg chg"  id="gauge_sysempty_chg"  data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg del"  id="gauge_sysempty_del"  data-ctl="border" style="height:0.0px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_sysempty_found" data-ctl="label">17</b> found</div>
-          <div class="stn-act" id="lbl_sysempty_act" data-ctl="label"><span class="act none">0 acted</span></div>
-          <div class="casc" id="lbl_sysempty_cascade" data-ctl="label">cascade 0</div>
-          <button class="arm" id="chk_sysempty" data-ctl="checkbox" data-page="line"
-                  data-tag="sysempty" data-handler="OnArmStation" data-new="true">ARMED</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn repair bypass" id="stn_sysname" data-ctl="border"
-             data-page="line" data-tag="sysname" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_sysname_ord" data-ctl="label">05</span>
-            <span class="grp">SYSTEMS</span>
-          </div>
-          <div class="stn-glyph" id="stn_sysname_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_sysname_name" data-ctl="label">Names</div>
-          <div class="gauge" id="gauge_sysname" data-ctl="border">
-            <div class="gseg held" id="gauge_sysname_held" data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg chg"  id="gauge_sysname_chg"  data-ctl="border" style="height:32.2px"></div>
-            <div class="gseg del"  id="gauge_sysname_del"  data-ctl="border" style="height:0.0px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_sysname_found" data-ctl="label">6</b> found</div>
-          <div class="stn-act" id="lbl_sysname_act" data-ctl="label"><span class="act chg">6 changed</span></div>
-          <div class="casc none">no cascade</div>
-          <button class="arm" id="chk_sysname" data-ctl="checkbox" data-page="line"
-                  data-tag="sysname" data-handler="OnArmStation" data-new="true">BYPASS</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn repair" id="stn_systype" data-ctl="border"
-             data-page="line" data-tag="systype" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_systype_ord" data-ctl="label">06</span>
-            <span class="grp">SYSTEMS</span>
-          </div>
-          <div class="stn-glyph" id="stn_systype_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_systype_name" data-ctl="label">Types</div>
-          <div class="gauge" id="gauge_systype" data-ctl="border">
-            <div class="gseg held" id="gauge_systype_held" data-ctl="border" style="height:7.2px"></div>
-            <div class="gseg chg"  id="gauge_systype_chg"  data-ctl="border" style="height:34.2px"></div>
-            <div class="gseg del"  id="gauge_systype_del"  data-ctl="border" style="height:0.0px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_systype_found" data-ctl="label">23</b> found</div>
-          <div class="stn-act" id="lbl_systype_act" data-ctl="label"><span class="act chg">19 changed</span></div>
-          <div class="casc none">no cascade</div>
-          <button class="arm" id="chk_systype" data-ctl="checkbox" data-page="line"
-                  data-tag="systype" data-handler="OnArmStation" data-new="true">ARMED</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn repair bypass" id="stn_nvis" data-ctl="border"
-             data-page="line" data-tag="nvis" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_nvis_ord" data-ctl="label">07</span>
-            <span class="grp">NESTED</span>
-          </div>
-          <div class="stn-glyph" id="stn_nvis_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_nvis_name" data-ctl="label">Nested</div>
-          <div class="gauge" id="gauge_nvis" data-ctl="border">
-            <div class="gseg held" id="gauge_nvis_held" data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg chg"  id="gauge_nvis_chg"  data-ctl="border" style="height:30.3px"></div>
-            <div class="gseg del"  id="gauge_nvis_del"  data-ctl="border" style="height:0.0px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_nvis_found" data-ctl="label">4</b> found</div>
-          <div class="stn-act" id="lbl_nvis_act" data-ctl="label"><span class="act chg">4 changed</span></div>
-          <div class="casc none">no cascade</div>
-          <button class="arm" id="chk_nvis" data-ctl="checkbox" data-page="line"
-                  data-tag="nvis" data-handler="OnArmStation" data-new="true">BYPASS</button>
-        </div>
-        <div class="conn" aria-hidden="true"><i class="conn-rule"></i><i class="conn-dot"></i></div>
-        <div class="stn destroy" id="stn_orphans" data-ctl="border"
-             data-page="line" data-tag="orphans" data-handler="OnStationSelect" data-new="true">
-          <div class="stn-top">
-            <span class="ordn" id="stn_orphans_ord" data-ctl="label">08</span>
-            <span class="grp">PURGE</span>
-          </div>
-          <div class="stn-glyph" id="stn_orphans_glyph" data-ctl="glyph"></div>
-          <div class="stn-name" id="stn_orphans_name" data-ctl="label">Orphans</div>
-          <div class="gauge" id="gauge_orphans" data-ctl="border">
-            <div class="gseg held" id="gauge_orphans_held" data-ctl="border" style="height:41.6px"></div>
-            <div class="gseg chg"  id="gauge_orphans_chg"  data-ctl="border" style="height:0.0px"></div>
-            <div class="gseg del"  id="gauge_orphans_del"  data-ctl="border" style="height:16.6px"></div>
-          </div>
-          <div class="stn-found"><b id="lbl_orphans_found" data-ctl="label">91</b> found</div>
-          <div class="stn-act" id="lbl_orphans_act" data-ctl="label"><span class="act del">&#8722;26</span></div>
-          <div class="casc cap" id="lbl_orphans_cascade" data-ctl="label" title="dependent probe exceeded the 800-element cap - the number is UNKNOWN, never 0">cascade &#8212;</div>
-          <button class="arm" id="chk_orphans" data-ctl="checkbox" data-page="line"
-                  data-tag="orphans" data-handler="OnArmStation" data-new="true">ARMED</button>
-        </div>
-        </div>
-        <div class="ruler" id="flow_ruler" data-ctl="border" data-page="line">
-          <span class="rcell hot" id="lbl_flow_dups" data-ctl="label">36 913</span>
-          <span class="rgap"></span>
-          <span class="rcell hot" id="lbl_flow_lines" data-ctl="label">36 842</span>
-          <span class="rgap"></span>
-          <span class="rcell" id="lbl_flow_mep" data-ctl="label">&#183;</span>
-          <span class="rgap"></span>
-          <span class="rcell" id="lbl_flow_sysempty" data-ctl="label">&#183;</span>
-          <span class="rgap"></span>
-          <span class="rcell off" id="lbl_flow_sysname" data-ctl="label">&#183;</span>
-          <span class="rgap"></span>
-          <span class="rcell" id="lbl_flow_systype" data-ctl="label">&#183;</span>
-          <span class="rgap"></span>
-          <span class="rcell off" id="lbl_flow_nvis" data-ctl="label">&#183;</span>
-          <span class="rgap"></span>
-          <span class="rcell hot" id="lbl_flow_orphans" data-ctl="label">&#8804; 36 816</span>
-        </div>
+  <!-- ---------------- LAYERS ---------------- -->
+  <section class="pane">
+    <div class="ph"><span class="lbl">Layers</span><span class="sub">tick = shown + armed</span><span class="sp"></span><button class="link" id="btn_arm_all" data-ctl="Button" data-page="survey" data-handler="OnCheckAll" title="Arm every pass, or disarm them all when all are armed">All</button></div>
+    <div class="rail-b">
+      <div class="cov"><div class="lbl">Located</div>
+        <div class="big num"><span id="lbl_located_count" data-ctl="TextBlock" data-page="survey">628</span><small id="lbl_located_total" data-ctl="TextBlock" data-page="survey">of 1 576</small></div>
+        <div class="bar"><i id="bar_located" data-ctl="Border" data-page="survey"></i></div>
+        <div class="note" id="lbl_located_note" data-ctl="TextBlock" data-page="survey">39.8 % of findings have a model position. The rest live off-plan, on the shelf under the map.</div></div>
+
+      <div class="grp"><div class="lbl">Plotted</div>
+        <div class="ly" id="stn_dups" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="dups"><input type="checkbox" checked id="chk_dups" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="dups"><span class="shape" id="stn_dups_glyph" data-ctl="Canvas" data-page="survey"><svg viewBox="-8 -8 16 16"><circle r="4.2" fill="var(--TextSecondary)"/></svg></span><span class="nm"><span id="stn_dups_name" data-ctl="TextBlock" data-page="survey">Ghost Purge</span><small id="stn_dups_ord" data-ctl="TextBlock" data-page="survey">01 &middot; removes</small></span><span class="n num" id="lbl_dups_found" data-ctl="TextBlock" data-page="survey">412</span></div>
+        <div class="ly" id="stn_lines" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="lines"><input type="checkbox" checked id="chk_lines" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="lines"><span class="shape" id="stn_lines_glyph" data-ctl="Canvas" data-page="survey"><svg viewBox="-8 -8 16 16"><line x1="-6" y1="3" x2="6" y2="-3" stroke="var(--TextSecondary)" stroke-width="2.6" stroke-linecap="round"/></svg></span><span class="nm"><span id="stn_lines_name" data-ctl="TextBlock" data-page="survey">Overkill Lines</span><small id="stn_lines_ord" data-ctl="TextBlock" data-page="survey">02 &middot; removes</small></span><span class="n num" id="lbl_lines_found" data-ctl="TextBlock" data-page="survey">71</span></div>
+        <div class="ly" id="stn_mep" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="mep"><input type="checkbox" checked id="chk_mep" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="mep"><span class="shape" id="stn_mep_glyph" data-ctl="Canvas" data-page="survey"><svg viewBox="-8 -8 16 16"><rect x="-3.6" y="-3.6" width="7.2" height="7.2" transform="rotate(45)" fill="var(--TextSecondary)"/></svg></span><span class="nm"><span id="stn_mep_name" data-ctl="TextBlock" data-page="survey">Connection Fix</span><small id="stn_mep_ord" data-ctl="TextBlock" data-page="survey">03 &middot; repairs</small></span><span class="n num" id="lbl_mep_found" data-ctl="TextBlock" data-page="survey">118</span></div>
+        <div class="ly" id="stn_systype" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="systype"><input type="checkbox" checked id="chk_systype" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="systype"><span class="shape" id="stn_systype_glyph" data-ctl="Canvas" data-page="survey"><svg viewBox="-8 -8 16 16"><polygon points="0,-5 5,4 -5,4" fill="var(--TextSecondary)"/></svg></span><span class="nm"><span id="stn_systype_name" data-ctl="TextBlock" data-page="survey">System Type Repair</span><small id="stn_systype_ord" data-ctl="TextBlock" data-page="survey">06 &middot; repairs</small></span><span class="n num" id="lbl_systype_found" data-ctl="TextBlock" data-page="survey">23</span></div>
+        <div class="ly" id="stn_nvis" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="nvis"><input type="checkbox" checked id="chk_nvis" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="nvis"><span class="shape" id="stn_nvis_glyph" data-ctl="Canvas" data-page="survey"><svg viewBox="-8 -8 16 16"><rect x="-4" y="-4" width="8" height="8" fill="var(--TextSecondary)"/></svg></span><span class="nm"><span id="stn_nvis_name" data-ctl="TextBlock" data-page="survey">Nested Fix</span><small id="stn_nvis_ord" data-ctl="TextBlock" data-page="survey">07 &middot; repairs</small></span><span class="n num" id="lbl_nvis_found" data-ctl="TextBlock" data-page="survey">4</span></div>
       </div>
 
-      <!-- ------------------------------ CATCH TRAY ----------------------- -->
-      <div class="tray" id="tray_host" data-ctl="border" data-page="line">
-        <div class="trayhdr">
-          <span class="trayord" id="lbl_tray_ord" data-ctl="label">02</span>
-          <i class="trayglyph" id="lbl_tray_glyph" data-ctl="glyph"></i>
-          <span class="traytitle" id="lbl_tray_title" data-ctl="label">Overkill Lines</span>
-          <span class="traydesc" id="lbl_tray_desc" data-ctl="label">Collinear detail / model / separation lines that overlap or touch are merged onto one survivor; the rest are deleted.</span>
-        </div>
-        <div class="traybar">
-          <button class="chip on" id="chip_all" data-ctl="button" data-page="line"
-                  data-tag="all" data-handler="OnTrayFilter" data-new="true">ALL
-            <span class="n" id="lbl_chip_all_n" data-ctl="label">88</span></button>
-          <button class="chip" id="chip_change" data-ctl="button" data-page="line"
-                  data-tag="change" data-handler="OnTrayFilter" data-new="true">WILL CHANGE
-            <span class="n" id="lbl_chip_change_n" data-ctl="label">71</span></button>
-          <button class="chip" id="chip_held" data-ctl="button" data-page="line"
-                  data-tag="held" data-handler="OnTrayFilter" data-new="true">HELD
-            <span class="n" id="lbl_chip_held_n" data-ctl="label">17</span></button>
-          <!-- the receipt of the last run; appears once a run completes -->
-          <button class="chip postrun" id="chip_results" data-ctl="button" data-page="line"
-                  data-tag="results" data-handler="OnTrayFilter" data-new="true">RESULTS
-            <span class="n" id="lbl_chip_results_n" data-ctl="label">0</span></button>
-          <span class="searchwrap"><i title="filter this catch"></i>
-            <input id="txt_tray_search" data-ctl="textbox" data-page="line"
-                   data-handler="OnTraySearch" data-new="true" placeholder="filter this catch&#8230;"></span>
-        </div>
-        <!-- wraps BOTH the header and the rows, so an empty catch collapses
-             the grid as one instead of leaving a floating header -->
-        <div class="trayscroll" id="tray_scroll" data-ctl="border" data-page="line">
-          <div class="thead">
-            <span></span><span>SURVIVOR</span><span>REMOVED</span><span>CATEGORY</span>
-            <span class="c-num">LENGTH</span><span class="c-num">CASCADE</span>
-            <span>VERDICT</span><span>WHY</span>
-          </div>
-          <div id="grid_tray" data-ctl="listview" data-page="line">
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 284 907</span>
-              <span class="cell c-id dim">1 284 911</span>
-              <span class="cell c-cat">Detail Lines</span>
-              <span class="cell c-num">3 420 mm</span>
-              <span class="cell c-num">0</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, full overlap</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 284 907</span>
-              <span class="cell c-id dim">1 284 918</span>
-              <span class="cell c-cat">Detail Lines</span>
-              <span class="cell c-num">3 420 mm</span>
-              <span class="cell c-num">0</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, full overlap</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 291 044</span>
-              <span class="cell c-id dim">1 291 052</span>
-              <span class="cell c-cat">Model Lines</span>
-              <span class="cell c-num">1 180 mm</span>
-              <span class="cell c-num">2</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, touching</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 291 044</span>
-              <span class="cell c-id dim">1 291 061</span>
-              <span class="cell c-cat">Model Lines</span>
-              <span class="cell c-num">1 180 mm</span>
-              <span class="cell c-num">0</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, touching</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 303 776</span>
-              <span class="cell c-id dim">1 303 781</span>
-              <span class="cell c-cat">&lt;Room Separation&gt;</span>
-              <span class="cell c-num">6 050 mm</span>
-              <span class="cell c-num">0</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, full overlap</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 310 220</span>
-              <span class="cell c-id dim">1 310 229</span>
-              <span class="cell c-cat">Detail Lines</span>
-              <span class="cell c-num">925 mm</span>
-              <span class="cell c-num">1</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, partial</span>
-            </div>
-            <div class="trow" data-verdict="held">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 318 003</span>
-              <span class="cell c-id dim">&#8212;</span>
-              <span class="cell c-cat">Model Lines</span>
-              <span class="cell c-num">2 700 mm</span>
-              <span class="cell c-num">&#8212;</span>
-              <span class="cell c-vd"><i class="vpill vd-held"><i class="vg"></i><i class="vt">Held</i></i></span>
-              <span class="cell c-note">sole line on a locked workset</span>
-            </div>
-            <div class="trow" data-verdict="held">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 318 044</span>
-              <span class="cell c-id dim">&#8212;</span>
-              <span class="cell c-cat">Detail Lines</span>
-              <span class="cell c-num">410 mm</span>
-              <span class="cell c-num">&#8212;</span>
-              <span class="cell c-vd"><i class="vpill vd-held"><i class="vg"></i><i class="vt">Held</i></i></span>
-              <span class="cell c-note">different line style - not a duplicate</span>
-            </div>
-            <div class="trow" data-verdict="held">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 322 190</span>
-              <span class="cell c-id dim">&#8212;</span>
-              <span class="cell c-cat">&lt;Room Separation&gt;</span>
-              <span class="cell c-num">1 900 mm</span>
-              <span class="cell c-num">&#8212;</span>
-              <span class="cell c-vd"><i class="vpill vd-held"><i class="vg"></i><i class="vt">Held</i></i></span>
-              <span class="cell c-note">bounds a placed room</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 327 815</span>
-              <span class="cell c-id dim">1 327 820</span>
-              <span class="cell c-cat">Detail Lines</span>
-              <span class="cell c-num">5 100 mm</span>
-              <span class="cell c-num">0</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, full overlap</span>
-            </div>
-            <div class="trow" data-verdict="held">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 331 402</span>
-              <span class="cell c-id dim">&#8212;</span>
-              <span class="cell c-cat">Model Lines</span>
-              <span class="cell c-num">780 mm</span>
-              <span class="cell c-num">&#8212;</span>
-              <span class="cell c-vd"><i class="vpill vd-held"><i class="vg"></i><i class="vt">Held</i></i></span>
-              <span class="cell c-note">in a design option - out of scope</span>
-            </div>
-            <div class="trow" data-verdict="delete">
-              <span class="cell c-chk"><i class="tick" title="ticked for removal"></i></span>
-              <span class="cell c-id">1 344 918</span>
-              <span class="cell c-id dim">1 344 923</span>
-              <span class="cell c-cat">Detail Lines</span>
-              <span class="cell c-num">2 240 mm</span>
-              <span class="cell c-num">3</span>
-              <span class="cell c-vd"><i class="vpill vd-del"><i class="vg"></i><i class="vt">Delete</i></i></span>
-              <span class="cell c-note">collinear, touching</span>
-            </div>
-          </div>
-        </div>
-        <div class="trayempty only" id="lbl_tray_empty" data-ctl="label">
-          <i class="eg"></i>
-          <span>Nothing in this catch matches the filter.</span>
-        </div>
-        <div class="trayfoot">
-          <span id="lbl_tray_count" data-ctl="label">12 of 88 shown &#183; 71 ticked for removal</span>
-          <span class="fspacer" style="flex:1 1 auto"></span>
-          <button class="linkbtn" id="btn_tray_zoom" data-ctl="button" data-page="line"
-                  data-handler="OnTrayZoom" data-new="true">Zoom ticked</button>
-          <button class="linkbtn" id="btn_export_report" data-ctl="button" data-page="line"
-                  data-handler="OnExportReport" data-new="true" disabled
-                  title="Export the last run receipt to Excel (.xlsx)">Export report</button>
-          <button class="linkbtn" id="btn_undo_last" data-ctl="button" data-page="line"
-                  data-handler="OnUndoLast" data-new="true" disabled>Undo last run</button>
-          <button class="linkbtn" id="btn_tray_all" data-ctl="button" data-page="line"
-                  data-handler="OnTickAll" data-new="true">Tick all</button>
-          <button class="linkbtn" id="btn_tray_none" data-ctl="button" data-page="line"
-                  data-handler="OnTickNone" data-new="true">Hold all</button>
-        </div>
+      <div class="grp"><div class="lbl">Off-plan</div>
+        <div class="ly" id="stn_sysempty" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="sysempty"><input type="checkbox" checked id="chk_sysempty" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="sysempty"><span class="shape gl" id="stn_sysempty_glyph" data-ctl="TextBlock" data-page="survey"></span><span class="nm"><span id="stn_sysempty_name" data-ctl="TextBlock" data-page="survey">System Integrity</span><small id="stn_sysempty_ord" data-ctl="TextBlock" data-page="survey">04 &middot; no position</small></span><span class="n num" id="lbl_sysempty_found" data-ctl="TextBlock" data-page="survey">17</span></div>
+        <div class="ly" id="stn_sysname" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="sysname"><input type="checkbox" checked id="chk_sysname" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="sysname"><span class="shape gl" id="stn_sysname_glyph" data-ctl="TextBlock" data-page="survey"></span><span class="nm"><span id="stn_sysname_name" data-ctl="TextBlock" data-page="survey">System Names</span><small id="stn_sysname_ord" data-ctl="TextBlock" data-page="survey">05 &middot; no position</small></span><span class="n num" id="lbl_sysname_found" data-ctl="TextBlock" data-page="survey">6</span></div>
+        <div class="ly" id="stn_orphans" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="orphans"><input type="checkbox" checked id="chk_orphans" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="orphans"><span class="shape gl" id="stn_orphans_glyph" data-ctl="TextBlock" data-page="survey"></span><span class="nm"><span id="stn_orphans_name" data-ctl="TextBlock" data-page="survey">Orphan Purge</span><small id="stn_orphans_ord" data-ctl="TextBlock" data-page="survey">08 &middot; no position</small></span><span class="n num" id="lbl_orphans_found" data-ctl="TextBlock" data-page="survey">925</span></div>
+        <div class="ly" id="stn_famdupes" data-ctl="Border" data-page="survey" data-handler="OnStationSelect" data-tag="famdupes"><input type="checkbox" checked id="chk_famdupes" data-ctl="CheckBox" data-page="survey" data-handler="OnArmStation" data-tag="famdupes"><span class="shape gl" id="stn_famdupes_glyph" data-ctl="TextBlock" data-page="survey"></span><span class="nm"><span id="stn_famdupes_name" data-ctl="TextBlock" data-page="survey">Family Duplicates</span><small id="stn_famdupes_ord" data-ctl="TextBlock" data-page="survey">09 &middot; no position</small></span><span class="n num" id="lbl_famdupes_found" data-ctl="TextBlock" data-page="survey">14</span></div>
       </div>
+
+      <div class="legend"><div class="lbl">Reading the marks</div>
+        <span><i style="background:var(--StatusWarn)"></i>removes (deletes)</span>
+        <span><i style="background:var(--StatusCascade)"></i>removes + dependents</span>
+        <span><i style="background:var(--AccentBg)"></i>repairs (edits)</span>
+        <span><i style="border:1.5px solid var(--TextTertiary)"></i>held, never acted on</span></div>
+      <div class="note">XY projection only: the plan flattens every level into one sheet.</div>
+    </div>
+  </section>
+
+  <!-- ---------------- PLAN ---------------- -->
+  <section class="planp">
+    <div class="mh"><span class="lbl">Plan</span><span class="sub">drag = region</span><span class="sp"></span>
+      <div class="chips">
+        <button class="chip on" id="chip_all" data-ctl="ToggleButton" data-page="survey" data-handler="OnTrayFilter" data-tag="all"><span>ALL</span><b id="lbl_chip_all_n" data-ctl="TextBlock" data-page="survey">0</b></button>
+        <button class="chip" id="chip_change" data-ctl="ToggleButton" data-page="survey" data-handler="OnTrayFilter" data-tag="change"><span>WILL CHANGE</span><b id="lbl_chip_change_n" data-ctl="TextBlock" data-page="survey">0</b></button>
+        <button class="chip" id="chip_held" data-ctl="ToggleButton" data-page="survey" data-handler="OnTrayFilter" data-tag="held"><span>HELD</span><b id="lbl_chip_held_n" data-ctl="TextBlock" data-page="survey">0</b></button>
+        <button class="chip" id="chip_results" data-ctl="ToggleButton" data-page="survey" data-handler="OnTrayFilter" data-tag="results" style="display:none"><span>RESULTS</span><b id="lbl_chip_results_n" data-ctl="TextBlock" data-page="survey">0</b></button>
+      </div>
+      <button class="tbtn on" id="btn_zones" data-ctl="ToggleButton" data-page="survey" data-handler="OnZonesToggle" data-new="true" title="Outline the five grid cells with the most findings">Hot zones</button>
+      <button class="tbtn" id="btn_clear_region" data-ctl="Button" data-page="survey" data-handler="OnClearRegion" data-new="true" title="Drop the drawn region">Clear region</button>
+      <button class="icon" id="btn_reset_view" data-ctl="Button" data-page="survey" data-handler="OnResetView" title="Reset temporary hide / isolate in the active view"><span class="gl"></span></button>
     </div>
 
-    <!-- ------------------------------- MANIFEST -------------------------- -->
-    <div class="manifest">
-      <div class="mfhdr">
-        <div class="mfk">COMMIT MANIFEST</div>
-        <div class="mfsub">Everything below happens once, as one act.</div>
-      </div>
-      <div class="mfbody">
-        <div class="mflabel">SCOPE &#183; WHAT ENTERS THE LINE</div>
-        <select class="mfselect" id="cb_scope" data-ctl="combobox" data-page="line"
-                data-handler="OnScopeChanged" data-new="true">
+    <div class="mapwrap" id="map_host" data-ctl="Border" data-page="survey">
+      <svg id="map_canvas" data-ctl="Canvas" data-page="survey" data-handler="OnMapDown" data-new="true" viewBox="0 0 1000 456" preserveAspectRatio="none"></svg>
+      <div class="hud" id="lbl_map_hud" data-ctl="TextBlock" data-page="survey">XY &middot; levels flattened &middot; grid 8 &times; 6 cells</div>
+      <div class="mapidle" id="map_idle" data-ctl="StackPanel" data-page="survey"><div class="t">Nothing plotted</div><div class="s">Scan places every finding that has a model position.</div><button class="btn pri" id="btn_scan_map" data-ctl="Button" data-page="survey" data-handler="OnScan" data-tag="map"><span class="gl"></span><span>SCAN MODEL</span></button></div>
+    </div>
+
+    <div class="shelf">
+      <div class="sc t5" id="shelf_orphans" data-ctl="Border" data-page="survey" data-handler="OnShelfSelect" data-new="true" data-tag="orphans"><h4><span class="gl"></span><span>Orphan Purge</span></h4><div class="n num"><span id="lbl_shelf_orphans_n" data-ctl="TextBlock" data-page="survey">925</span><small id="lbl_shelf_orphans_split" data-ctl="TextBlock" data-page="survey">860 remove &middot; 65 held</small></div><p id="lbl_shelf_orphans_note" data-ctl="TextBlock" data-page="survey">Tags and markers are bound to views; schemas carry no geometry.</p></div>
+      <div class="sc t0" id="shelf_sysempty" data-ctl="Border" data-page="survey" data-handler="OnShelfSelect" data-new="true" data-tag="sysempty"><h4><span class="gl"></span><span>System Integrity</span></h4><div class="n num"><span id="lbl_shelf_sysempty_n" data-ctl="TextBlock" data-page="survey">17</span><small id="lbl_shelf_sysempty_split" data-ctl="TextBlock" data-page="survey">17 held</small></div><p id="lbl_shelf_sysempty_note" data-ctl="TextBlock" data-page="survey">A system object has no location.</p></div>
+      <div class="sc t1" id="shelf_sysname" data-ctl="Border" data-page="survey" data-handler="OnShelfSelect" data-new="true" data-tag="sysname"><h4><span class="gl"></span><span>System Names</span></h4><div class="n num"><span id="lbl_shelf_sysname_n" data-ctl="TextBlock" data-page="survey">6</span><small id="lbl_shelf_sysname_split" data-ctl="TextBlock" data-page="survey">6 rename</small></div><p id="lbl_shelf_sysname_note" data-ctl="TextBlock" data-page="survey">A duplicate name belongs to the system, not to one element.</p></div>
+      <div class="sc t3" id="shelf_famdupes" data-ctl="Border" data-page="survey" data-handler="OnShelfSelect" data-new="true" data-tag="famdupes"><h4><span class="gl"></span><span>Family Duplicates</span></h4><div class="n num"><span id="lbl_shelf_famdupes_n" data-ctl="TextBlock" data-page="survey">14</span><small id="lbl_shelf_famdupes_split" data-ctl="TextBlock" data-page="survey">9 remove &middot; 5 held</small></div><p id="lbl_shelf_famdupes_note" data-ctl="TextBlock" data-page="survey">A loaded family lives in the project, not on the plan.</p></div>
+    </div>
+
+    <div class="catch">
+      <div class="ch"><span class="ord" id="lbl_tray_ord" data-ctl="TextBlock" data-page="survey">01</span><span class="g gl" id="lbl_tray_glyph" data-ctl="TextBlock" data-page="survey"></span><span class="ti" id="lbl_tray_title" data-ctl="TextBlock" data-page="survey">Ghost Purge</span><span class="de" id="lbl_tray_desc" data-ctl="TextBlock" data-page="survey">Detects overlapping duplicate elements (MEP + structural), keeps the connected copy, deletes the floating ghost.</span>
+        <div class="search"><span class="gl" title="Filter this catch"></span><input id="txt_tray_search" data-ctl="TextBox" data-page="survey" data-handler="OnTraySearch" title="Filter this catch"></div></div>
+      <div class="cols"><span></span><span>SURVIVOR</span><span>REMOVED</span><span>CATEGORY</span><span class="r">LENGTH</span><span>ZONE</span><span class="r">DEPS</span><span>VERDICT</span><span>WHY</span></div>
+      <div class="rows" id="tray_scroll" data-ctl="ScrollViewer" data-page="survey"><div id="grid_tray" data-ctl="StackPanel" data-page="survey"></div>
+        <div class="empty" id="lbl_tray_empty" data-ctl="StackPanel" data-page="survey"><span class="gl"></span><span>Press SCAN MODEL to fill the plan.</span></div></div>
+      <div class="cf"><span class="cnt" id="lbl_tray_count" data-ctl="TextBlock" data-page="survey"></span><span class="sp"></span>
+        <button class="link" id="btn_tray_zoom" data-ctl="Button" data-page="survey" data-handler="OnTrayZoom" title="Select and zoom the ticked rows in the active view">Zoom ticked</button>
+        <button class="link" id="btn_export_report" data-ctl="Button" data-page="survey" data-handler="OnExportReport" disabled title="Export the last run receipt to Excel (.xlsx)">Export report</button>
+        <button class="link" id="btn_tray_all" data-ctl="Button" data-page="survey" data-handler="OnTickAll">Tick all</button>
+        <button class="link" id="btn_tray_none" data-ctl="Button" data-page="survey" data-handler="OnTickNone">Hold all</button></div>
+    </div>
+  </section>
+
+  <!-- ---------------- REGION & RUN ---------------- -->
+  <aside class="pane run">
+    <div class="ph"><span class="lbl">Region &amp; run</span><span class="sp"></span><span class="stat" id="lbl_scope_echo" data-ctl="TextBlock" data-page="survey">region C3</span></div>
+    <div class="rb">
+      <div class="stale" id="lbl_stale" data-ctl="TextBlock" data-page="survey">Model edited since the scan &mdash; scan again before a run.</div>
+      <div><div class="mflabel">SCOPE &middot; WHAT ENTERS</div>
+        <select id="cb_scope" data-ctl="ComboBox" data-page="survey" data-handler="OnScopeChanged">
           <option value="all" selected>Whole model</option>
+          <option value="region">Region (drawn)</option>
           <option value="structural">Structural only</option>
           <option value="selection">Current selection</option>
           <option value="active_view">Active view</option>
-        </select>
-        <div class="mfrow"><span class="lb">intake</span>
-          <span class="vl" id="lbl_mf_intake" data-ctl="label">37 363</span></div>
-        <div class="mfrow"><span class="lb">stations armed</span>
-          <span class="vl" id="lbl_mf_armed" data-ctl="label">6 of 8</span></div>
-
-        <div class="mfrule"></div>
-        <div class="mflabel">CONSEQUENCE</div>
-        <div class="totbar">
-          <i id="bar_mf_delete" data-ctl="border" style="width:67.2%;background:var(--StatusFail)"></i>
-          <i id="bar_mf_change" data-ctl="border" style="width:18.1%;background:var(--StatusWarn)"></i>
-          <i id="bar_mf_held"   data-ctl="border" style="width:14.7%;background:var(--TextTertiary);opacity:.45"></i>
-        </div>
-        <div class="mfrow mf-del"><span class="lb">will delete</span>
-          <span class="vl" id="lbl_mf_delete" data-ctl="label">509</span></div>
-        <div class="mfrow sub"><span class="lb">dependent cascade</span>
-          <span class="vl" id="lbl_mf_cascade" data-ctl="label">+38 &#183; 1 pass over cap</span></div>
-        <div class="mfrow"><span class="lb">will change</span>
-          <span class="vl" id="lbl_mf_change" data-ctl="label" style="color:var(--StatusWarn)">137</span></div>
-        <div class="mfrow"><span class="lb">held &#183; report only</span>
-          <span class="vl" id="lbl_mf_held" data-ctl="label" style="color:var(--TextTertiary)">111</span></div>
-
-        <div class="mfrule"></div>
-        <div class="mfrow"><span class="lb">model after</span>
-          <span class="vl" id="lbl_mf_after" data-ctl="label">&#8804; 36 816</span></div>
-        <!-- shown only when an armed delete pass exceeded the cascade probe
-             cap, hidden otherwise -->
-        <div class="mfrow sub"><span class="lb" id="lbl_mf_capnote" data-ctl="label">Orphan
-          Purge exceeded the 800-element cascade cap, so the true figure is at
-          most this &#8212; never a reassuring exact number.</span><span></span></div>
-
-        <div class="mfrule"></div>
-        <div class="mftxn" id="lbl_mf_txn" data-ctl="label">
-          Commits as one undoable item:<br><b>&#8220;CD Model Cleanup&#8221;</b><br>
-          Ctrl+Z reverts all six armed stations together.
-        </div>
+        </select></div>
+      <button class="btn wide" id="btn_scan" data-ctl="Button" data-page="survey" data-handler="OnScan" data-tag="pane"><span class="gl"></span><span id="lbl_scan" data-ctl="TextBlock" data-page="survey">SCAN MODEL</span></button>
+      <div class="card regc" id="card_region" data-ctl="Border" data-page="survey"><div class="lbl">Region</div><div class="big num" id="lbl_region_cells" data-ctl="TextBlock" data-page="survey">C3</div><div class="small" id="lbl_region_stats" data-ctl="TextBlock" data-page="survey">None drawn. Drag on the plan, or click a hot zone.</div></div>
+      <div class="card bk">
+        <div class="bkr" id="bk_dups" data-ctl="Grid" data-page="survey"><span class="shape"><svg viewBox="-8 -8 16 16"><circle r="4.2" fill="var(--StatusWarn)"/></svg></span><span>Ghost Purge</span><b class="num" id="lbl_bk_dups" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_lines" data-ctl="Grid" data-page="survey"><span class="shape"><svg viewBox="-8 -8 16 16"><line x1="-6" y1="3" x2="6" y2="-3" stroke="var(--StatusWarn)" stroke-width="2.6" stroke-linecap="round"/></svg></span><span>Overkill Lines</span><b class="num" id="lbl_bk_lines" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_mep" data-ctl="Grid" data-page="survey"><span class="shape"><svg viewBox="-8 -8 16 16"><rect x="-3.6" y="-3.6" width="7.2" height="7.2" transform="rotate(45)" fill="var(--AccentBg)"/></svg></span><span>Connection Fix</span><b class="num" id="lbl_bk_mep" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_systype" data-ctl="Grid" data-page="survey"><span class="shape"><svg viewBox="-8 -8 16 16"><polygon points="0,-5 5,4 -5,4" fill="var(--AccentBg)"/></svg></span><span>System Type Repair</span><b class="num" id="lbl_bk_systype" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_nvis" data-ctl="Grid" data-page="survey"><span class="shape"><svg viewBox="-8 -8 16 16"><rect x="-4" y="-4" width="8" height="8" fill="var(--AccentBg)"/></svg></span><span>Nested Fix</span><b class="num" id="lbl_bk_nvis" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_sysempty" data-ctl="Grid" data-page="survey"><span class="shape gl"></span><span>System Integrity</span><b class="num" id="lbl_bk_sysempty" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_sysname" data-ctl="Grid" data-page="survey"><span class="shape gl"></span><span>System Names</span><b class="num" id="lbl_bk_sysname" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_orphans" data-ctl="Grid" data-page="survey"><span class="shape gl"></span><span>Orphan Purge</span><b class="num" id="lbl_bk_orphans" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="bkr" id="bk_famdupes" data-ctl="Grid" data-page="survey"><span class="shape gl"></span><span>Family Duplicates</span><b class="num" id="lbl_bk_famdupes" data-ctl="TextBlock" data-page="survey">0</b></div>
       </div>
-      <!-- one button, not two: the manifest above already states every
-           consequence before the fact, so a second confirming press was the
-           tool making the same promise twice -->
-      <div class="mffoot">
-        <button class="bigbtn pri" id="btn_run" data-ctl="button" data-page="line"
-                data-handler="Run_Click"><i class="g"></i>
-          <span id="lbl_run" data-ctl="label">RUN CLEANUP</span></button>
-      </div>
+      <div class="card delta" id="card_delta" data-ctl="Border" data-page="survey"><div class="lbl">Model</div>
+        <div class="big num"><span id="lbl_mf_intake" data-ctl="TextBlock" data-page="survey">37 363</span><i>&rarr;</i><span id="lbl_mf_after" data-ctl="TextBlock" data-page="survey">&mdash;</span></div>
+        <div class="kv"><span>Will delete</span><b class="del num" id="lbl_mf_delete" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Dependent cascade</span><b class="num" id="lbl_mf_cascade" data-ctl="TextBlock" data-page="survey">&mdash;</b></div>
+        <div class="kv"><span>Will change</span><b class="chg num" id="lbl_mf_change" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Held &middot; report only</span><b class="held num" id="lbl_mf_held" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Passes armed</span><b class="num" id="lbl_mf_armed" data-ctl="TextBlock" data-page="survey">9 of 9</b></div>
+        <div class="capnote" id="lbl_mf_capnote" data-ctl="TextBlock" data-page="survey">A delete pass is over the 800-element cascade cap, so the model figure is a bound, never an exact count.</div></div>
+      <div class="confirm" id="card_confirm_cap" data-ctl="Border" data-page="survey"><input type="checkbox" id="chk_confirm_cap" data-ctl="CheckBox" data-page="survey" data-handler="OnConfirmCap" data-new="true"><span id="lbl_confirm_cap" data-ctl="TextBlock" data-page="survey">Orphan Purge is in the run: 860 deletes, cascade not computed (over the 800 cap). Run anyway.</span></div>
+      <div class="res" id="card_result" data-ctl="Border" data-page="survey"><h3 id="lbl_res_title" data-ctl="TextBlock" data-page="survey">Cleanup complete &middot; one undo step</h3>
+        <div class="kv"><span>Deleted</span><b class="num" id="lbl_res_deleted" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Changed</span><b class="num" id="lbl_res_changed" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Cascaded</span><b class="num" id="lbl_res_cascaded" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Failed / skipped</span><b class="num" id="lbl_res_failed" data-ctl="TextBlock" data-page="survey">0</b></div>
+        <div class="kv"><span>Model</span><b class="num" id="lbl_res_model" data-ctl="TextBlock" data-page="survey">&mdash;</b></div></div>
     </div>
-  </div>
-
-  <!-- ================================ console ============================== -->
-  <!-- the run console. The chip below carries the LATEST event and only the
-       latest; this keeps all of them. The footer answers "what just
-       happened", the console answers "what happened". -->
-  <div class="conrow" id="row_log" data-ctl="border" data-page="line">
-    <div class="console" id="txt_log" data-ctl="textbox" data-page="line">[07:41:02] Model read - 37 363 elements in scope (whole model).
-[07:41:02] 01 Ghost Purge - 412 found
-[07:41:03] 02 Overkill Lines - 88 found
-[07:41:03] 03 Connection Fix - 126 found
-[07:41:04] 04 System Integrity - 17 found, report only
-[07:41:04] 05 System Names - 6 found
-[07:41:05] 06 System Type Repair - 23 found (19 repairable, 4 need a fallback)
-[07:41:05] 07 Nested Fix - 4 found
-[07:41:06] 08 Orphan Purge - 91 found, cascade probe capped at 800
-[07:41:06] Read complete. 6 of 8 armed.</div>
-  </div>
-
-  <!-- ================================ footer =============================== -->
-  <div class="footer">
-    <span class="hallmark"><i class="sq"></i>IcZ Workspace</span>
-    <span class="statuswrap">
-      <span class="statuschip" id="footer_status" data-ctl="label"
-            title="6 OF 8 ARMED &#183; NOT YET RUN">6 OF 8 ARMED &#183; NOT YET RUN</span>
-    </span>
-    <button class="chevbtn" id="btn_console_chev" data-ctl="button" data-page="line"
-            data-handler="Console_Toggle" data-new="true"
-            title="Show or hide the run console">&#xE70E;</button>
-    <span id="foot_model" data-ctl="label">Tower-A_MEP_Part_001 &#183; 37 363 elements</span>
-    <span id="foot_page" data-ctl="label">The Line</span>
-    <span class="progwrap"><i id="run_progress" data-ctl="progressbar"></i></span>
-  </div>
-
-  <!-- ============================ config sheet ============================= -->
-  <div class="scrim" id="scrim_config" data-ctl="border" data-page="config">
-    <div class="sheet">
-      <div class="sheethdr">
-        <i class="mdl2" style="font-size:15px;color:var(--AccentBg)"></i>
-        <span class="t">Configuration</span>
-        <button class="iconbtn mdl2" id="btn_cfg_close" data-ctl="button" data-page="config"
-                data-handler="OnCloseConfig" data-new="true" title="Close"></button>
-      </div>
-      <div class="sheetbody">
-        <div class="cfgcard">
-          <div class="cfgk">GEOMETRY</div>
-          <div class="frow"><span class="fl">duplicate bucket</span>
-            <input class="fin" id="txt_bucket_ft" data-ctl="textbox" data-page="config" data-tag="bucket_ft"
-                   data-handler="OnCfgField" data-new="true" value="4.0 ft"></div>
-          <div class="frow"><span class="fl">connector tolerance</span>
-            <input class="fin" id="txt_mep_tol" data-ctl="textbox" data-page="config" data-tag="mep_tolerance_mm"
-                   data-handler="OnCfgField" data-new="true" value="20.0 mm"></div>
-          <div class="frow"><span class="fl">join size mismatch with a reducer</span>
-            <button class="sw" id="chk_mep_transition" data-ctl="checkbox" data-page="config" data-tag="mep_use_transition"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-        </div>
-        <div class="cfgcard">
-          <div class="cfgk">SESSION</div>
-          <div class="frow"><span class="fl">default scope</span>
-            <select class="fin" id="cb_default_scope" data-ctl="combobox" data-page="config" data-tag="default_scope"
-                    data-handler="OnCfgField" data-new="true">
-              <option selected>Whole model</option><option>Structural only</option>
-              <option>Current selection</option><option>Active view</option></select></div>
-          <div class="frow"><span class="fl">isolate element on row click</span>
-            <button class="sw" id="chk_isolate_click" data-ctl="checkbox" data-page="config" data-tag="isolate_on_click"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">max rows per catch</span>
-            <input class="fin" id="txt_max_rows" data-ctl="textbox" data-page="config" data-tag="max_grid_rows"
-                   data-handler="OnCfgField" data-new="true" value="1500"></div>
-          <div class="frow"><span class="fl">schema preview sample</span>
-            <input class="fin" id="txt_schema_preview" data-ctl="textbox" data-page="config" data-tag="schema_preview_limit"
-                   data-handler="OnCfgField" data-new="true" value="3"></div>
-        </div>
-        <div class="cfgcard">
-          <div class="cfgk">STATION 07 &#183; NESTED FIX</div>
-          <div class="frow"><span class="fl">enabled</span>
-            <button class="sw on" id="chk_nr_enabled" data-ctl="checkbox" data-page="config" data-tag="nested_resolve.enabled"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">overlap ratio</span>
-            <input class="fin" id="txt_nr_overlap" data-ctl="textbox" data-page="config" data-tag="nested_resolve.overlap_ratio"
-                   data-handler="OnCfgField" data-new="true" value="0.50"></div>
-          <div class="frow"><span class="fl">nested bucket</span>
-            <input class="fin" id="txt_nr_bucket" data-ctl="textbox" data-page="config" data-tag="nested_resolve.nested_bucket_ft"
-                   data-handler="OnCfgField" data-new="true" value="2.0 ft"></div>
-          <div class="frow"><span class="fl">keep preference</span>
-            <select class="fin" id="cb_nr_hidepref" data-ctl="combobox" data-page="config" data-tag="nested_resolve.hide_pref"
-                    data-handler="OnCfgField" data-new="true">
-              <option selected>higher id</option><option>lower id</option></select></div>
-          <div class="frow"><span class="fl">true-solid confirm</span>
-            <button class="sw" id="chk_nr_geom" data-ctl="checkbox" data-page="config" data-tag="nested_resolve.geom_confirm"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">cross-type pairs</span>
-            <button class="sw" id="chk_nr_cross" data-ctl="checkbox" data-page="config" data-tag="nested_resolve.cross_type"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">cross-type ratio</span>
-            <input class="fin" id="txt_nr_cross_ratio" data-ctl="textbox" data-page="config" data-tag="nested_resolve.cross_type_ratio"
-                   data-handler="OnCfgField" data-new="true" value="0.60"></div>
-        </div>
-        <div class="cfgcard wide">
-          <div class="cfgk">STATION 07 &#183; NESTED &#8212; ADVANCED</div>
-          <div class="cfglab">Cross-type pairs (Family A | Family B, one pair per line)</div>
-          <textarea class="fml" id="txt_nr_cross_pairs" data-ctl="textbox" data-page="config"
-                    data-tag="nested_resolve.cross_type_pairs" data-handler="OnCfgField"
-                    data-new="true" rows="3">Sprinkler Head - Pendent | Sprinkler Head - Upright</textarea>
-          <div class="cfglab">Cross-type keep list (winner family name, one per line)</div>
-          <textarea class="fml" id="txt_nr_cross_keep" data-ctl="textbox" data-page="config"
-                    data-tag="nested_resolve.cross_type_keep" data-handler="OnCfgField"
-                    data-new="true" rows="3">Sprinkler Head - Pendent</textarea>
-          <div class="cfglab">Per-family visibility rules</div>
-          <div class="nrrules" id="panel_nr_rules" data-ctl="border" data-page="config">
-            <div class="nrrule"><span>Sprinkler Head - Pendent</span><span>hide higher id</span></div>
-            <div class="nrrule"><span>Air Terminal - Supply Diffuser</span><span>hide lower id</span></div>
-          </div>
-          <div class="nrbtns">
-            <button class="sbtn" id="btn_nr_discover" data-ctl="button" data-page="config"
-                    data-handler="OnNrDiscover" data-new="true">Discover from model</button>
-            <button class="sbtn" id="btn_nr_add_rule" data-ctl="button" data-page="config"
-                    data-handler="OnNrAddRule" data-new="true">Add rule</button>
-          </div>
-        </div>
-        <div class="cfgcard">
-          <div class="cfgk">STATIONS 04&#8211;06 &#183; SYSTEMS</div>
-          <div class="frow"><span class="fl">enabled</span>
-            <button class="sw on" id="chk_ms_enabled" data-ctl="checkbox" data-page="config" data-tag="mep_systems.enabled"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">fallback piping type</span>
-            <select class="fin" id="cb_ms_pipe_type" data-ctl="combobox" data-page="config" data-tag="mep_systems.fallback_pipe_type"
-                    data-handler="OnCfgField" data-new="true"><option selected>&#8212; none &#8212;</option></select></div>
-          <div class="frow"><span class="fl">fallback duct type</span>
-            <select class="fin" id="cb_ms_duct_type" data-ctl="combobox" data-page="config" data-tag="mep_systems.fallback_duct_type"
-                    data-handler="OnCfgField" data-new="true"><option selected>&#8212; none &#8212;</option></select></div>
-          <div class="frow"><span class="fl"></span>
-            <button class="sbtn" id="btn_ms_load_model" data-ctl="button" data-page="config"
-                    data-handler="OnLoadSystemTypes" data-new="true">Load from model</button></div>
-          <div class="frow"><span class="fl" style="color:var(--TextTertiary);font-size:10.5px">
-            No fallback set: an Undefined run with no healthy neighbour is
-            reported UNRESOLVED, never guessed at.</span></div>
-        </div>
-        <div class="cfgcard wide">
-          <div class="cfgk">STATION 08 &#183; ORPHAN PURGE EXTRAS</div>
-          <div class="frow"><span class="fl">unused scope boxes
-            <span style="color:var(--TextTertiary)">&#183; proven from a complete usage graph</span></span>
-            <button class="sw on" id="chk_pe_scope_boxes" data-ctl="checkbox" data-page="config" data-tag="purge_extras.scope_boxes"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">unused view filters
-            <span style="color:var(--TextTertiary)">&#183; proven from every view and template</span></span>
-            <button class="sw on" id="chk_pe_view_filters" data-ctl="checkbox" data-page="config" data-tag="purge_extras.view_filters"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">unplaced rooms &amp; spaces
-            <span style="color:var(--TextTertiary)">&#183; judgement call &#8212; deleting one destroys its parameter data</span></span>
-            <button class="sw" id="chk_pe_rooms" data-ctl="checkbox" data-page="config" data-tag="purge_extras.rooms_spaces"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-          <div class="frow"><span class="fl">linked CAD imports
-            <span style="color:var(--TextTertiary)">&#183; judgement call &#8212; a direct DWG import is often deliberate</span></span>
-            <button class="sw" id="chk_pe_cad" data-ctl="checkbox" data-page="config" data-tag="purge_extras.cad_imports"
-                    data-handler="OnCfgToggle" data-new="true"><i></i></button></div>
-        </div>
-        <div class="cfgcard wide">
-          <div class="cfgk">NEVER ENTERS THE LINE &#183; EXCLUDED CATEGORIES</div>
-          <div class="taglist" id="list_excl_cats" data-ctl="listview" data-page="config">
-            <span class="tagpill">Lines</span><span class="tagpill">Sketch Lines</span>
-            <span class="tagpill">Constraint Lines</span><span class="tagpill">Cameras</span>
-            <span class="tagpill">Dimensions</span><span class="tagpill">Text Notes</span>
-            <span class="tagpill">Tags</span><span class="tagpill">Room Tags</span>
-            <span class="tagpill">Grids</span><span class="tagpill">Levels</span>
-            <span class="tagpill">Reference Planes</span><span class="tagpill">Views</span>
-            <span class="tagpill">Viewers</span><span class="tagpill">Section Box</span>
-            <span class="tagpill">Scope Boxes</span>
-          </div>
-          <div class="frow" style="padding-top:9px">
-            <button class="sbtn" id="btn_excl_add" data-ctl="button" data-page="config"
-                    data-handler="OnExclAdd" data-new="true">Add category</button>
-            <button class="sbtn" id="btn_excl_remove" data-ctl="button" data-page="config"
-                    data-handler="OnExclRemove" data-new="true">Remove selected</button>
-          </div>
-        </div>
-      </div>
-      <div class="sheetfoot">
-        <button class="sbtn" id="btn_cfg_reset" data-ctl="button" data-page="config"
-                data-handler="OnCfgReset" data-new="true">Restore defaults</button>
-        <button class="sbtn pri" id="btn_cfg_save" data-ctl="button" data-page="config"
-                data-handler="OnCfgSave" data-new="true">Save</button>
-      </div>
+    <div class="rf">
+      <div class="txn" id="lbl_mf_txn" data-ctl="TextBlock" data-page="survey">One transaction group &ldquo;CD Model Cleanup&rdquo; &middot; Ctrl+Z undoes the whole run.</div>
+      <div class="pair pre" id="row_run_pre" data-ctl="Grid" data-page="survey"><button class="btn" id="btn_preview" data-ctl="Button" data-page="survey" data-handler="OnPreview" data-new="true" title="Run every armed pass inside a transaction group, measure it, and roll it back">PREVIEW</button><button class="btn pri" id="btn_run" data-ctl="Button" data-page="survey" data-handler="Run_Click" title="Commit every armed pass as one undoable transaction group"><span class="gl"></span><span id="lbl_run" data-ctl="TextBlock" data-page="survey">RUN CLEANUP</span></button></div>
+      <div class="pair post" id="row_run_post" data-ctl="Grid" data-page="survey"><button class="btn" id="btn_scan_again" data-ctl="Button" data-page="survey" data-handler="OnScan" data-tag="again">SCAN AGAIN</button><button class="btn" id="btn_undo_last" data-ctl="Button" data-page="survey" data-handler="OnUndoLast" title="Undo the last committed cleanup">UNDO LAST CLEANUP</button></div>
     </div>
+  </aside>
+
+  <!-- ---------------- CONFIG DRAWER ---------------- -->
+  <aside class="cfg" id="cfg_drawer" data-ctl="Border" data-page="config">
+    <div class="cfg-h"><span class="gl"></span><span>Configuration</span><span class="sp"></span><button class="icon" id="btn_cfg_close" data-ctl="Button" data-page="config" data-handler="OnCloseConfig" title="Close"><span class="gl"></span></button></div>
+    <div class="cfg-b">
+      <div class="cfgcard"><div class="cfgk">03 &middot; CONNECTION FIX</div>
+        <div class="sieve"><svg id="sieve_canvas" data-ctl="Canvas" data-page="config" data-handler="OnSieveDown" data-new="true" viewBox="0 0 320 84" preserveAspectRatio="none"></svg>
+          <div class="sv-read"><span><b class="num" id="lbl_sieve_in" data-ctl="TextBlock" data-page="config">118</b> sealed at &le; <span class="mono" id="lbl_sieve_tol" data-ctl="TextBlock" data-page="config">20.0</span> mm</span><span id="lbl_sieve_out" data-ctl="TextBlock" data-page="config">21 beyond tolerance, untouched</span></div></div>
+        <div class="frow"><span class="fl">Connector tolerance (mm)</span><input class="fin" id="txt_mep_tol" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="mep_tolerance_mm" value="20"></div>
+        <div class="frow"><span class="fl">Join size mismatch with a reducer</span><button class="sw" id="chk_mep_transition" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="mep_use_transition"></button></div></div>
+
+      <div class="cfgcard"><div class="cfgk">01 &middot; GHOST PURGE</div>
+        <div class="frow"><span class="fl">Duplicate bucket (ft)</span><input class="fin" id="txt_bucket_ft" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="bucket_ft" value="4"></div></div>
+
+      <div class="cfgcard"><div class="cfgk">SESSION</div>
+        <div class="frow"><span class="fl">Default scope</span><select class="fin" id="cb_default_scope" data-ctl="ComboBox" data-page="config" data-handler="OnCfgField" data-tag="default_scope"><option value="all" selected>Whole model</option><option value="structural">Structural only</option><option value="selection">Current selection</option><option value="active_view">Active view</option></select></div>
+        <div class="frow"><span class="fl">Isolate element on row click</span><button class="sw" id="chk_isolate_click" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="isolate_on_click"></button></div>
+        <div class="frow"><span class="fl">Max rows per catch</span><input class="fin" id="txt_max_rows" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="max_grid_rows" value="1500"></div>
+        <div class="frow"><span class="fl">Schema preview sample</span><input class="fin" id="txt_schema_preview" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="schema_preview_limit" value="3"></div></div>
+
+      <div class="cfgcard"><div class="cfgk">07 &middot; NESTED FIX</div>
+        <div class="frow"><span class="fl">Enabled</span><button class="sw on" id="chk_nr_enabled" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="nested_resolve.enabled"></button></div>
+        <div class="frow"><span class="fl">Overlap ratio</span><input class="fin" id="txt_nr_overlap" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="nested_resolve.overlap_ratio" value="0.5"></div>
+        <div class="frow"><span class="fl">Nested bucket (ft)</span><input class="fin" id="txt_nr_bucket" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="nested_resolve.nested_bucket_ft" value="2"></div>
+        <div class="frow"><span class="fl">Keep preference</span><select class="fin" id="cb_nr_hidepref" data-ctl="ComboBox" data-page="config" data-handler="OnCfgField" data-tag="nested_resolve.hide_pref"><option value="higher_id" selected>Higher ID</option><option value="lower_id">Lower ID</option></select></div>
+        <div class="frow"><span class="fl">True-solid confirm</span><button class="sw on" id="chk_nr_geom" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="nested_resolve.geom_confirm"></button></div>
+        <div class="frow"><span class="fl">Cross-type pairs</span><button class="sw" id="chk_nr_cross" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="nested_resolve.cross_type"></button></div>
+        <div class="frow"><span class="fl">Cross-type ratio</span><input class="fin" id="txt_nr_cross_ratio" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="nested_resolve.cross_type_ratio" value="0.6"></div>
+        <div class="fl small">Cross-type pairs (Family A | Family B, one pair per line)</div>
+        <textarea class="fin" id="txt_nr_cross_pairs" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="nested_resolve.cross_type_pairs"></textarea>
+        <div class="fl small">Cross-type keep list (winner family name, one per line)</div>
+        <textarea class="fin" id="txt_nr_cross_keep" data-ctl="TextBox" data-page="config" data-handler="OnCfgField" data-tag="nested_resolve.cross_type_keep"></textarea>
+        <div class="fl small">Per-family visibility rules</div>
+        <div class="rules" id="panel_nr_rules" data-ctl="StackPanel" data-page="config"><div class="rr"><span>*</span><span></span><span></span><span>&times;</span></div></div>
+        <div class="frow"><button class="btn" id="btn_nr_discover" data-ctl="Button" data-page="config" data-handler="OnNrDiscover">Discover from model</button><button class="btn" id="btn_nr_add_rule" data-ctl="Button" data-page="config" data-handler="OnNrAddRule">Add rule</button></div></div>
+
+      <div class="cfgcard"><div class="cfgk">04&ndash;06 &middot; SYSTEMS</div>
+        <div class="frow"><span class="fl">Enabled</span><button class="sw on" id="chk_ms_enabled" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="mep_systems.enabled"></button></div>
+        <div class="frow"><span class="fl">Fallback piping type</span><select class="fin" id="cb_ms_pipe_type" data-ctl="ComboBox" data-page="config" data-handler="OnCfgField" data-tag="mep_systems.fallback_pipe_type"><option value="">Piping type</option></select></div>
+        <div class="frow"><span class="fl">Fallback duct type</span><select class="fin" id="cb_ms_duct_type" data-ctl="ComboBox" data-page="config" data-handler="OnCfgField" data-tag="mep_systems.fallback_duct_type"><option value="">Duct type</option></select></div>
+        <div class="frow"><span></span><button class="btn" id="btn_ms_load_model" data-ctl="Button" data-page="config" data-handler="OnLoadSystemTypes">Load from model</button></div>
+        <div class="note">No fallback set: an Undefined run with no healthy neighbour is reported UNRESOLVED, never guessed at.</div>
+        <div class="frow"><span class="fl">Background guard</span><select class="fin" id="cb_ms_guard" data-ctl="ComboBox" data-page="config" data-handler="OnCfgField" data-tag="mep_systems.guard"><option value="off">Off</option><option value="notify" selected>Notify</option><option value="repair">Repair</option></select></div>
+        <div class="note">Watches every session for pipes and ducts created with no system type. Notify names them the moment they arrive; Repair also gives them the fallback type above, as one undo step.</div></div>
+
+      <div class="cfgcard"><div class="cfgk">08 &middot; ORPHAN PURGE EXTRAS</div>
+        <div class="frow"><span class="fl">Unused scope boxes</span><button class="sw on" id="chk_pe_scope_boxes" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="purge_extras.scope_boxes"></button></div>
+        <div class="frow"><span class="fl">Unused view filters</span><button class="sw on" id="chk_pe_view_filters" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="purge_extras.view_filters"></button></div>
+        <div class="frow"><span class="fl">Unplaced rooms &amp; spaces</span><button class="sw" id="chk_pe_rooms" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="purge_extras.rooms_spaces"></button></div>
+        <div class="frow"><span class="fl">Linked CAD imports</span><button class="sw" id="chk_pe_cad" data-ctl="ToggleButton" data-page="config" data-handler="OnCfgToggle" data-tag="purge_extras.cad_imports"></button></div></div>
+
+      <div class="cfgcard"><div class="cfgk">NEVER SCANNED &middot; EXCLUDED CATEGORIES</div>
+        <div class="tagwrap" id="list_excl_cats" data-ctl="WrapPanel" data-page="config"><span>Levels</span><span>Grids</span><span>Views</span><span>Sheets</span><span>RvtLinks</span><span>ProjectInformation</span></div>
+        <div class="frow"><button class="btn" id="btn_excl_add" data-ctl="Button" data-page="config" data-handler="OnExclAdd">Add category</button><button class="btn" id="btn_excl_remove" data-ctl="Button" data-page="config" data-handler="OnExclRemove">Remove selected</button></div></div>
+    </div>
+    <div class="cfg-f"><button class="btn" id="btn_cfg_reset" data-ctl="Button" data-page="config" data-handler="OnCfgReset">Restore defaults</button><button class="btn pri" id="btn_cfg_save" data-ctl="Button" data-page="config" data-handler="OnCfgSave">Save</button></div>
+  </aside>
+</div>
+
+<!-- ============================== CONSOLE ============================ -->
+<div class="console" id="txt_log" data-ctl="TextBox" data-page="shell"></div>
+
+<!-- ============================== FOOTER ============================= -->
+<div class="foot">
+  <span class="hall" title="IcZ Workspace Core"><span class="gl"></span><b>IcZ</b><span>Workspace</span></span>
+  <span class="stat" id="chip_status" data-ctl="TextBlock" data-page="shell">NOT SCANNED</span>
+  <span class="evt" id="footer_status" data-ctl="TextBlock" data-page="shell">Idle</span>
+  <button class="chev gl" id="btn_console_chev" data-ctl="Button" data-page="shell" data-handler="Console_Toggle" title="Show or hide the run console"></button>
+  <span id="foot_model" data-ctl="TextBlock" data-page="shell">Model loaded &middot; single-user</span>
+  <span id="foot_page" data-ctl="TextBlock" data-page="shell">Survey</span>
+  <div class="prog"><i id="run_progress" data-ctl="ProgressBar" data-page="shell"></i></div>
+</div>
   </div>
 </div>
 
 <script>
-/* MOCKUP-ONLY interaction. Reads attributes authored above; mints NOTHING the
-   extractable contract owns (no id / data-ctl / data-page / data-handler /
-   data-tag is created or altered here). */
-(function () {
-  var win = document.getElementById("cd_window");
-  var root = document.documentElement;
+/* ---------- illustrative dataset (seeded; only 37,363 elements and 17/17 empty systems are measured) ---------- */
+var D=(function(){
+var seed=81081;function R(){seed=(seed*1664525+1013904223)>>>0;return seed/4294967296;}
+function G(){var u=1-R(),v=R();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function pick(a){return a[Math.floor(R()*a.length)];}
+function wpick(a,w){var s=0,i;for(i=0;i<w.length;i++)s+=w[i];var r=R()*s;for(i=0;i<w.length;i++){r-=w[i];if(r<=0)return a[i];}return a[a.length-1];}
+var W=1000,H=456,N=37363;
+var POLY=[[70,40],[930,40],[930,250],[700,250],[700,420],[70,420]];
+function inside(x,y){var c=false;for(var i=0,j=POLY.length-1;i<POLY.length;j=i++){var xi=POLY[i][0],yi=POLY[i][1],xj=POLY[j][0],yj=POLY[j][1];if(((yi>y)!==(yj>y))&&(x<(xj-xi)*(y-yi)/(yj-yi)+xi))c=!c;}return c;}
+var P={dups:{ord:'01',name:'Ghost Purge',kind:'delete',g:'',desc:'Detects overlapping duplicate elements (MEP + structural), keeps the connected copy, deletes the floating ghost.'},
+ lines:{ord:'02',name:'Overkill Lines',kind:'delete',g:'',desc:'Merges collinear detail / model / separation lines that overlap or touch onto one survivor and deletes the rest.'},
+ mep:{ord:'03',name:'Connection Fix',kind:'change',g:'',desc:'Seals open MEP connector pairs within the tolerance. Runs after ghost purge on the cleaned model.'},
+ sysempty:{ord:'04',name:'System Integrity',kind:'delete',g:'',desc:'MEP systems with no members; ghost-empty ones whose elements still carry the name are reported, never removed.'},
+ sysname:{ord:'05',name:'System Names',kind:'change',g:'',desc:'MEP systems sharing a name; each duplicate gets a free name.'},
+ systype:{ord:'06',name:'System Type Repair',kind:'change',g:'',desc:'Undefined runs repaired as one unit from a healthy neighbour, else from the Config fallback.'},
+ nvis:{ord:'07',name:'Nested Fix',kind:'change',g:'',desc:'Hosts with intersecting same-type nested sub-components; clears the redundant one per family rule.'},
+ orphans:{ord:'08',name:'Orphan Purge',kind:'delete',g:'',desc:'Empty elevation markers, orphaned tags and opt-in purge extras; schemas erased only when ticked.'},
+ famdupes:{ord:'09',name:'Family Duplicates',kind:'delete',g:'',desc:'Loaded families sharing category and normalised name; instances re-pointed to the survivor, losers deleted.'}};
+var ORDER=['dups','lines','mep','sysempty','sysname','systype','nvis','orphans','famdupes'];
+var items=[],nid=3104020;
+function add(o){o.id=nid+Math.floor(R()*9)+1;nid=o.id;items.push(o);return o;}
+function spatial(p){var x,y,t=0,ok=false;while(!ok&&t++<400){
+ if(p==='dups'){var c=wpick([[240,130],[620,200],[820,140],[400,350],[200,320]],[5,6,3,4,3]);x=c[0]+G()*50;y=c[1]+G()*38;}
+ else if(p==='lines'){var s=pick([[70,150,930,150],[70,250,700,250],[70,340,700,340],[300,40,300,420],[500,40,500,420],[200,40,200,420]]);var u=R();x=s[0]+(s[2]-s[0])*u;y=s[1]+(s[3]-s[1])*u;}
+ else if(p==='mep'){var c2=wpick([[330,215],[560,190],[680,330],[430,370]],[3,5,4,2]);x=c2[0]+G()*70;y=c2[1]+G()*50;}
+ else if(p==='systype'){var c3=wpick([[560,190],[680,330],[330,215]],[4,4,2]);x=c3[0]+G()*50;y=c3[1]+G()*40;}
+ else {var e=pick([[70,40,930,40],[930,40,930,250],[70,420,700,420]]);var u2=R();x=e[0]+(e[2]-e[0])*u2;y=e[1]+(e[3]-e[1])*u2;}
+ ok=inside(x,y);} return [Math.round(x),Math.round(y)];}
+var CW=125,CH=H/6,L='ABCDEFGH';
+function zone(x,y){var c=Math.max(0,Math.min(7,Math.floor(x/CW))),r=Math.max(0,Math.min(5,Math.floor(y/CH)));return L.charAt(c)+(r+1);}
+var DC=[['Pipe Fittings','Elbow - Generic'],['Pipe Fittings','Tee - Generic'],['Duct Fittings','Rectangular Elbow'],['Pipe Accessories','Gate Valve'],['Structural Columns','Concrete Column'],['Mechanical Equipment','FCU Cassette']];
+for(var i=0;i<412;i++){var c=pick(DC),xy=spatial('dups'),dep=i<31?(i<24?1:2):0;add({p:'dups',kind:'delete',deps:dep,x:xy[0],y:xy[1],cat:c[0],sv:String(3200000+i*7),rm:String(3300000+i*7),len:'—',why:dep?'duplicate of the survivor; carries '+dep+' dependent'+(dep>1?'s':''):'duplicate of the survivor'});}
+for(i=0;i<71;i++){var xy2=spatial('lines');add({p:'lines',kind:'delete',deps:0,x:xy2[0],y:xy2[1],cat:pick(['Lines','Detail Lines','Room Separation']),sv:String(4100000+i*3),rm:String(4200000+i*3),len:(200+Math.floor(R()*4000))+' mm',why:'collinear / overlapping - merges onto the survivor'});}
+var BINS=[[0,5,41],[5,10,33],[10,15,24],[15,20,20],[20,25,9],[25,30,5],[30,35,3],[35,40,2],[40,45,1],[45,50,1]];
+BINS.forEach(function(b){for(var k=0;k<b[2];k++){var g=Math.round((b[0]+0.1+R()*4.8)*10)/10,xy3=spatial('mep');add({p:'mep',kind:'change',deps:0,gap:g,x:xy3[0],y:xy3[1],cat:pick(['Pipes','Ducts','Pipe Fittings','Duct Fittings']),sv:String(5100000+k),rm:'—',len:'—',why:'open connector pair, gap '+g.toFixed(1)+' mm'});}});
+for(i=0;i<17;i++)add({p:'sysempty',kind:'held',deps:0,x:null,y:null,cat:'Piping Systems',sv:String(6100000+i),rm:'—',len:'—',why:'ghost-empty: elements still carry the System Name - report only'});
+for(i=0;i<6;i++)add({p:'sysname',kind:'change',deps:0,x:null,y:null,cat:'Duct Systems',sv:String(6200000+i),rm:'—',len:'—',why:'duplicate name - a free name is assigned'});
+for(i=0;i<23;i++){var xy4=spatial('systype'),h=i>=19;add({p:'systype',kind:h?'held':'change',deps:0,x:xy4[0],y:xy4[1],cat:pick(['Pipes','Ducts']),sv:String(6300000+i),rm:'—',len:'—',why:h?'no healthy neighbour and no Config fallback - report only':'repaired from a connected healthy neighbour'});}
+for(i=0;i<4;i++){var xy5=spatial('nvis');add({p:'nvis',kind:'held',deps:0,x:xy5[0],y:xy5[1],cat:'Doors',sv:String(6400000+i),rm:'—',len:'—',why:'family rule is report-only (no visibility parameter set)'});}
+for(i=0;i<860;i++)add({p:'orphans',kind:'delete',deps:0,cap:true,x:null,y:null,cat:i<640?'Tags':'Elevation Marks',sv:String(7100000+i),rm:'—',len:'—',why:i<640?'tag whose host is gone':'marker with no elevation view'});
+for(i=0;i<65;i++)add({p:'orphans',kind:'held',deps:0,x:null,y:null,cat:'Schema',sv:'—',rm:'—',len:'—',why:'extensible-storage schema - erased only when ticked'});
+for(i=0;i<9;i++)add({p:'famdupes',kind:'delete',deps:0,x:null,y:null,cat:'Pipe Fittings',sv:'Elbow - Generic',rm:'Elbow - Generic 2',len:(3+i)+' inst.',why:'same category + normalised name; instances re-pointed'});
+for(i=0;i<5;i++)add({p:'famdupes',kind:'held',deps:0,x:null,y:null,cat:'Doors',sv:'Single-Flush',rm:'Single-Flush 1',len:'2 inst.',why:'loser has types the survivor lacks - held'});
+items.forEach(function(it){it.z=it.x!=null?zone(it.x,it.y):'—';it.ex=false;});
+var D={items:items,P:P,ORDER:ORDER,W:W,H:H,N:N,POLY:POLY,tol:20,bins:BINS,CW:CW,CH:CH,L:L};
+D.recalc=function(){items.forEach(function(it){if(it.p==='mep'){it.kind=(it.gap<=D.tol+1e-9)?'change':'out';}});};
+D.fmt=function(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,' ');};
+D.recalc();return D;})();
 
-  document.getElementById("btn_theme").addEventListener("click", function () {
-    root.setAttribute("data-theme",
-      root.getAttribute("data-theme") === "dark" ? "light" : "dark");
-  });
+function $(id){return document.getElementById(id);}
+var PLOT=['dups','lines','mep','systype','nvis'],OFF=['sysempty','sysname','orphans','famdupes'];
+var S={state:'scanned',filt:'all',scope:'all',reg:null,zones:true,armed:{},sel:'dups',res:null,confirm:false,q:''};
+D.ORDER.forEach(function(k){S.armed[k]=true;});
+function live(){return D.items.filter(function(i){return i.kind!=='out';});}
+function inReg(it){var r=S.reg;return !!r&&it.x!=null&&it.x>=r.x0&&it.x<r.x1&&it.y>=r.y0&&it.y<r.y1;}
+function eligible(it){if(it.kind==='out'||it.kind==='held'||it.ex)return false;if(!S.armed[it.p])return false;if(S.scope==='region')return inReg(it);return true;}
+function plan(){var r={del:0,chg:0,held:0,deps:0,cap:false,by:{}};D.items.forEach(function(it){if(it.kind==='out'||!S.armed[it.p])return;if(S.scope==='region'&&!inReg(it))return;if(it.kind==='held'||it.ex){r.held++;return;}if(it.kind==='delete'){r.del++;r.deps+=it.deps;if(it.cap)r.cap=true;}else r.chg++;r.by[it.p]=(r.by[it.p]||0)+1;});return r;}
+function zonesTop(){var z={};D.items.forEach(function(it){if(it.x==null||it.kind==='out')return;z[it.z]=(z[it.z]||0)+1;});return Object.keys(z).map(function(k){return {z:k,n:z[k]};}).sort(function(a,b){return b.n-a.n;}).slice(0,5);}
+function cells(r){var c0=Math.floor(r.x0/D.CW),c1=Math.min(7,Math.floor((r.x1-1)/D.CW)),r0=Math.floor(r.y0/D.CH),r1=Math.min(5,Math.floor((r.y1-1)/D.CH));var a=D.L.charAt(c0)+(r0+1),b=D.L.charAt(c1)+(r1+1);return a===b?a:a+'–'+b;}
+function col(it){if(it.kind==='held'||it.kind==='out')return 'var(--TextTertiary)';if(it.kind==='delete')return it.deps>0?'var(--StatusCascade)':'var(--StatusWarn)';return 'var(--AccentBg)';}
 
-  document.getElementById("btn_config").addEventListener("click", function () {
-    win.classList.add("cfg-open");
-    document.getElementById("foot_page").textContent = "Configuration";
-  });
-  document.getElementById("btn_cfg_close").addEventListener("click", function () {
-    win.classList.remove("cfg-open");
-    document.getElementById("foot_page").textContent = "The Line";
-  });
+function renderLayers(){var idle=S.state==='idle',t=live(),sp=t.filter(function(i){return i.x!=null;}).length;
+ $('lbl_located_count').textContent=idle?'—':D.fmt(sp);$('lbl_located_total').textContent='of '+(idle?'—':D.fmt(t.length));
+ $('bar_located').style.width=idle?'0':(sp/t.length*100)+'%';
+ $('lbl_located_note').textContent=idle?'Scan to count.':(sp/t.length*100).toFixed(1)+' % of findings have a model position. The rest live off-plan, on the shelf under the map.';
+ D.ORDER.forEach(function(k){var n=t.filter(function(i){return i.p===k;}).length;$('lbl_'+k+'_found').textContent=idle?'—':D.fmt(n);
+  var row=$('stn_'+k);row.classList.toggle('off',!S.armed[k]);row.classList.toggle('sel',S.sel===k);$('chk_'+k).checked=S.armed[k];});}
 
-  /* station select -> refill the catch tray header */
-  var META = {"dups":{"o":"01","g":"","t":"Ghost Purge","d":"Overlapping duplicate elements (MEP + structural). Keeps the connected copy, deletes the floating ghost.","f":"412","c":"412","h":"0"},"lines":{"o":"02","g":"","t":"Overkill Lines","d":"Collinear detail / model / separation lines that overlap or touch are merged onto one survivor; the rest are deleted.","f":"88","c":"71","h":"17"},"mep":{"o":"03","g":"","t":"Connection Fix","d":"Seals open MEP connector pairs within 20 mm. Runs after ghost purge, on the cleaned model.","f":"126","c":"118","h":"8"},"sysempty":{"o":"04","g":"","t":"System Integrity","d":"MEP systems with no members. Systems whose elements still carry the System Name are REPORTED, never removed - deleting them orphans the run.","f":"17","c":"0","h":"17"},"sysname":{"o":"05","g":"","t":"System Names","d":"MEP systems sharing a name (the classic merge collision). Each duplicate is given a free name so type propagation stops landing on the wrong one.","f":"6","c":"6","h":"0"},"systype":{"o":"06","g":"","t":"System Type Repair","d":"Pipes and ducts whose system type is Undefined, repaired from a connected healthy neighbour. Runs with no neighbour use the Config fallbacks.","f":"23","c":"19","h":"4"},"nvis":{"o":"07","g":"","t":"Nested Fix","d":"Hosts with intersecting same-type nested sub-components. Clears the redundant one's visibility per family rule.","f":"4","c":"4","h":"0"},"orphans":{"o":"08","g":"","t":"Orphan Purge","d":"Empty elevation markers, orphaned annotation tags, and orphan extensible-storage schemas left behind by removed add-ins.","f":"91","c":"26","h":"65"}};
-  var stations = document.querySelectorAll(".stn");
-  Array.prototype.forEach.call(stations, function (el) {
-    el.addEventListener("click", function (ev) {
-      if (ev.target.classList.contains("arm")) { return; }
-      Array.prototype.forEach.call(stations, function (o) { o.classList.remove("sel"); });
-      el.classList.add("sel");
-      var m = META[el.getAttribute("data-tag")];
-      document.getElementById("lbl_tray_ord").textContent = m.o;
-      document.getElementById("lbl_tray_glyph").textContent = m.g;
-      document.getElementById("lbl_tray_title").textContent = m.t;
-      document.getElementById("lbl_tray_desc").textContent = m.d;
-      document.getElementById("lbl_chip_all_n").textContent = m.f;
-      document.getElementById("lbl_chip_change_n").textContent = m.c;
-      document.getElementById("lbl_chip_held_n").textContent = m.h;
-    });
-  });
+function mapSVG(){var W=D.W,H=D.H,s='',i;
+ for(i=0;i<=8;i++)s+='<line x1="'+i*D.CW+'" y1="0" x2="'+i*D.CW+'" y2="'+H+'" stroke="var(--PaperMatte)" stroke-opacity=".10"/>';
+ for(i=0;i<=6;i++)s+='<line x1="0" y1="'+i*D.CH+'" x2="'+W+'" y2="'+i*D.CH+'" stroke="var(--PaperMatte)" stroke-opacity=".10"/>';
+ for(i=0;i<8;i++)s+='<text x="'+(i*D.CW+D.CW/2)+'" y="13" fill="var(--PaperMatte)" fill-opacity=".55" font-size="11" text-anchor="middle" font-family="Consolas">'+D.L.charAt(i)+'</text>';
+ for(i=0;i<6;i++)s+='<text x="8" y="'+(i*D.CH+D.CH/2+4)+'" fill="var(--PaperMatte)" fill-opacity=".55" font-size="11" font-family="Consolas">'+(i+1)+'</text>';
+ /* model grids drawn as the backdrop (illustrative positions) */
+ [[70,'1'],[200,'2'],[300,'3'],[500,'4'],[700,'5'],[930,'6']].forEach(function(g){s+='<line x1="'+g[0]+'" y1="30" x2="'+g[0]+'" y2="430" stroke="var(--PaperMatte)" stroke-opacity=".28" stroke-dasharray="10 4 2 4"/>';});
+ [[40,'A'],[150,'B'],[250,'C'],[340,'D'],[420,'E']].forEach(function(g){s+='<line x1="60" y1="'+g[0]+'" x2="940" y2="'+g[0]+'" stroke="var(--PaperMatte)" stroke-opacity=".28" stroke-dasharray="10 4 2 4"/>';});
+ if(S.state==='idle')return s;
+ if(S.zones)zonesTop().forEach(function(z,ix){var c=D.L.indexOf(z.z.charAt(0)),r=+z.z.slice(1)-1;s+='<g class="zone" data-z="'+z.z+'" style="cursor:pointer"><rect x="'+(c*D.CW+2)+'" y="'+(r*D.CH+2)+'" width="'+(D.CW-4)+'" height="'+(D.CH-4)+'" rx="6" fill="var(--AccentBg)" fill-opacity="'+(0.14-ix*0.02)+'" stroke="var(--AccentBg)" stroke-dasharray="5 4" stroke-opacity=".8"/></g>';});
+ var dim=!!S.reg&&S.scope==='region';
+ D.items.forEach(function(it,ix){if(it.x==null||!S.armed[it.p])return;var done=S.state==='committed'&&eligible(it);if(done&&it.kind==='delete')return;
+  if(S.filt==='change'&&(it.kind==='held'||it.kind==='out'))return;if(S.filt==='held'&&it.kind!=='held')return;
+  var c=done?'var(--StatusPass)':col(it),hol=it.kind==='held'||it.kind==='out',op=(dim&&!inReg(it))?.22:(it.kind==='out'?.5:1),f=hol?'none':c,a='data-ix="'+ix+'" opacity="'+op+'"',st='stroke="'+c+'" stroke-width="1.5"',x=it.x,y=it.y;
+  if(it.p==='dups')s+='<circle '+a+' cx="'+x+'" cy="'+y+'" r="'+(it.deps?4.6:3.6)+'" fill="'+f+'" '+st+'/>';
+  else if(it.p==='lines')s+='<line '+a+' x1="'+(x-7)+'" y1="'+y+'" x2="'+(x+7)+'" y2="'+y+'" stroke="'+c+'" stroke-width="2.6" stroke-linecap="round"/>';
+  else if(it.p==='mep')s+='<rect '+a+' x="-3" y="-3" width="6" height="6" transform="translate('+x+','+y+') rotate(45)" fill="'+f+'" '+st+'/>';
+  else if(it.p==='systype')s+='<polygon '+a+' points="'+x+','+(y-4.6)+' '+(x+4.4)+','+(y+3.4)+' '+(x-4.4)+','+(y+3.4)+'" fill="'+f+'" '+st+'/>';
+  else if(it.p==='nvis')s+='<rect '+a+' x="'+(x-3.6)+'" y="'+(y-3.6)+'" width="7.2" height="7.2" fill="'+f+'" '+st+'/>';});
+ if(S.zones)zonesTop().forEach(function(z,ix){var c=D.L.indexOf(z.z.charAt(0)),r=+z.z.slice(1)-1;s+='<text x="'+(c*D.CW+8)+'" y="'+(r*D.CH+16)+'" fill="var(--AccentHover)" font-size="11" font-weight="700" font-family="Consolas" pointer-events="none">#'+(ix+1)+' '+z.z+' · '+z.n+'</text>';});
+ if(S.reg){var g=S.reg;s+='<rect x="'+g.x0+'" y="'+g.y0+'" width="'+(g.x1-g.x0)+'" height="'+(g.y1-g.y0)+'" fill="var(--AccentBg)" fill-opacity=".10" stroke="var(--AccentBg)" stroke-width="2"/>';}
+ return s;}
+var TIP=null;function tip(h,e){if(!TIP){TIP=document.createElement('div');TIP.className='tip';document.body.appendChild(TIP);}if(h===null){TIP.style.display='none';return;}TIP.innerHTML=h;TIP.style.display='block';TIP.style.left=(e.clientX+14)+'px';TIP.style.top=(e.clientY+14)+'px';}
+function renderMap(){var svg=$('map_canvas');svg.innerHTML=mapSVG();$('map_idle').style.display=S.state==='idle'?'flex':'none';}
+function wireMap(){var svg=$('map_canvas'),drag=null;
+ function pt(e){var p=svg.createSVGPoint();p.x=e.clientX;p.y=e.clientY;var q=p.matrixTransform(svg.getScreenCTM().inverse());return {x:Math.max(0,Math.min(D.W,q.x)),y:Math.max(0,Math.min(D.H,q.y))};}
+ svg.onpointerdown=function(e){if(S.state==='idle')return;var z=e.target.closest&&e.target.closest('.zone');if(z){var k=z.dataset.z,c=D.L.indexOf(k.charAt(0)),r=+k.slice(1)-1;S.reg={x0:c*D.CW,x1:(c+1)*D.CW,y0:Math.round(r*D.CH),y1:Math.round((r+1)*D.CH)};S.scope='region';all();return;}var p=pt(e);drag={x:p.x,y:p.y};svg.setPointerCapture(e.pointerId);};
+ svg.onpointermove=function(e){if(drag){var p=pt(e);S.reg={x0:Math.round(Math.min(drag.x,p.x)),y0:Math.round(Math.min(drag.y,p.y)),x1:Math.round(Math.max(drag.x,p.x)),y1:Math.round(Math.max(drag.y,p.y))};S.scope='region';renderMap();return;}
+  var t=e.target;if(t&&t.dataset&&t.dataset.ix){var it=D.items[+t.dataset.ix];tip('<b>'+D.P[it.p].name+' · '+it.cat+'</b><br>'+it.why+'<br><span class="mono">zone '+it.z+'</span>',e);}else tip(null);};
+ svg.onpointerup=function(){if(drag){var big=S.reg&&(S.reg.x1-S.reg.x0>14)&&(S.reg.y1-S.reg.y0>14);if(!big)S.reg=null;drag=null;all();}};
+ svg.onpointerleave=function(){tip(null);};}
 
-  /* arm / bypass */
-  Array.prototype.forEach.call(document.querySelectorAll(".arm"), function (b) {
-    b.addEventListener("click", function (ev) {
-      ev.stopPropagation();
-      var stn = b.parentNode;
-      var off = stn.classList.toggle("bypass");
-      b.textContent = off ? "BYPASS" : "ARMED";
-      var n = document.querySelectorAll(".stn").length -
-              document.querySelectorAll(".stn.bypass").length;
-      document.getElementById("lbl_mf_armed").textContent = n + " of 8";
-      document.getElementById("footer_status").textContent =
-        n + " OF 8 ARMED \u00B7 NOT YET RUN";
-    });
-  });
+function renderShelf(){var idle=S.state==='idle',reg=S.scope==='region';
+ OFF.forEach(function(k){var d=0,c=0,h=0;D.items.forEach(function(it){if(it.p!==k)return;if(it.kind==='held')h++;else if(it.kind==='delete')d++;else c++;});
+  $('lbl_shelf_'+k+'_n').textContent=idle?'—':D.fmt(d+c+h);
+  var bits=[];if(d)bits.push(D.fmt(d)+' remove');if(c)bits.push(D.fmt(c)+(k==='sysname'?' rename':' repair'));if(h)bits.push(D.fmt(h)+' held');$('lbl_shelf_'+k+'_split').textContent=idle?'':bits.join(' · ');
+  $('shelf_'+k).classList.toggle('dim',reg&&!idle);$('shelf_'+k).classList.toggle('sel',S.sel===k);});}
 
-  /* ALL / WILL CHANGE / HELD - the approved filter, driving real rows */
-  var tray = document.getElementById("tray_host");
-  var cdwin = document.getElementById("cd_window");
+function renderCatch(){var idle=S.state==='idle',k=S.sel,P=D.P[k];
+ $('chip_results').style.display=S.state==='committed'?'inline-flex':'none';$('chip_results').classList.toggle('on',S.filt==='results');
+ if(S.filt==='results'&&S.state==='committed'){renderReceipt();return;}
+ $('lbl_tray_ord').textContent=P.ord;$('lbl_tray_glyph').textContent=P.g;$('lbl_tray_title').textContent=P.name;$('lbl_tray_desc').textContent=P.desc;
+ var rows=D.items.filter(function(it){return it.p===k&&it.kind!=='out';}),all_=rows.length,chg=rows.filter(function(it){return it.kind!=='held'&&!it.ex;}).length;
+ $('lbl_chip_all_n').textContent=idle?'0':all_;$('lbl_chip_change_n').textContent=idle?'0':chg;$('lbl_chip_held_n').textContent=idle?'0':(all_-chg);
+ var shown=rows.filter(function(it){var held=it.kind==='held'||it.ex;if(S.filt==='change'&&held)return false;if(S.filt==='held'&&!held)return false;if(S.q&&(it.cat+' '+it.why+' '+it.sv).toLowerCase().indexOf(S.q)<0)return false;if(S.scope==='region'&&S.reg&&it.x!=null&&!inReg(it))return false;return true;});
+ var g=$('grid_tray'),s='';
+ if(!idle)shown.slice(0,60).forEach(function(it){var held=it.kind==='held';var verb={dups:'Delete',lines:'Merge',mep:'Connect',nvis:'Fix',orphans:'Delete',sysempty:'Delete',sysname:'Rename',systype:'Repair',famdupes:'Delete'}[k];
+  var pill=held?'<span class="pill held"><span class="gl"></span>Held</span>':(it.kind==='delete'?(it.deps?'<span class="pill dep"><span class="gl"></span>'+verb+'</span>':'<span class="pill del"><span class="gl"></span>'+verb+'</span>'):'<span class="pill chg"><span class="gl"></span>'+verb+'</span>');
+  s+='<div class="row"><input type="checkbox" '+(held?'disabled':'')+' '+(!held&&!it.ex?'checked':'')+'><span>'+it.sv+'</span><span class="d">'+it.rm+'</span><span>'+it.cat+'</span><span class="r">'+it.len+'</span><span class="mono">'+it.z+'</span><span class="r">'+(it.kind==='delete'?it.deps:'—')+'</span><span>'+pill+'</span><span class="d" title="'+it.why+'">'+it.why+'</span></div>';});
+ g.innerHTML=s;var empty=idle||shown.length===0;$('lbl_tray_empty').style.display=empty?'flex':'none';
+ $('lbl_tray_empty').lastChild.textContent=idle?'Press SCAN MODEL to fill the plan.':'Nothing in this catch matches the filter.';
+ $('lbl_tray_count').textContent=idle?'':(Math.min(shown.length,60)+' of '+all_+' shown · '+shown.filter(function(it){return it.kind!=='held'&&!it.ex;}).length+' ticked for action');
+ ['all','change','held'].forEach(function(f){$('chip_'+f).classList.toggle('on',S.filt===f);});}
 
-  /* the run console - one chevron, one band */
-  var chev = document.getElementById("btn_console_chev");
-  chev.addEventListener("click", function () {
-    var open = cdwin.classList.toggle("console-open");
-    chev.innerHTML = open ? "&#xE70D;" : "&#xE70E;";
-  });
+function renderRun(){var idle=S.state==='idle',p=plan(),reg=S.scope==='region';
+ $('cb_scope').value=S.scope;$('lbl_scope_echo').textContent=reg?(S.reg?'region '+cells(S.reg):'region: none'):({all:'whole model',structural:'structural only',selection:'current selection',active_view:'active view'})[S.scope];
+ $('card_region').style.display=reg?'flex':'none';
+ if(S.reg){var tot=0,held=0;D.items.forEach(function(it){if(inReg(it)&&it.kind!=='out'){if(it.kind==='held')held++;else tot++;}});$('lbl_region_cells').textContent=cells(S.reg);$('lbl_region_stats').textContent=D.fmt(tot)+' findings inside · '+held+' held · '+Math.round((S.reg.x1-S.reg.x0)*(S.reg.y1-S.reg.y0)/(D.W*D.H)*100)+' % of the plan';}
+ else{$('lbl_region_cells').textContent='—';$('lbl_region_stats').textContent='None drawn. Drag on the plan, or click a hot zone.';}
+ $('lbl_scan').textContent='SCAN MODEL';$('btn_scan').className=idle?'btn wide pri':'btn wide';
+ D.ORDER.forEach(function(k){var off=OFF.indexOf(k)>=0&&reg;$('lbl_bk_'+k).textContent=idle?'—':(off?'—':D.fmt(p.by[k]||0));$('bk_'+k).classList.toggle('off',!S.armed[k]||off);});
+ var armed=D.ORDER.filter(function(k){return S.armed[k];}).length;$('lbl_mf_armed').textContent=armed+' of 9';
+ $('lbl_mf_intake').textContent=D.fmt(D.N);$('lbl_mf_delete').textContent=idle?'—':D.fmt(p.del);$('lbl_mf_change').textContent=idle?'—':D.fmt(p.chg);$('lbl_mf_held').textContent=idle?'—':D.fmt(p.held);
+ $('lbl_mf_cascade').textContent=idle?'—':(p.cap?'— · over cap':'+'+p.deps);$('lbl_mf_after').textContent=idle?'—':((p.cap?'≤ ':'')+D.fmt(D.N-p.del-(p.cap?0:p.deps)));
+ $('lbl_mf_capnote').style.display=(!idle&&p.cap)?'block':'none';
+ var needc=!idle&&p.cap&&S.state==='scanned';$('card_confirm_cap').style.display=needc?'grid':'none';$('chk_confirm_cap').checked=S.confirm;
+ var post=S.state==='committed',pv=S.state==='preview';$('row_run_pre').style.display=post?'none':'grid';$('row_run_post').style.display=post?'grid':'none';
+ $('card_delta').style.display=post?'none':'flex';var rc=$('card_result');rc.style.display=(post||pv)?'flex':'none';rc.className='res'+(pv?' pv':'');
+ $('lbl_res_title').textContent=pv?'Preview · measured, then rolled back':'Cleanup complete · one undo step';
+ $('lbl_res_deleted').textContent=D.fmt(p.del);$('lbl_res_changed').textContent=D.fmt(p.chg);$('lbl_res_cascaded').textContent=p.cap?'38':String(p.deps);$('lbl_res_failed').textContent='0';$('lbl_res_model').textContent=D.fmt(D.N)+' → '+D.fmt(D.N-p.del-(p.cap?38:p.deps));
+ var none=(p.del+p.chg)===0;$('btn_preview').disabled=idle||none||(reg&&!S.reg);$('btn_run').disabled=idle||none||(reg&&!S.reg)||(p.cap&&!S.confirm);
+ $('btn_export_report').disabled=!post;$('lbl_stale').style.display='none';}
 
-  /* RUN CLEANUP -> the post-run state. RESULTS, Export and Undo exist ONLY
-     after a run, so a mockup that never runs cannot show them at all. */
-  document.getElementById("btn_run").addEventListener("click", function () {
-    cdwin.classList.add("has-run");
-    document.getElementById("lbl_chip_results_n").textContent = "656";
-    document.getElementById("btn_export_report").removeAttribute("disabled");
-    document.getElementById("btn_undo_last").removeAttribute("disabled");
-    var s = "CLEANUP COMPLETE \u00B7 656 ELEMENTS ACTED ON \u00B7 OPEN THE CONSOLE FOR THE RECEIPT";
-    var pill = document.getElementById("footer_status");
-    pill.textContent = s;
-    pill.setAttribute("title", s);
-    document.getElementById("txt_log").textContent +=
-      "\n[07:43:18] RUN CLEANUP - one transaction group, 6 armed stations." +
-      "\n[07:43:21] 656 elements acted on. Ctrl+Z reverts the whole cleanup." +
-      "\n[07:43:21] Receipt ready - press Export report for the .xlsx.";
-  });
+function renderFoot(){var cs=$('chip_status'),fs=$('footer_status');
+ if(S.state==='idle'){cs.className='stat';cs.textContent='NOT SCANNED';fs.textContent='Idle';}
+ else if(S.state==='scanned'){cs.className='stat acc';cs.textContent='SCANNED · '+D.fmt(live().length)+' FOUND';fs.textContent=S.scope==='region'&&S.reg?'Ready · region '+cells(S.reg):'Ready';}
+ else if(S.state==='preview'){cs.className='stat acc';cs.textContent='PREVIEWED';fs.textContent='Preview measured and rolled back - nothing changed.';}
+ else{cs.className='stat pass';cs.textContent='DONE';fs.textContent='Committed · Ctrl+Z undoes the whole run';}}
 
-  var chips = [document.getElementById("chip_all"),
-               document.getElementById("chip_change"),
-               document.getElementById("chip_held"),
-               document.getElementById("chip_results")];
-  chips.forEach(function (c) {
-    c.addEventListener("click", function () {
-      chips.forEach(function (o) { o.classList.remove("on"); });
-      c.classList.add("on");
-      var want = c.getAttribute("data-tag");
-      var rows = document.querySelectorAll("#grid_tray .trow");
-      var shown = 0;
-      Array.prototype.forEach.call(rows, function (r) {
-        var v = r.getAttribute("data-verdict");
-        var ok = (want === "all") || (want === "change" && v === "delete")
-                 || (want === "held" && v === "held");
-        r.style.display = ok ? "" : "none";
-        if (ok) { shown += 1; }
-      });
-      tray.classList.toggle("is-empty", shown === 0);
-      document.getElementById("lbl_tray_count").textContent =
-        shown + " of 88 shown \u00B7 71 ticked for removal";
-    });
-  });
-})();
+function all(){renderLayers();renderMap();renderShelf();renderCatch();renderRun();renderFoot();
+ }
+
+function renderReceipt(){var p=plan(),L=[['01','Ghost Purge','−'+(p.by.dups||0),'0 skipped, 0 failed'],['02','Overkill Lines',(p.by.lines||0)+' merged','0 failed'],['03','Connection Fix',(p.by.mep||0)+' connected','0 failed'],['04','System Integrity','0 fixed','17 reported, 0 failed'],['05','System Names',(p.by.sysname||0)+' fixed','0 failed'],['06','System Type Repair',(p.by.systype||0)+' fixed','4 reported, 0 failed'],['07','Nested Fix','0 fixed','4 reported'],['08','Orphan Purge','−'+(p.by.orphans||0),'65 reported, 0 schema(s) erased'],['09','Family Duplicates','−'+(p.by.famdupes||0)+' fam.','5 held, 0 failed'],['∑','Dependent cascade','−38','elements deleted because a parent was']];
+ $('lbl_tray_ord').textContent='✓';$('lbl_tray_glyph').textContent='';$('lbl_tray_title').textContent='Run receipt';$('lbl_tray_desc').textContent='What each armed pass actually did, in execution order. One undoable item.';
+ var s='';L.forEach(function(r){s+='<div class="row"><span></span><span class="d">'+r[0]+'</span><span></span><span>'+r[1]+'</span><span class="r rspan">'+r[2]+'</span><span></span><span class="d">'+r[3]+'</span></div>';});
+ $('grid_tray').innerHTML=s;$('lbl_tray_empty').style.display='none';$('lbl_chip_results_n').textContent=L.length;$('lbl_tray_count').textContent=L.length+' pass receipt(s) · one undoable item';['all','change','held'].forEach(function(f){$('chip_'+f).classList.remove('on');});}
+/* sieve (Connection Fix tolerance) */
+function sieve(){var svg=$('sieve_canvas'),VW=320,VH=84,PL=6,PR=6,PB=14,mx=0;D.bins.forEach(function(b){if(b[2]>mx)mx=b[2];});var bw=(VW-PL-PR)/10;
+ function X(mm){return PL+mm/50*(VW-PL-PR);}
+ function draw(){var s='';D.bins.forEach(function(b,i){var h=(b[2]/mx)*(VH-PB-6),full=b[1]<=D.tol;s+='<rect x="'+(PL+i*bw+1)+'" y="'+(VH-PB-h)+'" width="'+(bw-2)+'" height="'+h+'" rx="2" fill="'+(full?'var(--AccentBg)':'var(--TrackBg)')+'"/>';s+='<text x="'+(PL+i*bw+bw/2)+'" y="'+(VH-3)+'" text-anchor="middle" font-size="9" font-family="Consolas" fill="var(--TextTertiary)">'+b[0]+'</text>';});
+  s+='<line x1="'+X(D.tol)+'" x2="'+X(D.tol)+'" y1="2" y2="'+(VH-PB)+'" stroke="var(--StatusWarn)" stroke-width="2"/><rect x="'+(X(D.tol)-5)+'" y="0" width="10" height="8" rx="2" fill="var(--StatusWarn)"/>';svg.innerHTML=s;
+  var inn=0,out=0;D.items.forEach(function(it){if(it.p==='mep'){if(it.gap<=D.tol+1e-9)inn++;else out++;}});$('lbl_sieve_in').textContent=inn;$('lbl_sieve_tol').textContent=D.tol.toFixed(1);$('lbl_sieve_out').textContent=out+' beyond tolerance, untouched';$('txt_mep_tol').value=D.tol;}
+ function mv(e){var r=svg.getBoundingClientRect(),mm=(e.clientX-r.left)/r.width*VW,v=(mm-PL)/(VW-PL-PR)*50;v=Math.max(5,Math.min(50,Math.round(v*2)/2));if(v!==D.tol){D.tol=v;D.recalc();draw();all();}}
+ function up(){window.removeEventListener('pointermove',mv);window.removeEventListener('pointerup',up);}
+ svg.onpointerdown=function(e){e.preventDefault();mv(e);window.addEventListener('pointermove',mv);window.addEventListener('pointerup',up);};draw();}
+
+/* wiring */
+function wire(){
+ $('btn_theme').onclick=function(){var r=document.documentElement;r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark');all();};
+ $('btn_config').onclick=function(){$('cfg_drawer').style.display='grid';$('foot_page').textContent='Configuration';};
+ $('btn_cfg_close').onclick=function(){$('cfg_drawer').style.display='none';$('foot_page').textContent='Survey';};
+ document.querySelectorAll('.sw').forEach(function(b){b.onclick=function(){b.classList.toggle('on');};});
+ D.ORDER.forEach(function(k){$('chk_'+k).onclick=function(e){e.stopPropagation();S.armed[k]=this.checked;all();};$('stn_'+k).onclick=function(){S.sel=k;all();};});
+ OFF.forEach(function(k){$('shelf_'+k).onclick=function(){S.sel=k;all();};});
+ $('btn_arm_all').onclick=function(){var on=D.ORDER.every(function(k){return S.armed[k];});D.ORDER.forEach(function(k){S.armed[k]=!on;});all();};
+ ['all','change','held','results'].forEach(function(f){$('chip_'+f).onclick=function(){S.filt=f;all();};});
+ $('btn_zones').onclick=function(){S.zones=!S.zones;this.classList.toggle('on',S.zones);renderMap();};
+ $('btn_clear_region').onclick=function(){S.reg=null;all();};
+ $('cb_scope').onchange=function(){S.scope=this.value;all();};
+ $('txt_tray_search').oninput=function(){S.q=this.value.trim().toLowerCase();renderCatch();};
+ $('chk_confirm_cap').onchange=function(){S.confirm=this.checked;renderRun();};
+ function scan(){S.state='scanned';S.confirm=false;S.filt='all';all();}
+ $('btn_scan').onclick=$('btn_scan_map').onclick=$('btn_scan_again').onclick=scan;
+ $('btn_preview').onclick=function(){S.state='preview';all();};
+ $('btn_run').onclick=function(){S.state='committed';S.filt='results';all();};
+ $('btn_undo_last').onclick=function(){S.state='scanned';all();};
+ $('btn_console_chev').onclick=function(){$('txt_log').classList.toggle('open');};
+ $('txt_log').textContent='[20:31:05]     Ghost Purge: 412 finding(s)\n[20:31:05]     Overkill Lines: 71 finding(s)\n[20:31:06]     Connection Fix: 118 finding(s)';
+ wireMap();sieve();}
+wire();all();
 </script>
 </body>
 </html>
